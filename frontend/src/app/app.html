@@ -1,0 +1,51 @@
+<main class="page-shell">
+  <section class="intro">
+    <p class="eyebrow">Cobold vs Hero</p>
+    <h1>Turn a legacy worry into a reviewable delivery quest.</h1>
+    <p class="lede">
+      The Cobold team brings production memory and COBOL instincts. The Hero team brings a small
+      Java/Angular move. The briefing keeps both sides honest.
+    </p>
+  </section>
+
+  <section class="workspace" aria-label="Cobold vs Hero briefing form">
+    <form class="briefing-form" (ngSubmit)="requestBriefing()">
+      <label>
+        <span>Cobold concern</span>
+        <textarea name="coboldConcern" rows="4" [(ngModel)]="coboldConcern"></textarea>
+      </label>
+
+      <label>
+        <span>Hero move</span>
+        <textarea name="heroMove" rows="4" [(ngModel)]="heroMove"></textarea>
+      </label>
+
+      <label>
+        <span>System mood</span>
+        <input name="systemMood" type="text" [(ngModel)]="systemMood" />
+      </label>
+
+      <button type="submit" [disabled]="loading()">
+        {{ loading() ? 'Reading the runes...' : 'Request briefing' }}
+      </button>
+    </form>
+
+    <article class="briefing-card" aria-live="polite">
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      } @else if (briefing(); as result) {
+        <p class="signal">{{ result.signal }}</p>
+        <h2>{{ result.headline }}</h2>
+        <p>{{ result.coboldWisdom }}</p>
+        <p class="next-step">{{ result.heroNextStep }}</p>
+        <ul>
+          @for (item of result.checklist; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      } @else {
+        <p class="empty">Send the first briefing to see whether this quest is a truce, sparring match, or shield-wall moment.</p>
+      }
+    </article>
+  </section>
+</main>

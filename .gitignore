@@ -1,0 +1,5 @@
+backend/.gradle/
+backend/build/
+frontend/dist/
+frontend/node_modules/
+screenshots/

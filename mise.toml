@@ -1,0 +1,35 @@
+[tools]
+java = "zulu-17"
+node = "24"
+
+[tasks."backend:start"]
+description = "Run the Spring Boot API on http://localhost:8080"
+dir = "backend"
+run = "./gradlew bootRun"
+
+[tasks."backend:test"]
+description = "Run backend tests"
+dir = "backend"
+run = "./gradlew test"
+
+[tasks."frontend:install"]
+description = "Install Angular dependencies"
+dir = "frontend"
+run = "npm install --registry=https://registry.npmjs.org"
+
+[tasks."frontend:start"]
+description = "Run the Angular app on http://localhost:4200"
+dir = "frontend"
+run = "npm start"
+
+[tasks."frontend:build"]
+description = "Build the Angular app"
+dir = "frontend"
+run = "npm run build"
+
+[tasks.verify]
+description = "Run the demo verification gates"
+run = [
+  "mise run backend:test",
+  "mise run frontend:build",
+]
