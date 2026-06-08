@@ -48,4 +48,26 @@ export class App {
         },
       });
   }
+
+  reasonFor(signal: string): string {
+    switch (signal) {
+      case 'shield-wall':
+        return 'High-risk path: legacy or production-sensitive work needs a smaller slice before implementation.';
+      case 'sparring':
+        return 'Medium-risk path: the idea is useful, but the team needs sharper acceptance criteria.';
+      default:
+        return 'Low-risk path: the move is small, targeted, and has verification evidence before the MR.';
+    }
+  }
+
+  statusFor(signal: string): string {
+    switch (signal) {
+      case 'shield-wall':
+        return 'Split before review';
+      case 'sparring':
+        return 'Sharpen before MR';
+      default:
+        return 'Review-ready slice';
+    }
+  }
 }

@@ -9,7 +9,7 @@
   </section>
 
   <section class="workspace" aria-label="Cobold vs Hero briefing form">
-    <form class="briefing-form" (ngSubmit)="requestBriefing()">
+    <form class="briefing-form" (submit)="$event.preventDefault()">
       <label>
         <span>Cobold concern</span>
         <textarea name="coboldConcern" rows="4" [(ngModel)]="coboldConcern"></textarea>
@@ -25,26 +25,48 @@
         <input name="systemMood" type="text" [(ngModel)]="systemMood" />
       </label>
 
-      <button type="submit" [disabled]="loading()">
+      <button type="button" [disabled]="loading()" (click)="requestBriefing()">
         {{ loading() ? 'Reading the runes...' : 'Request briefing' }}
       </button>
     </form>
 
-    <article class="briefing-card" aria-live="polite">
+    <article class="briefing-card" [class.briefing-card--active]="briefing()" aria-live="polite">
       @if (error()) {
         <p class="error">{{ error() }}</p>
       } @else if (briefing(); as result) {
-        <p class="signal">{{ result.signal }}</p>
+        <header class="result-header">
+          <p class="signal">{{ result.signal }}</p>
+          <p class="proof-status">{{ statusFor(result.signal) }}</p>
+        </header>
         <h2>{{ result.headline }}</h2>
         <p>{{ result.coboldWisdom }}</p>
+        <section class="reason-block" aria-label="Reason evidence">
+          <div class="reason-mark">MR</div>
+          <div>
+            <p class="reason-title">Reason / evidence</p>
+            <p>{{ reasonFor(result.signal) }}</p>
+          </div>
+        </section>
         <p class="next-step">{{ result.heroNextStep }}</p>
-        <ul>
+        <ul class="evidence-list">
           @for (item of result.checklist; track item) {
             <li>{{ item }}</li>
           }
         </ul>
       } @else {
-        <p class="empty">Send the first briefing to see whether this quest is a truce, sparring match, or shield-wall moment.</p>
+        <section class="empty-state" aria-label="Empty briefing state">
+          <p class="empty-kicker">Evidence ledger</p>
+          <h2>Ready for a reviewable briefing.</h2>
+          <p>
+            Send the first briefing to see whether this quest is a truce, sparring match, or
+            shield-wall moment.
+          </p>
+          <ul class="empty-steps">
+            <li>Legacy concern</li>
+            <li>Small Hero move</li>
+            <li>Review evidence</li>
+          </ul>
+        </section>
       }
     </article>
   </section>

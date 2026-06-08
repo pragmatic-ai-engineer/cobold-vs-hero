@@ -49,19 +49,18 @@ Response:
 
 ## Good Workshop Slice
 
-Ask an agent to inspect the repo and plan one change:
+Good design-to-code slice:
 
-> Add a short reason field to the briefing response so reviewers can understand
-> why the signal was chosen. Show the reason in the Angular result panel.
+> Improve the Reason / evidence display so it is easier to scan in a Teams
+> screenshare, without changing the backend behavior.
 
 Acceptance criteria:
 
-- Backend response includes `reason`.
-- `reason` explains one or two scoring inputs in plain language.
-- Angular result panel displays the reason.
+- Angular result panel keeps the reason/evidence explanation visible.
+- The evidence block is visually distinct enough for a Teams screenshare.
 - Existing tests still pass.
-- Add or update one backend test.
-- Keep the change small; do not add persistence, auth, or a scoring framework.
+- Keep the change small; do not change the backend contract, add persistence,
+  auth, or a scoring framework.
 
 ## Follow-Up Slices
 
