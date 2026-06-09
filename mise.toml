@@ -17,6 +17,11 @@ description = "Install Angular dependencies"
 dir = "frontend"
 run = "npm install --registry=https://registry.npmjs.org"
 
+[tasks."frontend:ci-install"]
+description = "Install Angular dependencies for CI"
+dir = "frontend"
+run = "npm ci --registry=https://registry.npmjs.org"
+
 [tasks."frontend:start"]
 description = "Run the Angular app on http://localhost:4200"
 dir = "frontend"
@@ -30,6 +35,14 @@ run = "npm run build"
 [tasks.verify]
 description = "Run the demo verification gates"
 run = [
+  "mise run backend:test",
+  "mise run frontend:build",
+]
+
+[tasks.ci]
+description = "Run the GitHub Actions verification gates"
+run = [
+  "mise run frontend:ci-install",
   "mise run backend:test",
   "mise run frontend:build",
 ]
