@@ -12,7 +12,7 @@ requirements, decisions, workflow, prompts, and follow-up notes.
 - `product/` - PO-owned product brief and acceptance criteria.
 - `design/` - designer/architect-owned HLD, LLD, and design decisions.
 - `testing/` - acceptance matrix, smoke checks, browser evidence, and testautomation plan.
-- `delivery/` - implementation plan, workflow, and decision log.
+- `delivery/` - implementation plan, workflow, loop contract, evidence, and decision log.
 - `prompts/` - reusable agent handoffs for the workshop.
 
 Runnable verification surfaces live next to the code they exercise:

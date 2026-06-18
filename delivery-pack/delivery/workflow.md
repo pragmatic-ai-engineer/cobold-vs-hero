@@ -9,6 +9,10 @@ Each surface owns one part of the loop:
 - `delivery-pack/design/high-level-design.md` defines system boundaries and flow.
 - `delivery-pack/design/low-level-design.md` defines endpoint details and mapping.
 - `delivery-pack/testing/acceptance-and-test-plan.md` defines acceptance evidence.
+- `delivery-pack/delivery/loop-contract.md` defines the loop goal, loss
+  function, constraints, instruments, and stop rules.
+- `delivery-pack/delivery/loop-evidence.md` records loop feedback and repair
+  evidence.
 - `contracts/` defines target behavior.
 - `backend/` computes the review signal.
 - `bff/` maps backend behavior to UI shape.
