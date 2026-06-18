@@ -1,0 +1,30 @@
+meta {
+  name: 03 Shield-wall briefing
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/cobold-vs-hero/briefing
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "coboldConcern": "production payment integration refactor goes to release",
+    "heroMove": "rewrite the flow quickly",
+    "systemMood": "panic"
+  }
+}
+
+tests {
+  const body = res.getBody();
+  expect(res.status).to.equal(200);
+  expect(body.signal).to.equal("shield-wall");
+  expect(body.reason).to.include("smaller slice");
+}

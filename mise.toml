@@ -1,6 +1,7 @@
 [tools]
 java = "zulu-17"
 node = "24"
+uv = "latest"
 
 [tasks."be:start"]
 description = "Run the Spring Boot API on http://localhost:8080"
@@ -32,10 +33,38 @@ description = "Build the Angular app"
 dir = "frontend"
 run = "npm run build"
 
+[tasks."bff:install"]
+description = "Install NestJS BFF dependencies"
+dir = "bff"
+run = "npm install --registry=https://registry.npmjs.org"
+
+[tasks."bff:ci-install"]
+description = "Install NestJS BFF dependencies for CI"
+dir = "bff"
+run = "npm ci --registry=https://registry.npmjs.org"
+
+[tasks."bff:start"]
+description = "Run the NestJS BFF on http://localhost:3000"
+dir = "bff"
+run = "npm run dev"
+
+[tasks."bff:build"]
+description = "Build the NestJS BFF"
+dir = "bff"
+run = "npm run build"
+
+[tasks."contracts:check"]
+description = "Check that workshop contract artifacts exist"
+run = "test -s contracts/openapi/cobold-briefing-api.yaml && test -s contracts/plantuml/briefing-flow.puml && test -s contracts/plantuml/briefing-state.puml"
+
+[tasks."api:smoke"]
+description = "Run DPS-lite API smoke tests against the running BFF"
+run = "PYTHONPATH=testautomation uv run --with pytest pytest testautomation"
+
 [tasks.verify]
 description = "Run the demo verification gates"
-run = ["mise run be:test", "mise run fe:build"]
+run = ["mise run contracts:check", "mise run be:test", "mise run bff:build", "mise run fe:build"]
 
 [tasks.ci]
 description = "Run the GitHub Actions verification gates"
-run = ["mise run fe:ci-install", "mise run be:test", "mise run fe:build"]
+run = ["mise run fe:ci-install", "mise run bff:ci-install", "mise run verify"]

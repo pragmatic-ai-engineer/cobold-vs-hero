@@ -1,0 +1,30 @@
+meta {
+  name: 01 Truce briefing
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/cobold-vs-hero/briefing
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "coboldConcern": "one label is confusing in a support screen",
+    "heroMove": "make a small text change and verify with a focused test",
+    "systemMood": "calm and curious"
+  }
+}
+
+tests {
+  const body = res.getBody();
+  expect(res.status).to.equal(200);
+  expect(body.signal).to.equal("truce");
+  expect(body.reason).to.include("clear verification path");
+}

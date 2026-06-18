@@ -1,0 +1,30 @@
+meta {
+  name: 02 Sparring briefing
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/cobold-vs-hero/briefing
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "coboldConcern": "customer status mapping is inconsistent between API and UI",
+    "heroMove": "add a mapper adapter and review targeted tests",
+    "systemMood": "tired"
+  }
+}
+
+tests {
+  const body = res.getBody();
+  expect(res.status).to.equal(200);
+  expect(body.signal).to.equal("sparring");
+  expect(body.evidencePrompts.length).to.be.greaterThan(0);
+}

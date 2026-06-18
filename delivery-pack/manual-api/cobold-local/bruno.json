@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Cobold vs Hero local",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
