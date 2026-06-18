@@ -10,7 +10,9 @@ Context:
 - Repo area:
 - User-visible behavior:
 - Backend/API impact:
+- BFF impact:
 - Frontend impact:
+- Verification impact:
 
 Acceptance criteria:
 1.
@@ -26,8 +28,13 @@ Files to inspect first:
 - 
 
 Verification:
+- contracts:
 - backend:
+- BFF:
 - frontend:
+- API smoke:
+- browser:
+- diff boundary:
 
 Ask:
 Inspect first. Return a plan before editing. Keep the diff small and explain

@@ -12,3 +12,6 @@ The runbook is intentionally small:
 
 In a real team, this folder can grow into shared prompts, slash commands, skill
 instructions, CI notes, and examples.
+
+Use `delivery-pack/` for the participant-facing work packet: PRD, ADR,
+implementation plan, workflow, Bruno collection, and workshop prompts.

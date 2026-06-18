@@ -27,16 +27,22 @@ evidence.
 Run from the repo root:
 
 ```bash
+mise run contracts:check
 mise run be:test
+mise run bff:build
 mise run fe:build
 mise run verify
 ```
 
-Install frontend dependencies first if needed:
+Install frontend and BFF dependencies first if needed:
 
 ```bash
 mise run fe:install
+mise run bff:install
 ```
+
+When backend and BFF are running, use `mise run api:smoke` for the live API
+behavior gate.
 
 ## Handoff
 
@@ -45,5 +51,6 @@ End with:
 - what changed
 - what was intentionally not changed
 - commands run and results
+- API/browser evidence, when relevant
 - risks and open questions
 - what reviewers should inspect first
