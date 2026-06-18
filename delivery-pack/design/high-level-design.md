@@ -1,27 +1,41 @@
-# High-Level Design - Review Signal Details
+# High-Level Design - Review Readiness Matrix
 
 ## Goal
 
-Show how a proposed delivery move becomes a reviewable briefing across backend,
-BFF, frontend, and verification surfaces.
+Show how a proposed delivery move becomes a review readiness matrix across
+backend, BFF, frontend, and verification surfaces.
 
-This HLD is intentionally compact. It exists to align the team before an agent
-implements, not to replace a full enterprise design package.
+This HLD is intentionally compact. It aligns the team before an agent
+implements, and it gives reviewers a stable context artifact for the loop.
+
+## Baseline
+
+The current app already supports Review Signal Details:
+
+```text
+Cobold concern + Hero move + system mood
+-> signal, reason, next action, evidence prompts, checklist
+```
+
+The new slice keeps the readiness signals but replaces the free-text input with
+structured evidence data.
 
 ## Scope
 
 In scope:
 
-- Review signal flow for `truce`, `sparring`, and `shield-wall`.
-- Runtime status flow for the NestJS BFF and Spring Boot backend.
-- API/BFF/frontend boundaries.
-- Evidence surfaces used by the loop.
-- Design assumptions and risks visible to reviewers.
+- Structured review readiness request.
+- Required evidence derived from affected surfaces and risk flags.
+- Missing evidence calculation.
+- Review matrix rows for affected surfaces.
+- Backend/BFF/frontend boundary updates.
+- Contract, Bruno, DPS-lite, and browser verification surfaces.
 
 Out of scope:
 
 - Authentication.
 - Persistence.
+- User management.
 - Real scoring framework.
 - Production topology.
 - Environment-specific configuration.
@@ -29,11 +43,11 @@ Out of scope:
 ## System Context
 
 ```text
-Hero proposer
+Hero proposer / reviewer
 -> Angular UI
 -> NestJS BFF
 -> Spring Boot API
--> Review signal response
+-> Review readiness response
 -> Cobold reviewer / human decision
 
 Angular UI
@@ -50,46 +64,46 @@ Canonical flow diagram:
 
 | Component | Responsibility |
 | --- | --- |
-| Angular UI | Collect concern, proposed move, and mood. Render signal, reason, next action, evidence prompts, checklist, and runtime status. |
+| Angular UI | Collect change title, description, affected surfaces, provided evidence, and risk flags. Render signal, stop condition, next action, and review matrix. |
 | NestJS BFF | Keep the UI contract stable, map backend field names to UI-facing names, and aggregate BFF/backend runtime status. |
-| Spring Boot API | Classify the review signal and produce reason, reviewer note, next action, evidence prompts, checklist, and backend runtime status. |
+| Spring Boot API | Derive required evidence, missing evidence, signal, stop condition, next action, and review matrix rows. |
 | Contracts | Keep OpenAPI, PlantUML, and sample payloads aligned with behavior. |
 | Bruno | Provide participant-friendly manual/API CLI smoke checks during development. |
 | Testautomation | Provide the heavier DPS-lite API automation gate from outside the code. |
 
 ## Design Decisions
 
-- The backend owns signal classification and evidence prompt generation.
-- The BFF owns field-name translation only; it should not duplicate scoring
+- The backend owns readiness rules and evidence derivation.
+- The BFF owns field-name translation only; it should not duplicate readiness
   logic.
-- The BFF owns the aggregate runtime status response because the UI should have
-  one local endpoint to inspect both services.
-- The UI owns readability and screen-share suitability.
-- The loop treats contract samples, API smoke, browser evidence, and diff scope
-  as feedback instruments.
+- The UI owns input ergonomics and matrix readability.
+- The loop treats contract samples, API smoke, DPS-lite, browser evidence, and
+  diff scope as feedback instruments.
 
 ## Assumptions
 
-- The demo uses deterministic keyword-based classification so participants can
-  reason about the loop without needing model nondeterminism.
+- The demo uses deterministic rule-based readiness logic so participants can
+  reason about the loop without model nondeterminism.
 - HLD/LLD stay short and reviewable during the workshop.
 - Browser evidence can be captured live or replayed from a prepared run.
+- The baseline status panel remains useful but is not the core workshop slice.
 
 ## Risks
 
 - The agent may over-expand the design into persistence, auth, or a scoring
   framework.
+- The matrix can become process theater if required evidence is not tied to
+  affected surfaces and risk flags.
 - The BFF can accidentally hide backend contract or validation behavior.
-- The status page can look healthy while deeper dependencies are unavailable;
-  this slice only reports runtime reachability.
 - UI wording can look successful while API behavior is still unverified.
-- Diagrams can drift from OpenAPI and tests unless they are part of the review
-  checklist.
+- Harness checks can become too broad for a 3-hour workshop if the slice is not
+  kept narrow.
 
 ## HLD Done Condition
 
 - System boundaries are clear.
-- The sequence diagram matches the intended flow.
 - Ownership of backend, BFF, frontend, and verification behavior is explicit.
-- Runtime status behavior is documented as a shallow reachability signal.
+- The sequence diagram matches the intended flow.
 - Risks and non-goals are visible before implementation.
+- The matrix has a clear verification path through API smoke, DPS-lite, and
+  browser evidence.
