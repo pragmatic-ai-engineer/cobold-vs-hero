@@ -1,5 +1,5 @@
 meta {
-  name: 03 Shield-wall briefing
+  name: 03 Shield-wall readiness
   type: http
   seq: 3
 }
@@ -16,14 +16,17 @@ headers {
 
 body:json {
   {
-    "coboldConcern": "production payment integration refactor goes to release",
-    "heroMove": "rewrite the flow quickly",
-    "systemMood": "panic"
+    "changeTitle": "Payment retry refactor",
+    "changeDescription": "Refactor production payment retry flow and auth callback in one release.",
+    "affectedSurfaces": ["backend", "bff", "frontend", "contract", "testing"],
+    "providedEvidence": ["hld"],
+    "riskFlags": ["production", "payment", "auth", "unclear-scope"]
   }
 }
 
 assert {
   res.status: eq 200
   res.body.signal: eq shield-wall
-  res.body.reason: contains smaller slice
+  res.body.missingEvidence: isNotEmpty
+  res.body.stopCondition: contains Split
 }

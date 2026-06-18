@@ -9,43 +9,59 @@ def test_status_reports_bff_and_backend_up() -> None:
     assert all(service["status"] == "UP" for service in response["services"])
 
 
-def test_truce_briefing_contains_verification_reason() -> None:
+def test_truce_readiness_has_no_missing_evidence() -> None:
     response = CoboldBriefingClient().create_briefing(
         BriefingRequest(
-            cobold_concern="one label is confusing in a support screen",
-            hero_move="make a small text change and verify with a focused test",
-            system_mood="calm and curious",
+            change_title="Backend label endpoint",
+            change_description="Add one small backend endpoint and attach the backend unit test.",
+            affected_surfaces=["backend"],
+            provided_evidence=["backend-test"],
+            risk_flags=[],
         )
     )
 
     assert response["signal"] == "truce"
-    assert "clear verification path" in response["reason"]
-    assert response["evidencePrompts"]
+    assert response["requiredEvidence"] == ["backend-test"]
+    assert response["missingEvidence"] == []
+    assert response["reviewMatrix"][0]["surface"] == "backend"
+    assert response["reviewMatrix"][0]["gap"] == "covered"
 
 
-def test_sparring_briefing_requires_sharper_acceptance_criteria() -> None:
+def test_sparring_readiness_reports_missing_ui_and_bff_evidence() -> None:
     response = CoboldBriefingClient().create_briefing(
         BriefingRequest(
-            cobold_concern="customer status mapping is inconsistent between API and UI",
-            hero_move="add a mapper adapter and review targeted tests",
-            system_mood="tired",
+            change_title="Status panel mapping",
+            change_description="Add one backend field, one BFF mapper, and one Angular status panel.",
+            affected_surfaces=["backend", "bff", "frontend"],
+            provided_evidence=["backend-test", "hld", "lld"],
+            risk_flags=[],
         )
     )
 
     assert response["signal"] == "sparring"
-    assert "acceptance criteria" in response["reason"]
-    assert "write acceptance criteria" in response["checklist"]
+    assert response["requiredEvidence"] == ["backend-test", "bruno-smoke", "browser-screenshot", "hld", "lld"]
+    assert response["missingEvidence"] == ["bruno-smoke", "browser-screenshot"]
+    assert "browser evidence" in response["heroNextStep"].lower()
 
 
-def test_shield_wall_briefing_requires_slice_split() -> None:
+def test_shield_wall_readiness_requires_split_for_high_risk_missing_proof() -> None:
     response = CoboldBriefingClient().create_briefing(
         BriefingRequest(
-            cobold_concern="production payment integration refactor goes to release",
-            hero_move="rewrite the flow quickly",
-            system_mood="panic",
+            change_title="Payment retry refactor",
+            change_description="Refactor production payment retry flow and auth callback in one release.",
+            affected_surfaces=["backend", "bff", "frontend", "contract", "testing"],
+            provided_evidence=["hld"],
+            risk_flags=["production", "payment", "auth", "unclear-scope"],
         )
     )
 
     assert response["signal"] == "shield-wall"
-    assert "smaller slice" in response["reason"]
-    assert response["checklist"][0] == "split the task"
+    assert response["missingEvidence"] == [
+        "backend-test",
+        "bruno-smoke",
+        "browser-screenshot",
+        "dps-testautomation",
+        "lld",
+    ]
+    assert "Split the work" in response["stopCondition"]
+    assert len(response["reviewMatrix"]) == 5

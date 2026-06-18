@@ -9,15 +9,19 @@ from typing import Any
 
 @dataclass(frozen=True)
 class BriefingRequest:
-    cobold_concern: str
-    hero_move: str
-    system_mood: str
+    change_title: str
+    change_description: str
+    affected_surfaces: list[str]
+    provided_evidence: list[str]
+    risk_flags: list[str]
 
-    def to_payload(self) -> dict[str, str]:
+    def to_payload(self) -> dict[str, str | list[str]]:
         return {
-            "coboldConcern": self.cobold_concern,
-            "heroMove": self.hero_move,
-            "systemMood": self.system_mood,
+            "changeTitle": self.change_title,
+            "changeDescription": self.change_description,
+            "affectedSurfaces": self.affected_surfaces,
+            "providedEvidence": self.provided_evidence,
+            "riskFlags": self.risk_flags,
         }
 
 

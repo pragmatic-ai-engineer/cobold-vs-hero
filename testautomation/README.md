@@ -7,9 +7,14 @@ It verifies the BFF boundary from outside the app. This is the heavier API
 automation gate, not the quick developer smoke path. Use Bruno / `mise run
 api:smoke` for fast local checks during development.
 
-- representative `truce`, `sparring`, and `shield-wall` requests
+- representative `truce`, `sparring`, and `shield-wall` readiness requests
 - response signal
-- reason and evidence prompts
+- required evidence and missing evidence
+- review matrix rows
+
+On `workshop/03-harness-before-code`, these checks are expected to fail against
+the baseline app. That failure is the feedback signal for the implementation
+loop.
 
 Run it after backend and BFF are running:
 
