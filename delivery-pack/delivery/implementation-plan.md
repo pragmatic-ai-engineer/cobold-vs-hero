@@ -1,39 +1,57 @@
-# Implementation Plan
+# Implementation Plan - Review Readiness Matrix
 
-## Slice 0 - Lightweight Design Artifacts
+## Slice 0 - Baseline
 
-- Add HLD for system boundaries, flow, assumptions, and risks.
-- Add LLD for endpoint behavior, BFF mapping, examples, and test cases.
-- Keep both documents short enough to review during the workshop.
+- Keep the existing Review Signal Details app as the starting point.
+- Preserve baseline verification commands and runtime status behavior.
+- Branch: `workshop/00-baseline-review-signal-details`.
 
-## Slice 1 - Contract And Backend Signal Details
+## Slice 1 - Product And Prompt Scope
 
-- Add `reason` and `evidencePrompts` to the briefing response contract.
-- Update backend response generation.
-- Add focused backend tests for representative signals.
+- Define the Review Readiness Matrix task.
+- Clarify non-goals and acceptance criteria.
+- Update the first planning prompt so an agent inspects before editing.
+- Branch: `workshop/01-prompt-scope-review-readiness-matrix`.
 
-## Slice 2 - BFF Mapping
+## Slice 2 - Context Delivery Packet
 
-- Add a minimal NestJS BFF.
-- Proxy the briefing request to the backend.
-- Map backend fields to UI-facing names.
-- Keep BFF logic thin and testable by API smoke.
+- Update HLD for system boundaries, responsibilities, assumptions, and risks.
+- Update LLD for request fields, response fields, evidence rules, signal rules,
+  validation, and verification cases.
+- Record design decisions about baseline, backend ownership, and harness-before-
+  implementation.
+- Branch: `workshop/02-context-delivery-packet`.
 
-## Slice 3 - Frontend Rendering
+## Slice 3 - Harness Before Code
 
-- Route the Angular app through the BFF.
-- Render reason and evidence prompts.
-- Keep the UI small and readable in a screen share.
+- Update OpenAPI and samples for structured readiness input.
+- Update PlantUML flow/state diagrams.
+- Add Bruno smoke requests for representative `truce`, `sparring`, and
+  `shield-wall` readiness cases.
+- Add DPS-lite API automation that fails against the baseline and becomes the
+  loop's measured error signal.
+- Branch: `workshop/03-harness-before-code`.
 
-## Slice 4 - Verification Harness
+## Slice 4 - Implementation Pass
 
-- Add contract samples and PlantUML flow/state notes.
-- Add Bruno manual/API CLI smoke checks for fast local feedback.
-- Add DPS-lite Python API checks as the heavier testautomation gate.
-- Keep browser verification as a recipe or prepared replay for the workshop.
+- Update backend request/response records and readiness rules.
+- Map backend response through the NestJS BFF.
+- Render structured readiness input and matrix output in Angular.
+- Run the cheapest relevant checks first, then the broader gates.
+- Branch: `workshop/04-implementation-pass`.
 
-## Slice 5 - Workshop Loop
+## Slice 5 - Loop Repair, Review, And Evidence
 
-- Use HLD/LLD as design gates before implementation.
-- Use the loop contract to run: plan, implement, verify, repair, review.
-- Capture command results, API smoke evidence, browser evidence, and diff notes.
+- Feed exact failing harness output back into the agent.
+- Repair only scoped failures.
+- Capture command, API, DPS-lite, browser, and diff evidence.
+- Run fresh-context review against the loop contract.
+- Branch: `workshop/05-loop-repair-review-evidence`.
+
+## Stop Conditions
+
+- Source of truth remains ambiguous.
+- Same check fails twice after a targeted repair.
+- Diff expands into persistence, auth, or real scoring.
+- Browser evidence cannot show the matrix clearly.
+- The agent claims success without command or browser evidence.

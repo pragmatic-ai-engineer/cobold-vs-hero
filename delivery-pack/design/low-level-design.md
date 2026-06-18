@@ -1,4 +1,4 @@
-# Low-Level Design - Briefing Endpoint
+# Low-Level Design - Review Readiness Endpoint
 
 ## Endpoints
 
@@ -22,21 +22,33 @@ Representative examples:
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `coboldConcern` | string | yes | Risk-aware concern from the reviewer role. |
-| `heroMove` | string | yes | Proposed delivery move. |
-| `systemMood` | string | yes | Lightweight context that can raise or lower risk. |
+| `changeTitle` | string | yes | Short name for the proposed delivery move. |
+| `changeDescription` | string | yes | Summary of the delivery intent. |
+| `affectedSurfaces` | string[] | yes | Any of `backend`, `bff`, `frontend`, `contract`, `testing`. |
+| `providedEvidence` | string[] | yes | Evidence already available for review. |
+| `riskFlags` | string[] | yes | Any of `production`, `customer-data`, `auth`, `payment`, `unclear-scope`. |
 
 ## Backend Response
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `signal` | string | `truce`, `sparring`, or `shield-wall`. |
-| `headline` | string | Short human-readable summary. |
-| `reason` | string | Why this signal was selected. |
-| `coboldWisdom` | string | Reviewer note that keeps the risky assumption visible. |
+| `headline` | string | Short human-readable readiness summary. |
+| `requiredEvidence` | string[] | Evidence expected from surfaces and risk flags. |
+| `missingEvidence` | string[] | Required evidence not present in `providedEvidence`. |
+| `stopCondition` | string | When the team should stop rather than implement. |
 | `heroNextStep` | string | Recommended next delivery action. |
-| `evidencePrompts` | string[] | Questions that guide proof collection. |
-| `checklist` | string[] | Concrete review checklist items. |
+| `reviewMatrix` | object[] | One row per affected surface. |
+
+Review matrix row:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `surface` | string | Affected surface. |
+| `expectedEvidence` | string[] | Evidence expected for the surface. |
+| `providedEvidence` | string[] | Matching evidence already provided. |
+| `gap` | string | `covered` or a short missing-evidence summary. |
+| `nextAction` | string | What the team should do for this surface. |
 
 ## BFF Mapping
 
@@ -44,75 +56,65 @@ Representative examples:
 | --- | --- |
 | `signal` | `signal` |
 | `headline` | `headline` |
-| `reason` | `reason` |
-| `coboldWisdom` | `reviewerNote` |
+| `requiredEvidence` | `requiredEvidence` |
+| `missingEvidence` | `missingEvidence` |
+| `stopCondition` | `stopCondition` |
 | `heroNextStep` | `nextAction` |
-| `evidencePrompts` | `evidencePrompts` |
-| `checklist` | `checklist` |
+| `reviewMatrix` | `reviewMatrix` |
 
 The BFF should stay thin. It maps field names and forwards behavior; it does not
-own classification rules.
+own readiness rules.
 
-## Status Response
+## Evidence Rules
 
-The UI calls the BFF status endpoint. The BFF reports itself as `bff-nestjs`,
-then probes the backend status endpoint and returns both service entries.
+Base evidence by surface:
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `status` | string | `UP` when both services are up, otherwise `DEGRADED`. |
-| `checkedAt` | string | ISO timestamp for the aggregate check. |
-| `services` | object[] | Ordered service status entries for BFF then backend. |
-
-Service entry fields:
-
-| Field | Type | Notes |
-| --- | --- | --- |
-| `service` | string | `bff-nestjs` or `be-java`. |
-| `runtime` | string | `nestjs` or `spring-boot`. |
-| `status` | string | `UP` or `DOWN`. |
-| `checkedAt` | string | ISO timestamp for that service check. |
-| `endpoint` | string | Endpoint used for the check. |
-| `detail` | string | Optional failure detail when the backend status check fails. |
-
-The backend status endpoint returns its own service metadata plus configured
-server port. The BFF intentionally does not expose dependency-level health in
-this slice.
-
-## Classification Rules
-
-The backend computes a simple risk score from the request text:
-
-- Production, release, payment, billing concerns raise risk.
-- Auth, customer, and data concerns raise risk.
-- Batch, integration, contract, legacy, migration, and refactor concerns raise
-  risk.
-- Panic, chaos, and tired mood raise risk.
-- Small, test, review, and adapter delivery moves lower risk.
-
-Signal thresholds:
-
-| Score | Signal |
+| Surface | Required evidence |
 | --- | --- |
-| `0..3` | `truce` |
-| `4..6` | `sparring` |
-| `7+` | `shield-wall` |
+| `backend` | `backend-test` |
+| `bff` | `bruno-smoke` |
+| `frontend` | `browser-screenshot` |
+| `contract` | `bruno-smoke` |
+| `testing` | `dps-testautomation` |
+
+Design evidence:
+
+- Any multi-surface change requires `hld` and `lld`.
+- `unclear-scope` requires `hld` and `lld`.
+
+Risk evidence:
+
+| Risk flag | Additional evidence |
+| --- | --- |
+| `production` | `dps-testautomation`, `browser-screenshot` |
+| `customer-data` | `dps-testautomation` |
+| `auth` | `dps-testautomation` |
+| `payment` | `dps-testautomation`, `browser-screenshot` |
+| `unclear-scope` | `hld`, `lld` |
+
+## Signal Rules
+
+| Condition | Signal |
+| --- | --- |
+| no missing evidence and no high-risk flags | `truce` |
+| one or two missing evidence items and no high-risk flags | `sparring` |
+| more than two missing evidence items, or any `production`, `payment`, or `auth` flag with missing evidence | `shield-wall` |
 
 ## Validation
 
-The backend rejects blank request fields through validation annotations.
-
-Current BFF behavior turns non-2xx backend responses into a service-unavailable
-response. That is acceptable for the workshop slice, but it is a useful review
-finding if the task expands toward production-grade validation behavior.
+- Blank `changeTitle` is invalid.
+- Blank `changeDescription` is invalid.
+- Empty `affectedSurfaces` is invalid.
+- Empty arrays are allowed for `providedEvidence` and `riskFlags`.
+- Unknown surfaces, evidence, or risk flags should be rejected by validation.
 
 ## Verification Cases
 
 | Case | Expected signal | Evidence |
 | --- | --- | --- |
-| Small reviewed UI/support change | `truce` | Backend unit test, Bruno smoke, DPS-lite testautomation. |
-| Inconsistent customer API/UI mapping | `sparring` | Bruno smoke and DPS-lite testautomation assert acceptance-criteria prompt. |
-| Production payment integration refactor | `shield-wall` | Backend unit test, Bruno smoke, DPS-lite testautomation, browser result panel. |
+| Small backend change with backend test | `truce` | Backend unit test, Bruno smoke, DPS-lite testautomation. |
+| Multi-surface UI/API change missing browser and smoke evidence | `sparring` | Bruno smoke and DPS-lite assert missing evidence. |
+| Production payment or auth change missing automation/browser proof | `shield-wall` | Backend unit test, Bruno smoke, DPS-lite testautomation, browser result panel. |
 | BFF and backend runtime status | `UP` | Backend unit test, Bruno smoke, DPS-lite testautomation, browser status panel. |
 
 ## LLD Done Condition
@@ -121,7 +123,5 @@ finding if the task expands toward production-grade validation behavior.
 - BFF mapping table matches implementation.
 - Samples, Bruno smoke requests, and DPS-lite testautomation cover representative
   signals.
-- Runtime status response is documented and covered in OpenAPI, sample payloads,
-  Bruno smoke, DPS-lite testautomation, and browser evidence.
 - Validation behavior and known gaps are explicit.
-- Browser evidence shows the fields that the API smoke checks assert.
+- Browser evidence shows the matrix fields that API smoke checks assert.

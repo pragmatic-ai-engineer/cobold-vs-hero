@@ -1,15 +1,20 @@
-# Prompt 00 - Draft Lightweight HLD/LLD
+# Prompt 00 - Draft Matrix HLD/LLD
 
-Use this before asking for an implementation plan.
+Use this before asking for contracts, tests, or implementation.
 
 ```text
 You are working in the Cobold vs Hero workshop repo.
 
 Goal:
-Turn the requested slice into a compact HLD and LLD that can guide an agent
-implementation loop.
+Turn the Review Readiness Matrix product brief into compact HLD and LLD updates
+that can guide an agent implementation loop.
+
+Baseline:
+The current app already implements Review Signal Details. Do not treat that as
+stale. Treat it as the starting point.
 
 Inspect:
+- docs/demo-task.md
 - delivery-pack/product/product-brief.md
 - delivery-pack/design/high-level-design.md
 - delivery-pack/design/low-level-design.md
@@ -20,6 +25,7 @@ Inspect:
 - backend/
 - bff/
 - frontend/
+- manual-api/
 - testautomation/
 
 Return:
@@ -27,8 +33,8 @@ Return:
 - LLD changes needed
 - design decision changes needed
 - testing plan changes needed
-- design risks and assumptions
-- contract/test/browser evidence that should verify the design
+- contract/sample changes needed
+- browser evidence that should verify the design
 - stop conditions
 
 Do not implement yet.
