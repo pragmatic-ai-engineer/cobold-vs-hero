@@ -5,8 +5,10 @@ import { FormsModule } from '@angular/forms';
 interface BriefingResponse {
   signal: string;
   headline: string;
-  coboldWisdom: string;
-  heroNextStep: string;
+  reviewerNote: string;
+  reason: string;
+  nextAction: string;
+  evidencePrompts: string[];
   checklist: string[];
 }
 
@@ -32,7 +34,7 @@ export class App {
     this.error.set('');
 
     this.http
-      .post<BriefingResponse>('http://localhost:8080/api/cobold-vs-hero/briefing', {
+      .post<BriefingResponse>('http://localhost:3000/api/cobold-vs-hero/briefing', {
         coboldConcern: this.coboldConcern,
         heroMove: this.heroMove,
         systemMood: this.systemMood,
@@ -43,21 +45,10 @@ export class App {
           this.loading.set(false);
         },
         error: () => {
-          this.error.set('The backend briefing service is not reachable. Start the Spring Boot API on port 8080.');
+          this.error.set('The briefing flow is not reachable. Start the BFF on port 3000 and backend on port 8080.');
           this.loading.set(false);
         },
       });
-  }
-
-  reasonFor(signal: string): string {
-    switch (signal) {
-      case 'shield-wall':
-        return 'High-risk path: production-sensitive work needs a smaller slice before implementation.';
-      case 'sparring':
-        return 'Medium-risk path: the idea is useful, but the team needs sharper acceptance criteria.';
-      default:
-        return 'Low-risk path: the move is small, targeted, and has verification evidence before the MR.';
-    }
   }
 
   statusFor(signal: string): string {

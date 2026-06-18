@@ -18,6 +18,8 @@ class CoboldVsHeroControllerTests {
 
 		assertThat(response.signal()).isEqualTo("truce");
 		assertThat(response.headline()).contains("review-ready starter slice");
+		assertThat(response.reason()).contains("clear verification path");
+		assertThat(response.evidencePrompts()).isNotEmpty();
 	}
 
 	@Test
@@ -30,5 +32,6 @@ class CoboldVsHeroControllerTests {
 
 		assertThat(response.signal()).isEqualTo("shield-wall");
 		assertThat(response.checklist()).first().isEqualTo("split the task");
+		assertThat(response.reason()).contains("smaller slice");
 	}
 }

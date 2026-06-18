@@ -1,0 +1,16 @@
+{
+  "signal": "truce",
+  "headline": "Truce declared: this is a review-ready starter slice.",
+  "reason": "The proposed move is small, focused, and has a clear verification path.",
+  "coboldWisdom": "The Cobold reviewer says: name the risky assumption, keep the review evidence visible, and keep one label is confusing in a support screen visible in the review.",
+  "heroNextStep": "Inspect nearby code, make the smallest diff, and verify it before the MR.",
+  "evidencePrompts": [
+    "Which command proves the slice still works?",
+    "Which screenshot or API response should be attached to the PR?"
+  ],
+  "checklist": [
+    "inspect nearby code",
+    "make a small change",
+    "attach verification evidence"
+  ]
+}

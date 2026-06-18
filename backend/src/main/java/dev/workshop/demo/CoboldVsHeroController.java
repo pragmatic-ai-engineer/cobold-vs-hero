@@ -23,8 +23,10 @@ class CoboldVsHeroController {
 		return new BriefingResponse(
 				signal,
 				headlineFor(signal),
+				reasonFor(signal),
 				coboldWisdomFor(request),
 				heroNextStepFor(signal),
+				evidencePromptsFor(signal),
 				checklistFor(signal));
 	}
 
@@ -69,6 +71,14 @@ class CoboldVsHeroController {
 				request.coboldConcern().trim() + " visible in the review.";
 	}
 
+	private String reasonFor(String signal) {
+		return switch (signal) {
+			case "shield-wall" -> "Production-sensitive or high-coupling work needs a smaller slice before implementation.";
+			case "sparring" -> "The idea is useful, but the team needs sharper acceptance criteria and targeted evidence.";
+			default -> "The proposed move is small, focused, and has a clear verification path.";
+		};
+	}
+
 	private String heroNextStepFor(String signal) {
 		return switch (signal) {
 			case "shield-wall" -> "Write non-goals, split the change, and ask for a review plan before implementation.";
@@ -85,6 +95,14 @@ class CoboldVsHeroController {
 		};
 	}
 
+	private List<String> evidencePromptsFor(String signal) {
+		return switch (signal) {
+			case "shield-wall" -> List.of("Which smaller slice can be reviewed independently?", "Which rollback or recovery signal proves the risky path is controlled?");
+			case "sparring" -> List.of("Which acceptance criterion would reject a vague implementation?", "Which focused test proves the mapper or UI behavior?");
+			default -> List.of("Which command proves the slice still works?", "Which screenshot or API response should be attached to the PR?");
+		};
+	}
+
 	record BriefingRequest(
 			@NotBlank String coboldConcern,
 			@NotBlank String heroMove,
@@ -94,8 +112,10 @@ class CoboldVsHeroController {
 	record BriefingResponse(
 			String signal,
 			String headline,
+			String reason,
 			String coboldWisdom,
 			String heroNextStep,
+			List<String> evidencePrompts,
 			List<String> checklist) {
 	}
 }

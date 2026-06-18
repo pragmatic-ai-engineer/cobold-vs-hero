@@ -39,15 +39,23 @@
           <p class="proof-status">{{ statusFor(result.signal) }}</p>
         </header>
         <h2>{{ result.headline }}</h2>
-        <p>{{ result.coboldWisdom }}</p>
+        <p>{{ result.reviewerNote }}</p>
         <section class="reason-block" aria-label="Reason evidence">
           <div class="reason-mark">MR</div>
           <div>
             <p class="reason-title">Reason / evidence</p>
-            <p>{{ reasonFor(result.signal) }}</p>
+            <p>{{ result.reason }}</p>
           </div>
         </section>
-        <p class="next-step">{{ result.heroNextStep }}</p>
+        <p class="next-step">{{ result.nextAction }}</p>
+        <section class="prompt-block" aria-label="Evidence prompts">
+          <p class="prompt-title">Evidence prompts</p>
+          <ul>
+            @for (item of result.evidencePrompts; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </section>
         <ul class="evidence-list">
           @for (item of result.checklist; track item) {
             <li>{{ item }}</li>

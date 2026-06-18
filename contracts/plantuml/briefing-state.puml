@@ -1,0 +1,22 @@
+@startuml
+title Review signal states
+
+[*] --> truce
+[*] --> sparring
+[*] --> shield_wall
+
+truce: safe starter slice
+truce: attach verification evidence
+
+sparring: useful idea
+sparring: sharpen acceptance criteria
+
+shield_wall: too risky
+shield_wall: split before implementation
+
+truce --> sparring: evidence missing
+sparring --> shield_wall: scope grows
+shield_wall --> sparring: slice split
+sparring --> truce: checks and criteria are clear
+
+@enduml

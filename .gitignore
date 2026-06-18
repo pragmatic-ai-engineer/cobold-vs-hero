@@ -1,5 +1,9 @@
 backend/.gradle/
 backend/build/
+bff/dist/
+bff/node_modules/
 frontend/dist/
 frontend/node_modules/
+testautomation/.pytest_cache/
+testautomation/**/__pycache__/
 screenshots/

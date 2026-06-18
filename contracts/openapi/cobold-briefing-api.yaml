@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Cobold vs Hero Briefing API
+  version: 0.1.0
+paths:
+  /api/cobold-vs-hero/briefing:
+    post:
+      summary: Create a review briefing for a proposed delivery move
+      operationId: createBriefing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BriefingRequest'
+            examples:
+              shieldWall:
+                value:
+                  coboldConcern: production payment integration refactor goes to release
+                  heroMove: rewrite the flow quickly
+                  systemMood: panic
+      responses:
+        '200':
+          description: Briefing generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BriefingResponse'
+components:
+  schemas:
+    BriefingRequest:
+      type: object
+      required:
+        - coboldConcern
+        - heroMove
+        - systemMood
+      properties:
+        coboldConcern:
+          type: string
+        heroMove:
+          type: string
+        systemMood:
+          type: string
+    BriefingResponse:
+      type: object
+      required:
+        - signal
+        - headline
+        - reason
+        - coboldWisdom
+        - heroNextStep
+        - evidencePrompts
+        - checklist
+      properties:
+        signal:
+          type: string
+          enum: [truce, sparring, shield-wall]
+        headline:
+          type: string
+        reason:
+          type: string
+        coboldWisdom:
+          type: string
+        heroNextStep:
+          type: string
+        evidencePrompts:
+          type: array
+          items:
+            type: string
+        checklist:
+          type: array
+          items:
+            type: string

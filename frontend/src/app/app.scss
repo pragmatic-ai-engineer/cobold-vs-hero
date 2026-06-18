@@ -220,6 +220,36 @@ h2 {
   width: 8px;
 }
 
+.prompt-block {
+  background: #f4f7fb;
+  border: 1px solid #d9e3ef;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+  padding: 16px;
+}
+
+.prompt-block ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.prompt-block li {
+  color: #263442;
+  line-height: 1.4;
+}
+
+.prompt-title {
+  color: #234b67;
+  font-size: 0.82rem;
+  font-weight: 900;
+  margin: 0;
+  text-transform: uppercase;
+}
+
 .empty-state {
   background: #173f35;
   border-radius: 8px;

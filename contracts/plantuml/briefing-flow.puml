@@ -1,0 +1,20 @@
+@startuml
+title Cobold vs Hero briefing flow
+
+actor "Hero proposer" as hero
+participant "Angular UI" as ui
+participant "NestJS BFF" as bff
+participant "Spring Boot API" as api
+participant "Cobold reviewer" as cobold
+
+hero -> ui: Enter risk concern + proposed move
+ui -> bff: POST /api/cobold-vs-hero/briefing
+bff -> api: POST /api/cobold-vs-hero/briefing
+api -> api: classify signal\nbuild reason + evidence prompts
+api --> bff: signal, reason, next action, checklist
+bff -> bff: map backend contract to UI DTO
+bff --> ui: UI briefing response
+ui -> cobold: review signal, reason, evidence prompts
+cobold --> hero: accept, sharpen, or split the slice
+
+@enduml
