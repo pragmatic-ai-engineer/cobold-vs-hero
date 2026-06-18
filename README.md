@@ -22,6 +22,17 @@ demo/
 
 ## Setup
 
+Install `mise` first if it is not already available:
+
+```bash
+brew install mise
+```
+
+For non-macOS platforms, use the official installation guide:
+https://mise.jdx.dev/installing-mise.html
+
+Then install the pinned Java and Node versions and frontend dependencies:
+
 ```bash
 cd demo
 mise install
