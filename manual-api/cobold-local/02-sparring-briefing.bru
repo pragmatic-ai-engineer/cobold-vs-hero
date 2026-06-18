@@ -27,6 +27,7 @@ body:json {
 assert {
   res.status: eq 200
   res.body.signal: eq sparring
+  res.body.nextAction: contains browser evidence
   res.body.missingEvidence: isNotEmpty
   res.body.reviewMatrix: isNotEmpty
 }

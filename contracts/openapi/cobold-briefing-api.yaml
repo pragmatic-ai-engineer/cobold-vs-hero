@@ -145,7 +145,7 @@ components:
         - requiredEvidence
         - missingEvidence
         - stopCondition
-        - heroNextStep
+        - nextAction
         - reviewMatrix
       properties:
         signal:
@@ -163,7 +163,7 @@ components:
             type: string
         stopCondition:
           type: string
-        heroNextStep:
+        nextAction:
           type: string
         reviewMatrix:
           type: array

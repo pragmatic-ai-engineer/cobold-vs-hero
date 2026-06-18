@@ -4,7 +4,7 @@
   "requiredEvidence": ["backend-test"],
   "missingEvidence": [],
   "stopCondition": "No stop condition triggered; keep the evidence attached to the review.",
-  "heroNextStep": "Implement the small slice and keep the backend test visible in the PR.",
+  "nextAction": "Implement the small slice and keep the backend test visible in the PR.",
   "reviewMatrix": [
     {
       "surface": "backend",

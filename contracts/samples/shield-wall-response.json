@@ -4,7 +4,7 @@
   "requiredEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "dps-testautomation", "hld", "lld"],
   "missingEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "dps-testautomation", "lld"],
   "stopCondition": "Split the work before implementation; production, payment, or auth risk is missing required proof.",
-  "heroNextStep": "Split the task and add automation, browser, and LLD evidence before implementation.",
+  "nextAction": "Split the task and add automation, browser, and LLD evidence before implementation.",
   "reviewMatrix": [
     {
       "surface": "backend",

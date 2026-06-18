@@ -27,6 +27,7 @@ body:json {
 assert {
   res.status: eq 200
   res.body.signal: eq truce
+  res.body.nextAction: contains Implement
   res.body.requiredEvidence: isNotEmpty
   res.body.reviewMatrix: isNotEmpty
   res.body.reviewMatrix[0].gap: eq covered

@@ -4,7 +4,7 @@
   "requiredEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "hld", "lld"],
   "missingEvidence": ["bruno-smoke", "browser-screenshot"],
   "stopCondition": "Do not request implementation review until API smoke and browser evidence are planned.",
-  "heroNextStep": "Add Bruno smoke and browser evidence before implementation review.",
+  "nextAction": "Add Bruno smoke and browser evidence before implementation review.",
   "reviewMatrix": [
     {
       "surface": "backend",

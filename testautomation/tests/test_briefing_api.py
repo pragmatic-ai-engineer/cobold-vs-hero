@@ -41,7 +41,7 @@ def test_sparring_readiness_reports_missing_ui_and_bff_evidence() -> None:
     assert response["signal"] == "sparring"
     assert response["requiredEvidence"] == ["backend-test", "bruno-smoke", "browser-screenshot", "hld", "lld"]
     assert response["missingEvidence"] == ["bruno-smoke", "browser-screenshot"]
-    assert "browser evidence" in response["heroNextStep"].lower()
+    assert "browser evidence" in response["nextAction"].lower()
 
 
 def test_shield_wall_readiness_requires_split_for_high_risk_missing_proof() -> None:

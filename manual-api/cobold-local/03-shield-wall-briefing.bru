@@ -27,6 +27,7 @@ body:json {
 assert {
   res.status: eq 200
   res.body.signal: eq shield-wall
+  res.body.nextAction: contains Split
   res.body.missingEvidence: isNotEmpty
   res.body.stopCondition: contains Split
 }
