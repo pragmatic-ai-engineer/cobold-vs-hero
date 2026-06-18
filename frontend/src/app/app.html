@@ -1,10 +1,10 @@
 <main class="page-shell">
   <section class="intro">
     <p class="eyebrow">Cobold vs Hero</p>
-    <h1>Turn a risky idea into a reviewable delivery slice.</h1>
+    <h1>Turn a proposed change into a review readiness matrix.</h1>
     <p class="lede">
-      The Cobold reviewer brings risk-aware skepticism. The Hero proposer brings a small
-      delivery move. The briefing keeps both sides honest.
+      Select the surfaces, evidence, and risk flags. The briefing shows whether the slice is
+      ready, needs sharper proof, or should be split before implementation.
     </p>
   </section>
 
@@ -54,22 +54,65 @@
   <section class="workspace" aria-label="Cobold vs Hero briefing form">
     <form class="briefing-form" (submit)="$event.preventDefault()">
       <label>
-        <span>Cobold concern</span>
-        <textarea name="coboldConcern" rows="4" [(ngModel)]="coboldConcern"></textarea>
+        <span>Change title</span>
+        <input name="changeTitle" type="text" [(ngModel)]="changeTitle" />
       </label>
 
       <label>
-        <span>Hero move</span>
-        <textarea name="heroMove" rows="4" [(ngModel)]="heroMove"></textarea>
+        <span>Change description</span>
+        <textarea name="changeDescription" rows="4" [(ngModel)]="changeDescription"></textarea>
       </label>
 
-      <label>
-        <span>System mood</span>
-        <input name="systemMood" type="text" [(ngModel)]="systemMood" />
-      </label>
+      <fieldset>
+        <legend>Affected surfaces</legend>
+        <div class="option-grid">
+          @for (option of surfaceOptions; track option.value) {
+            <label class="option-chip">
+              <input
+                type="checkbox"
+                [checked]="hasSelection(affectedSurfaces, option.value)"
+                (change)="toggleSelection(affectedSurfaces, option.value)"
+              />
+              <span>{{ option.label }}</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Available evidence</legend>
+        <div class="option-grid">
+          @for (option of evidenceOptions; track option.value) {
+            <label class="option-chip">
+              <input
+                type="checkbox"
+                [checked]="hasSelection(providedEvidence, option.value)"
+                (change)="toggleSelection(providedEvidence, option.value)"
+              />
+              <span>{{ option.label }}</span>
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Risk flags</legend>
+        <div class="option-grid">
+          @for (option of riskOptions; track option.value) {
+            <label class="option-chip">
+              <input
+                type="checkbox"
+                [checked]="hasSelection(riskFlags, option.value)"
+                (change)="toggleSelection(riskFlags, option.value)"
+              />
+              <span>{{ option.label }}</span>
+            </label>
+          }
+        </div>
+      </fieldset>
 
       <button type="button" [disabled]="loading()" (click)="requestBriefing()">
-        {{ loading() ? 'Reviewing the signal...' : 'Request briefing' }}
+        {{ loading() ? 'Checking readiness...' : 'Request readiness matrix' }}
       </button>
     </form>
 
@@ -82,40 +125,69 @@
           <p class="proof-status">{{ statusFor(result.signal) }}</p>
         </header>
         <h2>{{ result.headline }}</h2>
-        <p>{{ result.reviewerNote }}</p>
-        <section class="reason-block" aria-label="Reason evidence">
-          <div class="reason-mark">MR</div>
+        <section class="reason-block" aria-label="Stop condition">
+          <div class="reason-mark">SC</div>
           <div>
-            <p class="reason-title">Reason / evidence</p>
-            <p>{{ result.reason }}</p>
+            <p class="reason-title">Stop condition</p>
+            <p>{{ result.stopCondition }}</p>
           </div>
         </section>
         <p class="next-step">{{ result.nextAction }}</p>
-        <section class="prompt-block" aria-label="Evidence prompts">
-          <p class="prompt-title">Evidence prompts</p>
-          <ul>
-            @for (item of result.evidencePrompts; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
+
+        <section class="prompt-block" aria-label="Evidence summary">
+          <p class="prompt-title">Evidence summary</p>
+          <div class="evidence-columns">
+            <div>
+              <p class="column-title">Required</p>
+              <ul>
+                @for (item of result.requiredEvidence; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+            <div>
+              <p class="column-title">Missing</p>
+              @if (result.missingEvidence.length) {
+                <ul>
+                  @for (item of result.missingEvidence; track item) {
+                    <li>{{ item }}</li>
+                  }
+                </ul>
+              } @else {
+                <p class="empty">No missing evidence.</p>
+              }
+            </div>
+          </div>
         </section>
-        <ul class="evidence-list">
-          @for (item of result.checklist; track item) {
-            <li>{{ item }}</li>
-          }
-        </ul>
+
+        <section class="matrix-block" aria-label="Review readiness matrix">
+          <p class="prompt-title">Review readiness matrix</p>
+          <div class="matrix-list">
+            @for (row of result.reviewMatrix; track row.surface) {
+              <article class="matrix-row">
+                <header>
+                  <strong>{{ row.surface }}</strong>
+                  <span [class.gap-ok]="row.gap === 'covered'">{{ row.gap }}</span>
+                </header>
+                <p><span>Expected:</span> {{ row.expectedEvidence.join(', ') }}</p>
+                <p><span>Provided:</span> {{ row.providedEvidence.length ? row.providedEvidence.join(', ') : 'none' }}</p>
+                <p>{{ row.nextAction }}</p>
+              </article>
+            }
+          </div>
+        </section>
       } @else {
         <section class="empty-state" aria-label="Empty briefing state">
           <p class="empty-kicker">Evidence ledger</p>
-          <h2>Ready for a reviewable briefing.</h2>
+          <h2>Ready for a review readiness check.</h2>
           <p>
-            Send the first briefing to see whether this quest is a truce, sparring match, or
+            Send the first request to see whether this change is a truce, sparring match, or
             shield-wall moment.
           </p>
           <ul class="empty-steps">
-            <li>Risk concern</li>
-            <li>Small Hero move</li>
-            <li>Review evidence</li>
+            <li>Affected surfaces</li>
+            <li>Available evidence</li>
+            <li>Risk flags</li>
           </ul>
         </section>
       }
