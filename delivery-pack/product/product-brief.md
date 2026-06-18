@@ -1,4 +1,4 @@
-# Product Requirements - Review Signal Details
+# Product Brief - Review Signal Details
 
 ## Goal
 

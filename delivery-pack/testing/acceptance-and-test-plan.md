@@ -1,4 +1,4 @@
-# Test Plan - Review Signal Details
+# Acceptance And Test Plan - Review Signal Details
 
 This plan tracks the acceptance and verification surfaces for the workshop
 slice. It keeps quick developer smoke checks, browser evidence, and heavier API

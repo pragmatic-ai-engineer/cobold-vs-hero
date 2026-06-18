@@ -9,8 +9,8 @@ requirements, decisions, workflow, prompts, and follow-up notes.
 
 ## Files
 
-- `product/` - PO-owned product requirements and acceptance criteria.
-- `design/` - designer/architect-owned HLD, LLD, and ADRs.
+- `product/` - PO-owned product brief and acceptance criteria.
+- `design/` - designer/architect-owned HLD, LLD, and design decisions.
 - `testing/` - acceptance matrix, smoke checks, browser evidence, and testautomation plan.
 - `delivery/` - implementation plan, workflow, and decision log.
 - `prompts/` - reusable agent handoffs for the workshop.

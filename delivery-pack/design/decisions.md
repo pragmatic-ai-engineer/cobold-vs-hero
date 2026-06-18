@@ -1,4 +1,6 @@
-# ADR 0001 - Review Signal Contract
+# Design Decisions
+
+## D01 - Review Signal Contract
 
 Status: Accepted
 
