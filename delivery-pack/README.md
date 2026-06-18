@@ -11,11 +11,11 @@ notes.
 ## Files
 
 - `product-requirements.md` - behavior contract at product/API level.
+- `high-level-design.md` - system boundaries, flow, risks, and design evidence.
+- `low-level-design.md` - endpoint behavior, mapping, validation, and test cases.
 - `implementation-plan.md` - small implementation slices.
 - `decision-log.md` - accepted decisions and open questions.
 - `workflow.md` - how the loop runs during the workshop.
 - `adrs/` - lightweight architectural decisions.
 - `prompts/` - reusable prompt handoffs for the workshop.
 - `manual-api/` - Bruno collection for manual/API smoke checks.
-
-HLD/LLD are deliberately out of scope for this workshop version.

@@ -19,7 +19,7 @@ demo/
   bff/                 # NestJS BFF, TypeScript
   frontend/            # Angular app
   contracts/           # OpenAPI, PlantUML, sample payloads
-  delivery-pack/       # PRD, ADR, prompts, workflow, Bruno collection
+  delivery-pack/       # PRD, HLD, LLD, ADR, prompts, workflow, Bruno collection
   testautomation/      # DPS-lite Python API smoke tests
   docs/                # workshop task notes
   shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist

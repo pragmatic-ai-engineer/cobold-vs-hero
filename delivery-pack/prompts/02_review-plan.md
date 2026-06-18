@@ -6,6 +6,7 @@ Use this as a fresh-context review before implementation.
 Review the proposed implementation plan as the Cobold reviewer.
 
 Focus on:
+- whether the plan matches the HLD and LLD
 - hidden coupling between backend, BFF, frontend, and tests
 - missing verification
 - scope drift

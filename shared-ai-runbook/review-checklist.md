@@ -5,6 +5,7 @@ Use this after an AI-assisted change.
 ## Findings First
 
 - Does the API contract match the requested behavior?
+- Do the HLD and LLD still match the implemented behavior?
 - Does the BFF mapping preserve the backend behavior without hiding risk?
 - Did the frontend display only the intended new data?
 - Did the change introduce unrelated files or refactors?
@@ -20,6 +21,7 @@ Record:
 - result
 - API smoke result
 - browser evidence or explicit reason it was skipped
+- HLD/LLD drift, if any
 - known gaps
 - follow-up items
 

@@ -8,6 +8,7 @@ delivery slice.
 ## Users
 
 - Product/PO role: wants a clear decision about whether the work is ready.
+- Designer/architect role: wants HLD/LLD alignment before implementation.
 - Backend/BFF/frontend engineer: wants a small implementable scope.
 - Tester: wants concrete evidence expectations.
 - Reviewer: wants risk, behavior, and verification visible before merge.
@@ -36,7 +37,8 @@ It returns:
 2. The BFF maps backend response fields into a UI-facing DTO.
 3. The UI renders signal, reason, next action, evidence prompts, and checklist.
 4. API smoke checks cover truce, sparring, and shield-wall examples.
-5. The change stays scoped to briefing behavior and verification surfaces.
+5. HLD and LLD explain the agreed behavior before implementation.
+6. The change stays scoped to briefing behavior and verification surfaces.
 
 ## Non-Goals
 
@@ -44,4 +46,3 @@ It returns:
 - Persistence.
 - Real scoring framework.
 - Enterprise environment configuration.
-- HLD/LLD documents.

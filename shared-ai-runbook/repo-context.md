@@ -6,7 +6,7 @@ This is a workshop demo repo with an umbrella structure:
 - `bff/` - NestJS BFF, TypeScript
 - `frontend/` - Angular app, Node 24
 - `contracts/` - OpenAPI, PlantUML, and sample payloads
-- `delivery-pack/` - PRD, ADR, workflow, prompts, and Bruno smoke checks
+- `delivery-pack/` - PRD, HLD, LLD, ADR, workflow, prompts, and Bruno smoke checks
 - `testautomation/` - DPS-lite Python API smoke tests
 
 The demo domain is **Cobold vs Hero**:

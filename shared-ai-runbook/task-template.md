@@ -9,6 +9,8 @@ Task:
 Context:
 - Repo area:
 - User-visible behavior:
+- HLD impact:
+- LLD impact:
 - Backend/API impact:
 - BFF impact:
 - Frontend impact:
@@ -28,6 +30,7 @@ Files to inspect first:
 - 
 
 Verification:
+- HLD/LLD:
 - contracts:
 - backend:
 - BFF:

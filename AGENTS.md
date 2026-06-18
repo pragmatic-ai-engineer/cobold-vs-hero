@@ -19,6 +19,7 @@ evidence.
 - Do not add persistence, authentication, or broad scoring frameworks unless the
   task explicitly asks for them.
 - Do not refactor unrelated code.
+- If behavior changes across surfaces, update or explicitly defer HLD/LLD.
 - Record commands run and results.
 - Stop after two failed repair attempts and hand off the current evidence.
 
@@ -52,5 +53,6 @@ End with:
 - what was intentionally not changed
 - commands run and results
 - API/browser evidence, when relevant
+- HLD/LLD drift, when relevant
 - risks and open questions
 - what reviewers should inspect first

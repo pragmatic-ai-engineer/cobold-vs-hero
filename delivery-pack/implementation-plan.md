@@ -1,5 +1,11 @@
 # Implementation Plan
 
+## Slice 0 - Lightweight Design Artifacts
+
+- Add HLD for system boundaries, flow, assumptions, and risks.
+- Add LLD for endpoint behavior, BFF mapping, examples, and test cases.
+- Keep both documents short enough to review during the workshop.
+
 ## Slice 1 - Contract And Backend Signal Details
 
 - Add `reason` and `evidencePrompts` to the briefing response contract.
@@ -28,5 +34,6 @@
 
 ## Slice 5 - Workshop Loop
 
+- Use HLD/LLD as design gates before implementation.
 - Use the loop contract to run: plan, implement, verify, repair, review.
 - Capture command results, API smoke evidence, browser evidence, and diff notes.

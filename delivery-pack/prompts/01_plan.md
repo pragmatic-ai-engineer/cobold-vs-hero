@@ -12,6 +12,8 @@ verification surfaces.
 First inspect:
 - AGENTS.md
 - delivery-pack/product-requirements.md
+- delivery-pack/high-level-design.md
+- delivery-pack/low-level-design.md
 - delivery-pack/workflow.md
 - contracts/openapi/cobold-briefing-api.yaml
 - backend/
@@ -21,6 +23,7 @@ First inspect:
 
 Return:
 - current repo inventory
+- HLD/LLD alignment notes
 - proposed implementation plan
 - files expected to change
 - verification plan
