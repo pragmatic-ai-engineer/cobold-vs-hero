@@ -13,6 +13,6 @@ The runbook is intentionally small:
 In a real team, this folder can grow into shared prompts, slash commands, skill
 instructions, CI notes, and examples.
 
-Use `delivery-pack/` for the participant-facing work packet: PRD, HLD, LLD,
-ADR, implementation plan, workflow, and workshop prompts. Use `manual-api/` for
-Bruno smoke checks.
+Use `delivery-pack/` for the participant-facing work packet: product, design,
+testing, delivery, and workshop prompts. Use `manual-api/` for Bruno smoke
+checks.

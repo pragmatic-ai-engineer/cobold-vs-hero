@@ -6,7 +6,7 @@ This is a workshop demo repo with an umbrella structure:
 - `bff/` - NestJS BFF, TypeScript
 - `frontend/` - Angular app, Node 24
 - `contracts/` - OpenAPI, PlantUML, and sample payloads
-- `delivery-pack/` - PRD, HLD, LLD, ADR, workflow, and prompts
+- `delivery-pack/` - product, design, testing, delivery, and prompt artifacts
 - `manual-api/` - Bruno collection for local/manual API smoke checks
 - `testautomation/` - DPS-lite Python API testautomation
 

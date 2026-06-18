@@ -55,7 +55,7 @@ run = "npm run build"
 
 [tasks."contracts:check"]
 description = "Check that workshop contract artifacts exist"
-run = "test -s delivery-pack/high-level-design.md && test -s delivery-pack/low-level-design.md && test -s contracts/openapi/cobold-briefing-api.yaml && test -s contracts/plantuml/briefing-flow.puml && test -s contracts/plantuml/briefing-state.puml"
+run = "test -s delivery-pack/design/high-level-design.md && test -s delivery-pack/design/low-level-design.md && test -s delivery-pack/testing/test-plan.md && test -s contracts/openapi/cobold-briefing-api.yaml && test -s contracts/plantuml/briefing-flow.puml && test -s contracts/plantuml/briefing-state.puml"
 
 [tasks."api:smoke"]
 description = "Run Bruno CLI quick API smoke checks against the running BFF"

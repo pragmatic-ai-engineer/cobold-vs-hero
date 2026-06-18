@@ -10,9 +10,10 @@ Turn the requested slice into a compact HLD and LLD that can guide an agent
 implementation loop.
 
 Inspect:
-- delivery-pack/product-requirements.md
-- delivery-pack/high-level-design.md
-- delivery-pack/low-level-design.md
+- delivery-pack/product/product-requirements.md
+- delivery-pack/design/high-level-design.md
+- delivery-pack/design/low-level-design.md
+- delivery-pack/testing/test-plan.md
 - contracts/openapi/cobold-briefing-api.yaml
 - contracts/plantuml/briefing-flow.puml
 - backend/
@@ -23,6 +24,7 @@ Inspect:
 Return:
 - HLD changes needed
 - LLD changes needed
+- testing plan changes needed
 - design risks and assumptions
 - contract/test/browser evidence that should verify the design
 - stop conditions

@@ -9,14 +9,11 @@ requirements, decisions, workflow, prompts, and follow-up notes.
 
 ## Files
 
-- `product-requirements.md` - behavior contract at product/API level.
-- `high-level-design.md` - system boundaries, flow, risks, and design evidence.
-- `low-level-design.md` - endpoint behavior, mapping, validation, and test cases.
-- `implementation-plan.md` - small implementation slices.
-- `decision-log.md` - accepted decisions and open questions.
-- `workflow.md` - how the loop runs during the workshop.
-- `adrs/` - lightweight architectural decisions.
-- `prompts/` - reusable prompt handoffs for the workshop.
+- `product/` - PO-owned product requirements and acceptance criteria.
+- `design/` - designer/architect-owned HLD, LLD, and ADRs.
+- `testing/` - acceptance matrix, smoke checks, browser evidence, and testautomation plan.
+- `delivery/` - implementation plan, workflow, and decision log.
+- `prompts/` - reusable agent handoffs for the workshop.
 
 Runnable verification surfaces live next to the code they exercise:
 

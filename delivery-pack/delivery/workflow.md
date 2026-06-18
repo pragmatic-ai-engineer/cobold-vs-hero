@@ -6,8 +6,9 @@ Use the repo root `mise` tasks as the command surface.
 
 Each surface owns one part of the loop:
 
-- `delivery-pack/high-level-design.md` defines system boundaries and flow.
-- `delivery-pack/low-level-design.md` defines endpoint details and mapping.
+- `delivery-pack/design/high-level-design.md` defines system boundaries and flow.
+- `delivery-pack/design/low-level-design.md` defines endpoint details and mapping.
+- `delivery-pack/testing/test-plan.md` defines acceptance evidence.
 - `contracts/` defines target behavior.
 - `backend/` computes the review signal.
 - `bff/` maps backend behavior to UI shape.
