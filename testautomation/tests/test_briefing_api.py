@@ -1,6 +1,14 @@
 from cobold_qa.client import BriefingRequest, CoboldBriefingClient
 
 
+def test_status_reports_bff_and_backend_up() -> None:
+    response = CoboldBriefingClient().get_status()
+
+    assert response["status"] == "UP"
+    assert [service["service"] for service in response["services"]] == ["bff-nestjs", "be-java"]
+    assert all(service["status"] == "UP" for service in response["services"])
+
+
 def test_truce_briefing_contains_verification_reason() -> None:
     response = CoboldBriefingClient().create_briefing(
         BriefingRequest(

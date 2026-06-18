@@ -14,6 +14,14 @@ export interface BackendBriefingResponseDto {
   checklist: string[];
 }
 
+export interface BackendStatusResponseDto {
+  service: string;
+  runtime: string;
+  status: string;
+  checkedAt: string;
+  port: number;
+}
+
 export interface BriefingResponseDto {
   signal: string;
   headline: string;
@@ -22,4 +30,19 @@ export interface BriefingResponseDto {
   nextAction: string;
   evidencePrompts: string[];
   checklist: string[];
+}
+
+export interface ServiceStatusDto {
+  service: string;
+  runtime: string;
+  status: 'UP' | 'DOWN';
+  checkedAt: string;
+  endpoint: string;
+  detail?: string;
+}
+
+export interface SystemStatusResponseDto {
+  status: 'UP' | 'DEGRADED';
+  checkedAt: string;
+  services: ServiceStatusDto[];
 }

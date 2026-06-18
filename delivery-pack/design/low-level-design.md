@@ -1,8 +1,10 @@
 # Low-Level Design - Briefing Endpoint
 
-## Endpoint
+## Endpoints
 
 `POST /api/cobold-vs-hero/briefing`
+
+`GET /api/cobold-vs-hero/status`
 
 Canonical contract:
 
@@ -14,6 +16,7 @@ Representative examples:
 - `contracts/samples/sparring-request.json`
 - `contracts/samples/shield-wall-request.json`
 - `contracts/samples/truce-response.json`
+- `contracts/samples/status-response.json`
 
 ## Request
 
@@ -50,6 +53,32 @@ Representative examples:
 The BFF should stay thin. It maps field names and forwards behavior; it does not
 own classification rules.
 
+## Status Response
+
+The UI calls the BFF status endpoint. The BFF reports itself as `bff-nestjs`,
+then probes the backend status endpoint and returns both service entries.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `status` | string | `UP` when both services are up, otherwise `DEGRADED`. |
+| `checkedAt` | string | ISO timestamp for the aggregate check. |
+| `services` | object[] | Ordered service status entries for BFF then backend. |
+
+Service entry fields:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `service` | string | `bff-nestjs` or `be-java`. |
+| `runtime` | string | `nestjs` or `spring-boot`. |
+| `status` | string | `UP` or `DOWN`. |
+| `checkedAt` | string | ISO timestamp for that service check. |
+| `endpoint` | string | Endpoint used for the check. |
+| `detail` | string | Optional failure detail when the backend status check fails. |
+
+The backend status endpoint returns its own service metadata plus configured
+server port. The BFF intentionally does not expose dependency-level health in
+this slice.
+
 ## Classification Rules
 
 The backend computes a simple risk score from the request text:
@@ -84,6 +113,7 @@ finding if the task expands toward production-grade validation behavior.
 | Small reviewed UI/support change | `truce` | Backend unit test, Bruno smoke, DPS-lite testautomation. |
 | Inconsistent customer API/UI mapping | `sparring` | Bruno smoke and DPS-lite testautomation assert acceptance-criteria prompt. |
 | Production payment integration refactor | `shield-wall` | Backend unit test, Bruno smoke, DPS-lite testautomation, browser result panel. |
+| BFF and backend runtime status | `UP` | Backend unit test, Bruno smoke, DPS-lite testautomation, browser status panel. |
 
 ## LLD Done Condition
 
@@ -91,5 +121,7 @@ finding if the task expands toward production-grade validation behavior.
 - BFF mapping table matches implementation.
 - Samples, Bruno smoke requests, and DPS-lite testautomation cover representative
   signals.
+- Runtime status response is documented and covered in OpenAPI, sample payloads,
+  Bruno smoke, DPS-lite testautomation, and browser evidence.
 - Validation behavior and known gaps are explicit.
 - Browser evidence shows the fields that the API smoke checks assert.

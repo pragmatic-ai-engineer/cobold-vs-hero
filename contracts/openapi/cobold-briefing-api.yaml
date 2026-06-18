@@ -3,6 +3,17 @@ info:
   title: Cobold vs Hero Briefing API
   version: 0.1.0
 paths:
+  /api/cobold-vs-hero/status:
+    get:
+      summary: Return BFF and backend runtime status
+      operationId: getSystemStatus
+      responses:
+        '200':
+          description: Runtime status for the BFF and Java backend
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemStatusResponse'
   /api/cobold-vs-hero/briefing:
     post:
       summary: Create a review briefing for a proposed delivery move
@@ -28,6 +39,49 @@ paths:
                 $ref: '#/components/schemas/BriefingResponse'
 components:
   schemas:
+    ServiceStatus:
+      type: object
+      required:
+        - service
+        - runtime
+        - status
+        - checkedAt
+        - endpoint
+      properties:
+        service:
+          type: string
+          enum: [bff-nestjs, be-java]
+        runtime:
+          type: string
+          enum: [nestjs, spring-boot]
+        status:
+          type: string
+          enum: [UP, DOWN]
+        checkedAt:
+          type: string
+          format: date-time
+        endpoint:
+          type: string
+        detail:
+          type: string
+    SystemStatusResponse:
+      type: object
+      required:
+        - status
+        - checkedAt
+        - services
+      properties:
+        status:
+          type: string
+          enum: [UP, DEGRADED]
+        checkedAt:
+          type: string
+          format: date-time
+        services:
+          type: array
+          minItems: 2
+          items:
+            $ref: '#/components/schemas/ServiceStatus'
     BriefingRequest:
       type: object
       required:

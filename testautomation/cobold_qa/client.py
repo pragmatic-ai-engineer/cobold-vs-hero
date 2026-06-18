@@ -25,6 +25,17 @@ class CoboldBriefingClient:
     def __init__(self, base_url: str | None = None) -> None:
         self.base_url = (base_url or os.getenv("COBOLD_API_BASE_URL") or "http://localhost:3000").rstrip("/")
 
+    def get_status(self) -> dict[str, Any]:
+        http_request = urllib.request.Request(
+            f"{self.base_url}/api/cobold-vs-hero/status",
+            method="GET",
+        )
+
+        with urllib.request.urlopen(http_request, timeout=5) as response:
+            if response.status != 200:
+                raise AssertionError(f"Expected HTTP 200, got {response.status}")
+            return json.loads(response.read().decode("utf-8"))
+
     def create_briefing(self, request: BriefingRequest) -> dict[str, Any]:
         body = json.dumps(request.to_payload()).encode("utf-8")
         http_request = urllib.request.Request(

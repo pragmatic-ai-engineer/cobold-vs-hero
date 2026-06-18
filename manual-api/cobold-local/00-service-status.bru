@@ -1,0 +1,19 @@
+meta {
+  name: 00 Service status
+  type: http
+  seq: 0
+}
+
+get {
+  url: {{baseUrl}}/api/cobold-vs-hero/status
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq UP
+  res.body.services: isNotEmpty
+  res.body.services[0].service: eq bff-nestjs
+  res.body.services[1].service: eq be-java
+}

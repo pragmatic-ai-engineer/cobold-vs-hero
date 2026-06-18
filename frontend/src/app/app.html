@@ -8,6 +8,49 @@
     </p>
   </section>
 
+  <section class="status-page" aria-label="Service status">
+    <header class="status-header">
+      <div>
+        <p class="eyebrow">Runtime status</p>
+        <h2>BFF NestJS + BE Java</h2>
+      </div>
+      <button type="button" class="status-refresh" [disabled]="statusLoading()" (click)="refreshStatus()">
+        {{ statusLoading() ? 'Refreshing...' : 'Refresh status' }}
+      </button>
+    </header>
+
+    @if (statusError()) {
+      <p class="error">{{ statusError() }}</p>
+    } @else if (systemStatus(); as current) {
+      <p class="empty">
+        <span class="proof-status" [class.proof-status--warn]="current.status === 'DEGRADED'">
+          {{ current.status }}
+        </span>
+        <span>&nbsp;|&nbsp;</span>
+        <span>Checked {{ current.checkedAt }}</span>
+      </p>
+
+      <ul class="evidence-list">
+        @for (service of current.services; track service.service) {
+          <li>
+            <strong>{{ serviceLabel(service) }}</strong>
+            <span>&nbsp;|&nbsp;</span>
+            <span class="proof-status" [class.proof-status--warn]="service.status === 'DOWN'">
+              {{ service.status }}
+            </span>
+            <span>&nbsp;|&nbsp;</span>
+            <span>{{ service.runtime }}</span>
+            @if (service.detail) {
+              <p class="error">{{ service.detail }}</p>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="empty">Status has not been checked yet.</p>
+    }
+  </section>
+
   <section class="workspace" aria-label="Cobold vs Hero briefing form">
     <form class="briefing-form" (submit)="$event.preventDefault()">
       <label>

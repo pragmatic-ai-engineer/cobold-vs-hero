@@ -1,10 +1,13 @@
 package dev.workshop.demo;
 
+import java.time.Instant;
 import java.util.List;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +17,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cobold-vs-hero")
 @CrossOrigin(origins = "http://localhost:4200")
 class CoboldVsHeroController {
+
+	private final int serverPort;
+
+	CoboldVsHeroController(@Value("${server.port:8080}") int serverPort) {
+		this.serverPort = serverPort;
+	}
+
+	@GetMapping("/status")
+	StatusResponse status() {
+		return new StatusResponse("be-java", "spring-boot", "UP", Instant.now().toString(), serverPort);
+	}
 
 	@PostMapping("/briefing")
 	BriefingResponse createBriefing(@Valid @RequestBody BriefingRequest request) {
@@ -117,5 +131,13 @@ class CoboldVsHeroController {
 			String heroNextStep,
 			List<String> evidencePrompts,
 			List<String> checklist) {
+	}
+
+	record StatusResponse(
+			String service,
+			String runtime,
+			String status,
+			String checkedAt,
+			int port) {
 	}
 }

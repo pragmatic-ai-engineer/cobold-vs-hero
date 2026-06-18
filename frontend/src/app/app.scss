@@ -32,6 +32,22 @@ h1 {
   max-width: 720px;
 }
 
+.status-header {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-top: 32px;
+}
+
+.status-header h2 {
+  margin: 0;
+}
+
+.proof-status--warn {
+  background: #9b1c1c;
+}
+
 .workspace {
   display: grid;
   gap: 24px;
@@ -97,18 +113,13 @@ button:disabled {
 }
 
 .briefing-card:not(.briefing-card--active) {
-  background:
-    linear-gradient(135deg, rgba(242, 195, 111, 0.24), rgba(255, 255, 255, 0) 42%),
-    #ffffff;
+  background: #fffaf0;
   border-color: #c8b48d;
 }
 
 .briefing-card--active {
-  background:
-    linear-gradient(180deg, rgba(31, 111, 91, 0.08), rgba(255, 255, 255, 0) 180px),
-    #ffffff;
+  background: #f4faf7;
   border-color: #93b9aa;
-  box-shadow: 0 22px 55px rgba(31, 111, 91, 0.16);
 }
 
 .result-header {
@@ -132,12 +143,15 @@ button:disabled {
 }
 
 .proof-status {
+  align-items: center;
   background: #1f6f5b;
   border-radius: 999px;
   color: #ffffff;
+  display: inline-flex;
   font-size: 0.82rem;
   font-weight: 800;
-  margin: 0;
+  line-height: 1;
+  margin: 0 6px;
   padding: 7px 12px;
 }
 
@@ -320,5 +334,10 @@ h2 {
 
   .workspace {
     grid-template-columns: 1fr;
+  }
+
+  .status-header {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

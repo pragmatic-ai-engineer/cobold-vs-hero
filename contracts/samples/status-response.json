@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-06-18T20:00:00.000Z",
+  "services": [
+    {
+      "checkedAt": "2026-06-18T20:00:00.000Z",
+      "endpoint": "http://localhost:3000/api/cobold-vs-hero/status",
+      "runtime": "nestjs",
+      "service": "bff-nestjs",
+      "status": "UP"
+    },
+    {
+      "checkedAt": "2026-06-18T20:00:00.000Z",
+      "endpoint": "http://localhost:8080/api/cobold-vs-hero/status",
+      "runtime": "spring-boot",
+      "service": "be-java",
+      "status": "UP"
+    }
+  ],
+  "status": "UP"
+}

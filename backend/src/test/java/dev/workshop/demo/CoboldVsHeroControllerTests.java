@@ -6,7 +6,18 @@ import org.junit.jupiter.api.Test;
 
 class CoboldVsHeroControllerTests {
 
-	private final CoboldVsHeroController controller = new CoboldVsHeroController();
+	private final CoboldVsHeroController controller = new CoboldVsHeroController(8080);
+
+	@Test
+	void returnsBackendStatus() {
+		CoboldVsHeroController.StatusResponse response = controller.status();
+
+		assertThat(response.service()).isEqualTo("be-java");
+		assertThat(response.runtime()).isEqualTo("spring-boot");
+		assertThat(response.status()).isEqualTo("UP");
+		assertThat(response.port()).isEqualTo(8080);
+		assertThat(response.checkedAt()).isNotBlank();
+	}
 
 	@Test
 	void returnsTruceForSmallReviewedMove() {
