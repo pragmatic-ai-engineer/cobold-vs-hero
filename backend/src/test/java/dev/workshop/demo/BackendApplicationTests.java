@@ -1,4 +1,4 @@
-package dev.cpihero.demo;
+package dev.workshop.demo;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

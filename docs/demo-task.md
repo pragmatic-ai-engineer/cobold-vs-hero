@@ -4,8 +4,8 @@
 
 Build a tiny "Cobold vs Hero" briefing tool.
 
-The Cobold team enters a legacy concern. The Hero team enters the proposed
-modern delivery move. The app returns a briefing signal:
+The Cobold reviewer enters a risk concern. The Hero proposer enters the
+proposed delivery move. The app returns a briefing signal:
 
 - `truce` - safe starter slice
 - `sparring` - useful idea, needs sharper acceptance criteria
@@ -29,7 +29,7 @@ Request:
 
 ```json
 {
-  "coboldConcern": "legacy mainframe payment batch refactor goes to prod",
+  "coboldConcern": "production payment integration refactor goes to release",
   "heroMove": "rewrite the flow quickly",
   "systemMood": "panic"
 }
@@ -40,8 +40,8 @@ Response:
 ```json
 {
   "signal": "shield-wall",
-  "headline": "Cobold cave alarm: shrink the quest before anyone touches production.",
-  "coboldWisdom": "The Cobold team says: protect the legacy path...",
+  "headline": "Cobold risk alarm: shrink the slice before implementation.",
+  "coboldWisdom": "The Cobold reviewer says: name the risky assumption...",
   "heroNextStep": "Write non-goals, split the change...",
   "checklist": ["split the task", "define rollback evidence", "request fresh-context review"]
 }
@@ -51,13 +51,13 @@ Response:
 
 Good design-to-code slice:
 
-> Improve the Reason / evidence display so it is easier to scan in a Teams
-> screenshare, without changing the backend behavior.
+> Improve the review signal details so the briefing explains why the signal was
+> selected and what evidence the team should gather next.
 
 Acceptance criteria:
 
-- Angular result panel keeps the reason/evidence explanation visible.
-- The evidence block is visually distinct enough for a Teams screenshare.
+- Each signal has a clear reason.
+- The UI makes the reason and next action easy to scan in a screen share.
 - Existing tests still pass.
 - Keep the change small; do not change the backend contract, add persistence,
   auth, or a scoring framework.

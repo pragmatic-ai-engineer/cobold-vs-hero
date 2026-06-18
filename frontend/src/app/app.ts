@@ -19,7 +19,7 @@ interface BriefingResponse {
 export class App {
   private readonly http = inject(HttpClient);
 
-  coboldConcern = 'The nightly COBOL batch wakes up at 03:00 and eats invoice IDs.';
+  coboldConcern = 'The billing retry job owns customer invoices and runs during release night.';
   heroMove = 'Add one small Java endpoint and one Angular panel with targeted tests.';
   systemMood = 'curious but tired';
 
@@ -43,7 +43,7 @@ export class App {
           this.loading.set(false);
         },
         error: () => {
-          this.error.set('The cave tunnel to the backend is closed. Start the Spring Boot API on port 8080.');
+          this.error.set('The backend briefing service is not reachable. Start the Spring Boot API on port 8080.');
           this.loading.set(false);
         },
       });
@@ -52,7 +52,7 @@ export class App {
   reasonFor(signal: string): string {
     switch (signal) {
       case 'shield-wall':
-        return 'High-risk path: legacy or production-sensitive work needs a smaller slice before implementation.';
+        return 'High-risk path: production-sensitive work needs a smaller slice before implementation.';
       case 'sparring':
         return 'Medium-risk path: the idea is useful, but the team needs sharper acceptance criteria.';
       default:

@@ -1,4 +1,4 @@
-package dev.cpihero.demo;
+package dev.workshop.demo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,14 +17,14 @@ class CoboldVsHeroControllerTests {
 						"calm and curious"));
 
 		assertThat(response.signal()).isEqualTo("truce");
-		assertThat(response.headline()).contains("safe starter slice");
+		assertThat(response.headline()).contains("review-ready starter slice");
 	}
 
 	@Test
-	void returnsShieldWallForRiskyLegacyPaymentRelease() {
+	void returnsShieldWallForRiskyProductionPaymentRelease() {
 		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
 				new CoboldVsHeroController.BriefingRequest(
-						"legacy mainframe payment batch refactor goes to prod",
+						"production payment integration refactor goes to release",
 						"rewrite the flow quickly",
 						"panic"));
 

@@ -7,10 +7,10 @@ This is a workshop demo repo with two applications:
 
 The demo domain is **Cobold vs Hero**:
 
-- Cobold team represents COBOL and legacy-system knowledge.
-- Hero team represents a modern Java/Angular delivery team.
-- The app turns a legacy concern and proposed modern move into a small briefing
-  signal.
+- Cobold reviewer represents risk-aware adversarial review.
+- Hero proposer represents the delivery role proposing a useful change.
+- The app turns a risk concern and proposed delivery move into a small briefing
+  signal that helps the team scope, verify, and review the work.
 
 ## Commands
 

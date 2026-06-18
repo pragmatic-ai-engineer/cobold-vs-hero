@@ -1,12 +1,12 @@
 # Cobold vs Hero Demo
 
-Small Java + Angular demo repo for the CPI Hero workshop.
+Small Java + Angular demo repo for the Pragmatic AI Engineer workshop.
 
 The theme is intentionally light:
 
-- **Cobold team**: COBOL-background developers carrying legacy/system memory.
-- **Hero team**: the Java/Angular delivery team proposing a modern change.
-- **Goal**: turn a vague or risky request into a small, reviewable quest with
+- **Cobold reviewer**: a risk-aware adversary that asks what could go wrong.
+- **Hero proposer**: the delivery role proposing a useful change.
+- **Goal**: turn a vague or risky request into a small, reviewable slice with
   context, verification, and reviewer notes.
 
 ## Structure
@@ -16,7 +16,7 @@ demo/
   backend/             # Spring Boot API
   frontend/            # Angular app
   docs/                # workshop task and architecture notes
-  shared-ai-runbook/   # prompts, agent instructions, review checklist
+  shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
 ```
 

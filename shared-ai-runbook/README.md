@@ -6,6 +6,8 @@ The runbook is intentionally small:
 
 - `repo-context.md` tells an agent what this repo is.
 - `task-template.md` turns vague work into a reviewable slice.
+- `loop-contract-template.md` defines target, checks, stop conditions, and
+  evidence for an agent loop.
 - `review-checklist.md` keeps the human responsible for evidence before MR.
 
 In a real team, this folder can grow into shared prompts, slash commands, skill

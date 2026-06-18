@@ -1,4 +1,4 @@
-package dev.cpihero.demo;
+package dev.workshop.demo;
 
 import java.util.List;
 
@@ -34,10 +34,13 @@ class CoboldVsHeroController {
 		String mood = request.systemMood().toLowerCase();
 		int score = 0;
 
-		if (concern.contains("prod") || concern.contains("release") || concern.contains("payment")) {
+		if (concern.contains("prod") || concern.contains("release") || concern.contains("payment") || concern.contains("billing")) {
 			score += 4;
 		}
-		if (concern.contains("mainframe") || concern.contains("copybook") || concern.contains("jcl") || concern.contains("batch")) {
+		if (concern.contains("auth") || concern.contains("customer") || concern.contains("data")) {
+			score += 3;
+		}
+		if (concern.contains("batch") || concern.contains("integration") || concern.contains("contract")) {
 			score += 2;
 		}
 		if (concern.contains("legacy") || concern.contains("migration") || concern.contains("refactor")) {
@@ -55,14 +58,14 @@ class CoboldVsHeroController {
 
 	private String headlineFor(String signal) {
 		return switch (signal) {
-			case "shield-wall" -> "Cobold cave alarm: shrink the quest before anyone touches production.";
+			case "shield-wall" -> "Cobold risk alarm: shrink the slice before implementation.";
 			case "sparring" -> "Friendly duel: the idea is useful, but it needs sharper acceptance criteria.";
-			default -> "Truce declared: this is a safe starter slice for the Hero team.";
+			default -> "Truce declared: this is a review-ready starter slice.";
 		};
 	}
 
 	private String coboldWisdomFor(BriefingRequest request) {
-		return "The Cobold team says: protect the legacy path, name the risky assumption, and keep " +
+		return "The Cobold reviewer says: name the risky assumption, keep the review evidence visible, and keep " +
 				request.coboldConcern().trim() + " visible in the review.";
 	}
 
