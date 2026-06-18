@@ -1,10 +1,15 @@
 package dev.workshop.demo;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +22,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cobold-vs-hero")
 @CrossOrigin(origins = "http://localhost:4200")
 class CoboldVsHeroController {
+
+	private static final Map<String, List<String>> EVIDENCE_BY_SURFACE = Map.of(
+			"backend", List.of("backend-test"),
+			"bff", List.of("bruno-smoke"),
+			"frontend", List.of("browser-screenshot"),
+			"contract", List.of("bruno-smoke"),
+			"testing", List.of("dps-testautomation"));
+
+	private static final Map<String, List<String>> EVIDENCE_BY_RISK = Map.of(
+			"production", List.of("dps-testautomation", "browser-screenshot"),
+			"customer-data", List.of("dps-testautomation"),
+			"auth", List.of("dps-testautomation"),
+			"payment", List.of("dps-testautomation", "browser-screenshot"),
+			"unclear-scope", List.of("hld", "lld"));
+
+	private static final Set<String> HIGH_RISK_FLAGS = Set.of("production", "payment", "auth");
 
 	private final int serverPort;
 
@@ -31,106 +52,148 @@ class CoboldVsHeroController {
 
 	@PostMapping("/briefing")
 	BriefingResponse createBriefing(@Valid @RequestBody BriefingRequest request) {
-		int risk = riskScore(request);
-		String signal = risk >= 7 ? "shield-wall" : risk >= 4 ? "sparring" : "truce";
+		List<String> requiredEvidence = requiredEvidenceFor(request);
+		List<String> missingEvidence = missingEvidenceFor(requiredEvidence, request.providedEvidence());
+		String signal = signalFor(missingEvidence, request.riskFlags());
 
 		return new BriefingResponse(
 				signal,
 				headlineFor(signal),
-				reasonFor(signal),
-				coboldWisdomFor(request),
+				requiredEvidence,
+				missingEvidence,
+				stopConditionFor(signal),
 				heroNextStepFor(signal),
-				evidencePromptsFor(signal),
-				checklistFor(signal));
+				reviewMatrixFor(request));
 	}
 
-	private int riskScore(BriefingRequest request) {
-		String concern = request.coboldConcern().toLowerCase();
-		String move = request.heroMove().toLowerCase();
-		String mood = request.systemMood().toLowerCase();
-		int score = 0;
+	private List<String> requiredEvidenceFor(BriefingRequest request) {
+		LinkedHashSet<String> requiredEvidence = new LinkedHashSet<>();
 
-		if (concern.contains("prod") || concern.contains("release") || concern.contains("payment") || concern.contains("billing")) {
-			score += 4;
+		for (String surface : request.affectedSurfaces()) {
+			requiredEvidence.addAll(EVIDENCE_BY_SURFACE.getOrDefault(surface, List.of()));
 		}
-		if (concern.contains("auth") || concern.contains("customer") || concern.contains("data")) {
-			score += 3;
+		if (request.affectedSurfaces().size() > 1) {
+			requiredEvidence.add("hld");
+			requiredEvidence.add("lld");
 		}
-		if (concern.contains("batch") || concern.contains("integration") || concern.contains("contract")) {
-			score += 2;
-		}
-		if (concern.contains("legacy") || concern.contains("migration") || concern.contains("refactor")) {
-			score += 3;
-		}
-		if (mood.contains("panic") || mood.contains("chaos") || mood.contains("tired")) {
-			score += 3;
-		}
-		if (move.contains("small") || move.contains("test") || move.contains("review") || move.contains("adapter")) {
-			score -= 2;
+		for (String riskFlag : request.riskFlags()) {
+			requiredEvidence.addAll(EVIDENCE_BY_RISK.getOrDefault(riskFlag, List.of()));
 		}
 
-		return Math.max(score, 0);
+		return new ArrayList<>(requiredEvidence);
+	}
+
+	private List<String> missingEvidenceFor(List<String> requiredEvidence, List<String> providedEvidence) {
+		Set<String> provided = new LinkedHashSet<>(providedEvidence);
+
+		return requiredEvidence.stream()
+				.filter(evidence -> !provided.contains(evidence))
+				.toList();
+	}
+
+	private String signalFor(List<String> missingEvidence, List<String> riskFlags) {
+		boolean highRiskMissingProof = !missingEvidence.isEmpty() && riskFlags.stream().anyMatch(HIGH_RISK_FLAGS::contains);
+
+		if (missingEvidence.size() > 2 || highRiskMissingProof) {
+			return "shield-wall";
+		}
+		if (!missingEvidence.isEmpty() || riskFlags.stream().anyMatch(HIGH_RISK_FLAGS::contains)) {
+			return "sparring";
+		}
+		return "truce";
+	}
+
+	private List<ReviewMatrixRow> reviewMatrixFor(BriefingRequest request) {
+		Set<String> provided = new LinkedHashSet<>(request.providedEvidence());
+
+		return request.affectedSurfaces().stream()
+				.map(surface -> matrixRowFor(surface, provided))
+				.toList();
+	}
+
+	private ReviewMatrixRow matrixRowFor(String surface, Set<String> provided) {
+		List<String> expectedEvidence = EVIDENCE_BY_SURFACE.getOrDefault(surface, List.of());
+		List<String> matchingEvidence = expectedEvidence.stream()
+				.filter(provided::contains)
+				.toList();
+		List<String> missingEvidence = expectedEvidence.stream()
+				.filter(evidence -> !provided.contains(evidence))
+				.toList();
+		String gap = missingEvidence.isEmpty() ? "covered" : "missing " + String.join(", ", missingEvidence);
+
+		return new ReviewMatrixRow(surface, expectedEvidence, matchingEvidence, gap, nextActionForSurface(surface, missingEvidence.isEmpty()));
 	}
 
 	private String headlineFor(String signal) {
 		return switch (signal) {
-			case "shield-wall" -> "Cobold risk alarm: shrink the slice before implementation.";
-			case "sparring" -> "Friendly duel: the idea is useful, but it needs sharper acceptance criteria.";
-			default -> "Truce declared: this is a review-ready starter slice.";
+			case "shield-wall" -> "Split before review.";
+			case "sparring" -> "Useful slice, but evidence is incomplete.";
+			default -> "Review-ready starter slice.";
 		};
 	}
 
-	private String coboldWisdomFor(BriefingRequest request) {
-		return "The Cobold reviewer says: name the risky assumption, keep the review evidence visible, and keep " +
-				request.coboldConcern().trim() + " visible in the review.";
-	}
-
-	private String reasonFor(String signal) {
+	private String stopConditionFor(String signal) {
 		return switch (signal) {
-			case "shield-wall" -> "Production-sensitive or high-coupling work needs a smaller slice before implementation.";
-			case "sparring" -> "The idea is useful, but the team needs sharper acceptance criteria and targeted evidence.";
-			default -> "The proposed move is small, focused, and has a clear verification path.";
+			case "shield-wall" -> "Split the work before implementation; required evidence is missing for a high-risk or broad change.";
+			case "sparring" -> "Do not request implementation review until API smoke and browser evidence are planned.";
+			default -> "No stop condition triggered; keep the evidence attached to the review.";
 		};
 	}
 
 	private String heroNextStepFor(String signal) {
 		return switch (signal) {
-			case "shield-wall" -> "Write non-goals, split the change, and ask for a review plan before implementation.";
-			case "sparring" -> "Add one targeted test and one reviewer note before opening the MR.";
-			default -> "Inspect nearby code, make the smallest diff, and verify it before the MR.";
+			case "shield-wall" -> "Split the task and add automation, browser, and design evidence before implementation.";
+			case "sparring" -> "Add Bruno smoke and browser evidence before implementation review.";
+			default -> "Implement the small slice and keep the backend test visible in the PR.";
 		};
 	}
 
-	private List<String> checklistFor(String signal) {
-		return switch (signal) {
-			case "shield-wall" -> List.of("split the task", "define rollback evidence", "request fresh-context review");
-			case "sparring" -> List.of("write acceptance criteria", "run targeted tests", "explain the risky assumption");
-			default -> List.of("inspect nearby code", "make a small change", "attach verification evidence");
-		};
-	}
+	private String nextActionForSurface(String surface, boolean covered) {
+		if (covered) {
+			return switch (surface) {
+				case "backend" -> "Keep backend assertion attached to the PR.";
+				case "bff" -> "Keep Bruno smoke evidence attached to the PR.";
+				case "frontend" -> "Keep browser evidence attached to the PR.";
+				case "contract" -> "Keep contract smoke evidence attached to the PR.";
+				case "testing" -> "Keep DPS-lite evidence attached to the PR.";
+				default -> "Keep evidence attached to the PR.";
+			};
+		}
 
-	private List<String> evidencePromptsFor(String signal) {
-		return switch (signal) {
-			case "shield-wall" -> List.of("Which smaller slice can be reviewed independently?", "Which rollback or recovery signal proves the risky path is controlled?");
-			case "sparring" -> List.of("Which acceptance criterion would reject a vague implementation?", "Which focused test proves the mapper or UI behavior?");
-			default -> List.of("Which command proves the slice still works?", "Which screenshot or API response should be attached to the PR?");
+		return switch (surface) {
+			case "backend" -> "Add focused backend test evidence.";
+			case "bff" -> "Add Bruno smoke coverage for the BFF mapping.";
+			case "frontend" -> "Capture browser evidence for the rendered matrix.";
+			case "contract" -> "Prove the contract through a smoke request.";
+			case "testing" -> "Add DPS-lite automation before implementation review.";
+			default -> "Add evidence for this surface.";
 		};
 	}
 
 	record BriefingRequest(
-			@NotBlank String coboldConcern,
-			@NotBlank String heroMove,
-			@NotBlank String systemMood) {
+			@NotBlank String changeTitle,
+			@NotBlank String changeDescription,
+			@NotEmpty List<String> affectedSurfaces,
+			List<String> providedEvidence,
+			List<String> riskFlags) {
 	}
 
 	record BriefingResponse(
 			String signal,
 			String headline,
-			String reason,
-			String coboldWisdom,
+			List<String> requiredEvidence,
+			List<String> missingEvidence,
+			String stopCondition,
 			String heroNextStep,
-			List<String> evidencePrompts,
-			List<String> checklist) {
+			List<ReviewMatrixRow> reviewMatrix) {
+	}
+
+	record ReviewMatrixRow(
+			String surface,
+			List<String> expectedEvidence,
+			List<String> providedEvidence,
+			String gap,
+			String nextAction) {
 	}
 
 	record StatusResponse(

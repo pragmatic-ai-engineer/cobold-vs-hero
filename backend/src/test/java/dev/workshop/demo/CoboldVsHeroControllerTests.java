@@ -2,6 +2,8 @@ package dev.workshop.demo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 class CoboldVsHeroControllerTests {
@@ -20,29 +22,57 @@ class CoboldVsHeroControllerTests {
 	}
 
 	@Test
-	void returnsTruceForSmallReviewedMove() {
+	void returnsTruceWhenRequiredEvidenceIsCovered() {
 		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
 				new CoboldVsHeroController.BriefingRequest(
-						"one label is confusing in a support screen",
-						"make a small text change and verify with a focused test",
-						"calm and curious"));
+						"Backend label endpoint",
+						"Add one small backend endpoint and attach the backend unit test.",
+						List.of("backend"),
+						List.of("backend-test"),
+						List.of()));
 
 		assertThat(response.signal()).isEqualTo("truce");
-		assertThat(response.headline()).contains("review-ready starter slice");
-		assertThat(response.reason()).contains("clear verification path");
-		assertThat(response.evidencePrompts()).isNotEmpty();
+		assertThat(response.requiredEvidence()).containsExactly("backend-test");
+		assertThat(response.missingEvidence()).isEmpty();
+		assertThat(response.reviewMatrix()).first()
+				.extracting(CoboldVsHeroController.ReviewMatrixRow::gap)
+				.isEqualTo("covered");
 	}
 
 	@Test
-	void returnsShieldWallForRiskyProductionPaymentRelease() {
+	void returnsSparringWhenUsefulSliceHasMissingUiAndBffEvidence() {
 		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
 				new CoboldVsHeroController.BriefingRequest(
-						"production payment integration refactor goes to release",
-						"rewrite the flow quickly",
-						"panic"));
+						"Status panel mapping",
+						"Add one backend field, one BFF mapper, and one Angular status panel.",
+						List.of("backend", "bff", "frontend"),
+						List.of("backend-test", "hld", "lld"),
+						List.of()));
+
+		assertThat(response.signal()).isEqualTo("sparring");
+		assertThat(response.requiredEvidence()).containsExactly("backend-test", "bruno-smoke", "browser-screenshot", "hld", "lld");
+		assertThat(response.missingEvidence()).containsExactly("bruno-smoke", "browser-screenshot");
+		assertThat(response.heroNextStep()).contains("browser evidence");
+	}
+
+	@Test
+	void returnsShieldWallWhenHighRiskWorkMissesRequiredProof() {
+		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
+				new CoboldVsHeroController.BriefingRequest(
+						"Payment retry refactor",
+						"Refactor production payment retry flow and auth callback in one release.",
+						List.of("backend", "bff", "frontend", "contract", "testing"),
+						List.of("hld"),
+						List.of("production", "payment", "auth", "unclear-scope")));
 
 		assertThat(response.signal()).isEqualTo("shield-wall");
-		assertThat(response.checklist()).first().isEqualTo("split the task");
-		assertThat(response.reason()).contains("smaller slice");
+		assertThat(response.missingEvidence()).containsExactly(
+				"backend-test",
+				"bruno-smoke",
+				"browser-screenshot",
+				"dps-testautomation",
+				"lld");
+		assertThat(response.stopCondition()).contains("Split the work");
+		assertThat(response.reviewMatrix()).hasSize(5);
 	}
 }
