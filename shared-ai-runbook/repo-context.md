@@ -17,15 +17,15 @@ The demo domain is **Cobold vs Hero**:
 From `demo/`:
 
 ```bash
-mise run backend:test
-mise run frontend:build
+mise run be:test
+mise run fe:build
 mise run verify
 ```
 
 Install frontend dependencies first:
 
 ```bash
-mise run frontend:install
+mise run fe:install
 ```
 
 ## Boundaries

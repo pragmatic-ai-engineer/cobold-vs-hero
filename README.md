@@ -25,7 +25,7 @@ demo/
 ```bash
 cd demo
 mise install
-mise run frontend:install
+mise run fe:install
 ```
 
 ## Run
@@ -33,13 +33,13 @@ mise run frontend:install
 Terminal 1:
 
 ```bash
-mise run backend:start
+mise run be:start
 ```
 
 Terminal 2:
 
 ```bash
-mise run frontend:start
+mise run fe:start
 ```
 
 Open `http://localhost:4200`.
@@ -47,8 +47,8 @@ Open `http://localhost:4200`.
 ## Verify
 
 ```bash
-mise run backend:test
-mise run frontend:build
+mise run be:test
+mise run fe:build
 ```
 
 After frontend dependencies are installed, `mise run verify` runs both gates.
