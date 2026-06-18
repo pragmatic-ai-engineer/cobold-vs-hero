@@ -3,7 +3,7 @@
 Open this folder in Bruno:
 
 ```text
-delivery-pack/manual-api/cobold-local
+manual-api/cobold-local
 ```
 
 Use the `local` environment.

@@ -59,7 +59,7 @@ run = "test -s delivery-pack/high-level-design.md && test -s delivery-pack/low-l
 
 [tasks."api:smoke"]
 description = "Run Bruno CLI quick API smoke checks against the running BFF"
-dir = "delivery-pack/manual-api/cobold-local"
+dir = "manual-api/cobold-local"
 run = "npx --yes --registry=https://registry.npmjs.org @usebruno/cli run --env local --bail"
 
 [tasks."api:testautomation"]

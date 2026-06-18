@@ -5,8 +5,7 @@ workshop demo.
 
 It is intentionally named `delivery-pack`, not `.context`, because it is not
 agent memory. It is the product and delivery packet a team can review together:
-requirements, decisions, workflow, prompts, manual API checks, and follow-up
-notes.
+requirements, decisions, workflow, prompts, and follow-up notes.
 
 ## Files
 
@@ -18,4 +17,8 @@ notes.
 - `workflow.md` - how the loop runs during the workshop.
 - `adrs/` - lightweight architectural decisions.
 - `prompts/` - reusable prompt handoffs for the workshop.
-- `manual-api/` - Bruno collection for manual/API smoke checks.
+
+Runnable verification surfaces live next to the code they exercise:
+
+- `../manual-api/` - Bruno collection for local/manual API smoke checks.
+- `../testautomation/` - DPS-lite Python API testautomation.

@@ -13,7 +13,7 @@ Each surface owns one part of the loop:
 - `bff/` maps backend behavior to UI shape.
 - `frontend/` renders the reviewable briefing.
 - `testautomation/` verifies API behavior from outside.
-- `delivery-pack/manual-api/` supports manual Bruno smoke checks.
+- `manual-api/` supports manual and CLI Bruno smoke checks.
 
 ## Loop
 
