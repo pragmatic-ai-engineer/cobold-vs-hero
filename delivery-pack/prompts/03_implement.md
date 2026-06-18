@@ -15,7 +15,8 @@ Rules:
 
 Required evidence:
 - commands run and results
-- API smoke or testautomation evidence
+- Bruno API smoke evidence
+- DPS-lite testautomation evidence when the loop requires heavier proof
 - browser evidence or replay note if UI changed
 - changed files summary
 - risks and open questions

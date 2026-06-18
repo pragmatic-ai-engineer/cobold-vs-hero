@@ -22,9 +22,8 @@ body:json {
   }
 }
 
-tests {
-  const body = res.getBody();
-  expect(res.status).to.equal(200);
-  expect(body.signal).to.equal("truce");
-  expect(body.reason).to.include("clear verification path");
+assert {
+  res.status: eq 200
+  res.body.signal: eq truce
+  res.body.reason: contains clear verification path
 }

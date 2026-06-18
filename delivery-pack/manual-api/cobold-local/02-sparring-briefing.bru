@@ -22,9 +22,8 @@ body:json {
   }
 }
 
-tests {
-  const body = res.getBody();
-  expect(res.status).to.equal(200);
-  expect(body.signal).to.equal("sparring");
-  expect(body.evidencePrompts.length).to.be.greaterThan(0);
+assert {
+  res.status: eq 200
+  res.body.signal: eq sparring
+  res.body.evidencePrompts: isNotEmpty
 }

@@ -26,7 +26,8 @@ shape task
 -> Cobold review challenges proof and scope
 -> implement smallest slice
 -> run code gates
--> run API smoke / testautomation
+-> run Bruno smoke
+-> run DPS-lite testautomation when the loop needs heavier evidence
 -> capture browser evidence
 -> fresh-context review
 -> human decision
@@ -36,6 +37,7 @@ shape task
 
 - `mise run verify` passes.
 - `mise run api:smoke` passes while services are running.
+- `mise run api:testautomation` passes when heavier API evidence is needed.
 - HLD/LLD still match the implemented contract and evidence.
 - UI evidence is captured or replayed.
 - Diff stays inside agreed surfaces.

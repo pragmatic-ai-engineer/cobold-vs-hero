@@ -20,7 +20,7 @@ demo/
   frontend/            # Angular app
   contracts/           # OpenAPI, PlantUML, sample payloads
   delivery-pack/       # PRD, HLD, LLD, ADR, prompts, workflow, Bruno collection
-  testautomation/      # DPS-lite Python API smoke tests
+  testautomation/      # DPS-lite Python API testautomation
   docs/                # workshop task notes
   shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
@@ -80,9 +80,15 @@ mise run fe:build
 After frontend and BFF dependencies are installed, `mise run verify` runs the
 offline verification gates.
 
-With the backend and BFF running, the DPS-lite API smoke tests add the live
-behavior gate:
+With the backend and BFF running, Bruno CLI gives a quick developer/manual
+tester smoke check:
 
 ```bash
 mise run api:smoke
+```
+
+For the heavier DPS-lite Python automation gate:
+
+```bash
+mise run api:testautomation
 ```

@@ -42,8 +42,9 @@ mise run fe:install
 mise run bff:install
 ```
 
-When backend and BFF are running, use `mise run api:smoke` for the live API
-behavior gate.
+When backend and BFF are running, use `mise run api:smoke` for quick Bruno CLI
+checks and `mise run api:testautomation` for the heavier Python API automation
+gate.
 
 ## Handoff
 

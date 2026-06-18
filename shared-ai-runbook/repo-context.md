@@ -7,7 +7,7 @@ This is a workshop demo repo with an umbrella structure:
 - `frontend/` - Angular app, Node 24
 - `contracts/` - OpenAPI, PlantUML, and sample payloads
 - `delivery-pack/` - PRD, HLD, LLD, ADR, workflow, prompts, and Bruno smoke checks
-- `testautomation/` - DPS-lite Python API smoke tests
+- `testautomation/` - DPS-lite Python API testautomation
 
 The demo domain is **Cobold vs Hero**:
 
@@ -39,6 +39,7 @@ With backend and BFF running, execute the live API behavior gate:
 
 ```bash
 mise run api:smoke
+mise run api:testautomation
 ```
 
 ## Boundaries

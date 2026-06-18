@@ -1,9 +1,11 @@
-# DPS-Lite Testautomation
+# DPS-Lite Heavyweight Testautomation
 
 This folder is a tiny Python API automation suite that mirrors the role of DPS
 without copying the enterprise framework.
 
-It verifies the BFF boundary from outside the app:
+It verifies the BFF boundary from outside the app. This is the heavier API
+automation gate, not the quick developer smoke path. Use Bruno / `mise run
+api:smoke` for fast local checks during development.
 
 - representative `truce`, `sparring`, and `shield-wall` requests
 - response signal

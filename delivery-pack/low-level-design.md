@@ -81,14 +81,15 @@ finding if the task expands toward production-grade validation behavior.
 
 | Case | Expected signal | Evidence |
 | --- | --- | --- |
-| Small reviewed UI/support change | `truce` | Backend unit test, Bruno, DPS-lite smoke. |
-| Inconsistent customer API/UI mapping | `sparring` | Bruno and DPS-lite assert acceptance-criteria prompt. |
-| Production payment integration refactor | `shield-wall` | Backend unit test, Bruno, DPS-lite smoke, browser result panel. |
+| Small reviewed UI/support change | `truce` | Backend unit test, Bruno smoke, DPS-lite testautomation. |
+| Inconsistent customer API/UI mapping | `sparring` | Bruno smoke and DPS-lite testautomation assert acceptance-criteria prompt. |
+| Production payment integration refactor | `shield-wall` | Backend unit test, Bruno smoke, DPS-lite testautomation, browser result panel. |
 
 ## LLD Done Condition
 
 - OpenAPI request/response shape matches backend behavior.
 - BFF mapping table matches implementation.
-- Samples, Bruno requests, and DPS-lite tests cover representative signals.
+- Samples, Bruno smoke requests, and DPS-lite testautomation cover representative
+  signals.
 - Validation behavior and known gaps are explicit.
 - Browser evidence shows the fields that the API smoke checks assert.

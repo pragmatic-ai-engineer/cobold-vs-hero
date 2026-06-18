@@ -28,8 +28,8 @@
 ## Slice 4 - Verification Harness
 
 - Add contract samples and PlantUML flow/state notes.
-- Add Bruno manual API smoke checks.
-- Add DPS-lite Python API checks.
+- Add Bruno manual/API CLI smoke checks for fast local feedback.
+- Add DPS-lite Python API checks as the heavier testautomation gate.
 - Keep browser verification as a recipe or prepared replay for the workshop.
 
 ## Slice 5 - Workshop Loop

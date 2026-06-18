@@ -26,8 +26,8 @@ the design artifacts part of the feedback loop before implementation starts.
 Status: Accepted
 
 The sample repo should resemble the participant workflow: backend service,
-NestJS BFF, Angular frontend, API contract, manual API smoke, and Python
-testautomation.
+NestJS BFF, Angular frontend, API contract, Bruno manual/API CLI smoke, and
+Python testautomation.
 
 ## D04 - Keep The Domain Generic
 

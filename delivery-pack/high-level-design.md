@@ -48,8 +48,8 @@ Canonical flow diagram:
 | NestJS BFF | Keep the UI contract stable and map backend field names to UI-facing names. |
 | Spring Boot API | Classify the review signal and produce reason, reviewer note, next action, evidence prompts, and checklist. |
 | Contracts | Keep OpenAPI, PlantUML, and sample payloads aligned with behavior. |
-| Testautomation | Verify representative API behavior from outside the code. |
-| Bruno | Provide participant-friendly manual API smoke checks. |
+| Bruno | Provide participant-friendly manual/API CLI smoke checks during development. |
+| Testautomation | Provide the heavier DPS-lite API automation gate from outside the code. |
 
 ## Design Decisions
 

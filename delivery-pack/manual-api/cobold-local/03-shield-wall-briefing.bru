@@ -22,9 +22,8 @@ body:json {
   }
 }
 
-tests {
-  const body = res.getBody();
-  expect(res.status).to.equal(200);
-  expect(body.signal).to.equal("shield-wall");
-  expect(body.reason).to.include("smaller slice");
+assert {
+  res.status: eq 200
+  res.body.signal: eq shield-wall
+  res.body.reason: contains smaller slice
 }

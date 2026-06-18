@@ -58,7 +58,12 @@ description = "Check that workshop contract artifacts exist"
 run = "test -s delivery-pack/high-level-design.md && test -s delivery-pack/low-level-design.md && test -s contracts/openapi/cobold-briefing-api.yaml && test -s contracts/plantuml/briefing-flow.puml && test -s contracts/plantuml/briefing-state.puml"
 
 [tasks."api:smoke"]
-description = "Run DPS-lite API smoke tests against the running BFF"
+description = "Run Bruno CLI quick API smoke checks against the running BFF"
+dir = "delivery-pack/manual-api/cobold-local"
+run = "npx --yes --registry=https://registry.npmjs.org @usebruno/cli run --env local --bail"
+
+[tasks."api:testautomation"]
+description = "Run DPS-lite heavyweight API testautomation against the running BFF"
 run = "PYTHONPATH=testautomation uv run --with pytest pytest testautomation"
 
 [tasks.verify]

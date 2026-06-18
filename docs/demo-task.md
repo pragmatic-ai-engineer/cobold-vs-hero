@@ -20,7 +20,7 @@ proposed delivery move. The app returns a briefing signal:
 - It creates natural review questions without requiring real company repo
   access.
 - It has verifier surfaces: backend tests, BFF build, Angular build, Bruno
-  smoke checks, DPS-lite Python tests, and browser evidence.
+  smoke checks, DPS-lite Python testautomation, and browser evidence.
 
 ## Current API
 
