@@ -1,78 +1,117 @@
-# Demo Task: Cobold vs Hero Briefing
+# Demo Task: Review Readiness Matrix
 
-## Quirky Basic Task
+## Starting Point
 
-Build a tiny "Cobold vs Hero" briefing tool.
+The repo starts with a working Cobold vs Hero briefing tool.
 
-The Cobold reviewer enters a risk concern. The Hero proposer enters the
-proposed delivery move. The app returns a briefing signal:
+The Cobold reviewer enters a risk concern. The Hero proposer enters the proposed
+delivery move. The app returns a briefing signal:
 
 - `truce` - safe starter slice
 - `sparring` - useful idea, needs sharper acceptance criteria
 - `shield-wall` - too risky; split the task before implementation
 
-## Why This Works For The Workshop
+The current baseline already includes:
 
-- It is Java + NestJS + Angular, matching the target shop shape.
-- It is domain-light and funny enough to be memorable.
-- It has a clear backend/API/frontend split.
-- It has lightweight HLD/LLD artifacts that connect design to implementation.
-- It creates natural review questions without requiring real company repo
-  access.
-- It has verifier surfaces: backend tests, BFF build, Angular build, Bruno
-  smoke checks, DPS-lite Python testautomation, and browser evidence.
+- Java backend classification
+- NestJS BFF mapping
+- Angular UI rendering
+- OpenAPI, PlantUML, and sample payloads
+- Bruno local/API smoke checks
+- DPS-lite Python testautomation
+- lightweight HLD/LLD and delivery-pack artifacts
 
-## Current API
+This baseline is intentionally complete enough for workshop participants to
+practice improving the AI delivery loop instead of bootstrapping a repo from
+nothing.
 
-`POST /api/cobold-vs-hero/briefing`
+## Workshop Slice
 
-Request:
+The next slice is the Review Readiness Matrix.
+
+Starting vague request:
+
+> The briefing is too vague. Make it useful enough that a team can decide
+> whether a proposed change is safe to start, needs sharper acceptance criteria,
+> or must be split before implementation.
+
+Scoped task:
+
+> For a proposed delivery move, let the user choose affected surfaces and
+> available evidence. The system should return a readiness signal, required
+> evidence, missing evidence, stop condition, next action, and a review readiness
+> matrix. The UI should make the matrix readable, and the behavior should be
+> verified through Bruno, DPS-lite, and browser evidence.
+
+## Proposed Input
+
+The workshop evolves the current free-text briefing input into structured review
+readiness data:
 
 ```json
 {
-  "coboldConcern": "production payment integration refactor goes to release",
-  "heroMove": "rewrite the flow quickly",
-  "systemMood": "panic"
+  "changeTitle": "Billing retry status panel",
+  "changeDescription": "Add one backend endpoint, one BFF mapper, and one Angular panel.",
+  "affectedSurfaces": ["backend", "bff", "frontend", "contract", "testing"],
+  "providedEvidence": ["backend-test", "hld", "lld"],
+  "riskFlags": ["customer-data", "unclear-scope"]
 }
 ```
 
-Response:
+## Proposed Output
 
 ```json
 {
-  "signal": "shield-wall",
-  "headline": "Cobold risk alarm: shrink the slice before implementation.",
-  "reason": "Production-sensitive or high-coupling work needs a smaller slice before implementation.",
-  "coboldWisdom": "The Cobold reviewer says: name the risky assumption...",
-  "heroNextStep": "Write non-goals, split the change...",
-  "evidencePrompts": [
-    "Which smaller slice can be reviewed independently?",
-    "Which rollback or recovery signal proves the risky path is controlled?"
-  ],
-  "checklist": ["split the task", "define rollback evidence", "request fresh-context review"]
+  "signal": "sparring",
+  "headline": "Useful slice, but evidence is incomplete.",
+  "requiredEvidence": ["backend-test", "bruno-smoke", "dps-testautomation", "browser-screenshot", "hld", "lld"],
+  "missingEvidence": ["bruno-smoke", "dps-testautomation", "browser-screenshot"],
+  "stopCondition": "Do not implement until API, automation, and browser evidence are planned.",
+  "nextAction": "Add smoke and automation evidence before asking for implementation.",
+  "reviewMatrix": [
+    {
+      "surface": "backend",
+      "expectedEvidence": ["backend-test"],
+      "providedEvidence": ["backend-test"],
+      "gap": "covered",
+      "nextAction": "Keep backend assertion attached to the PR."
+    }
+  ]
 }
 ```
 
-## Good Workshop Slice
+## Acceptance Criteria
 
-Good design-to-code slice:
+- The backend accepts structured readiness input.
+- The backend derives required evidence from affected surfaces and risk flags.
+- The backend returns explicit missing evidence.
+- The backend returns a useful stop condition and next action.
+- The BFF maps backend fields into the UI-facing DTO without duplicating
+  readiness logic.
+- The UI renders a readable matrix with surface, expected evidence, provided
+  evidence, gap, and next action.
+- Bruno smoke covers representative `truce`, `sparring`, and `shield-wall`
+  readiness cases.
+- DPS-lite automation verifies required evidence and missing evidence.
+- Browser evidence proves the matrix is readable.
 
-> Improve the review signal details so the briefing explains why the signal was
-> selected and what evidence the team should gather next.
+## Non-Goals
 
-Acceptance criteria:
+- Persistence.
+- Authentication.
+- User management.
+- Real risk scoring engine.
+- Historical reporting.
+- Enterprise workflow integration.
+- Large UI redesign.
 
-- Each signal has a clear reason.
-- The BFF maps backend fields into a UI-facing DTO.
-- The UI makes the reason, next action, and evidence prompts easy to scan in a
-  screen share.
-- Backend tests, BFF build, frontend build, API smoke, and browser evidence
-  prove the slice.
-- Keep the change small; do not add persistence, auth, or a scoring framework.
+## Workshop Branch Stack
 
-## Follow-Up Slices
+The slice should be developed through numbered branches:
 
-- Add frontend unit coverage for rendering a briefing.
-- Add a history list of the last 3 briefings in memory.
-- Add a `GET /api/cobold-vs-hero/examples` endpoint.
-- Create an AI runbook prompt for reviewing a briefing change.
+- `workshop/00-baseline-review-signal-details`
+- `workshop/01-prompt-scope-review-readiness-matrix`
+- `workshop/02-context-delivery-packet`
+- `workshop/03-harness-before-code`
+- `workshop/04-implementation-pass`
+- `workshop/05-loop-repair-review-evidence`

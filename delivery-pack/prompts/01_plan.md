@@ -1,37 +1,56 @@
-# Prompt 01 - Plan The Slice
+# Prompt 01 - Scope The Review Readiness Slice
 
-Use this before implementation.
+Use this before design, contracts, or implementation.
 
 ```text
 You are working in the Cobold vs Hero workshop repo.
 
-Goal:
-Improve review signal details across contract, backend, BFF, frontend, and
-verification surfaces.
+Current baseline:
+The app already implements Review Signal Details. It accepts coboldConcern,
+heroMove, and systemMood, then returns signal, headline, reason, reviewer note,
+next action, evidence prompts, and checklist.
+
+New workshop goal:
+Evolve the baseline into Review Readiness Matrix.
+
+The proposed change should accept:
+- changeTitle
+- changeDescription
+- affectedSurfaces
+- providedEvidence
+- riskFlags
+
+It should return:
+- signal
+- headline
+- requiredEvidence
+- missingEvidence
+- stopCondition
+- nextAction
+- reviewMatrix rows with surface, expected evidence, provided evidence, gap,
+  and next action
 
 First inspect:
-- AGENTS.md
+- docs/demo-task.md
 - delivery-pack/product/product-brief.md
 - delivery-pack/design/high-level-design.md
 - delivery-pack/design/low-level-design.md
-- delivery-pack/design/decisions.md
 - delivery-pack/testing/acceptance-and-test-plan.md
-- delivery-pack/delivery/workflow.md
 - contracts/openapi/cobold-briefing-api.yaml
 - backend/
 - bff/
 - frontend/
+- manual-api/
 - testautomation/
 
 Return:
-- current repo inventory
-- HLD/LLD alignment notes
-- design decision alignment notes
-- test plan alignment notes
-- proposed implementation plan
-- files expected to change
-- verification plan
-- risks and stop conditions
+- scoped task
+- non-goals
+- acceptance criteria
+- expected files or surfaces to change
+- verification strategy
+- likely stop conditions
+- questions that must be answered before code
 
 Do not edit yet.
 ```
