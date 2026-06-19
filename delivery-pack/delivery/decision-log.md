@@ -35,3 +35,16 @@ Status: Accepted
 
 Cobold is a risk-aware reviewer. Hero is a delivery proposer. The demo avoids
 enterprise-specific and legacy-specific domain details.
+
+## D05 - Defer Readiness Matrix Contract Docs To Phase 2
+
+Status: Accepted For Planning
+
+The Review Readiness Matrix crosses frontend, BFF, backend, Bruno, DPS-lite, and
+browser evidence. The current planning prompt explicitly says not to create or
+update Swagger/OpenAPI, HLD, LLD, or extra documentation in phase 1.
+
+Phase 1 should therefore prepare the product scope, acceptance evidence, and
+implementation prompt while leaving those design and contract artifacts
+unchanged. The next planning pass must call out HLD/LLD/OpenAPI drift and decide
+whether phase 2 updates them before code changes.

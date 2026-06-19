@@ -20,8 +20,8 @@ Each surface owns one part of the loop:
 
 ```text
 shape task
--> draft/update lightweight HLD
--> draft/update lightweight LLD
+-> draft/update or explicitly defer lightweight HLD
+-> draft/update or explicitly defer lightweight LLD
 -> inspect sources
 -> propose plan
 -> Cobold review challenges proof and scope
@@ -39,7 +39,8 @@ shape task
 - `mise run verify` passes.
 - `mise run api:smoke` passes while services are running.
 - `mise run api:testautomation` passes when heavier API evidence is needed.
-- HLD/LLD still match the implemented contract and evidence.
+- HLD/LLD still match the implemented contract and evidence, or the handoff
+  records the drift and why it was deferred.
 - UI evidence is captured or replayed.
 - Diff stays inside agreed surfaces.
 - PR/handoff notes include commands, evidence, risks, and gaps.

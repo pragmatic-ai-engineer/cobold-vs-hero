@@ -1,19 +1,26 @@
-# Acceptance And Test Plan - Review Signal Details
+# Acceptance And Test Plan - Review Readiness Matrix
 
-This plan tracks the acceptance and verification surfaces for the workshop
-slice. It keeps quick developer smoke checks, browser evidence, and heavier API
-testautomation visible in one place.
+This plan tracks the evidence needed for the Review Readiness Matrix slice. It
+keeps quick API smoke, DPS-lite automation, browser evidence, accessibility
+expectations, and handoff evidence visible in one place.
 
 ## Acceptance Criteria
 
 | ID | Acceptance criterion | Primary evidence |
 | --- | --- | --- |
-| AC1 | API returns a specific `reason` for each signal. | Backend unit test, Bruno smoke, DPS-lite testautomation. |
-| AC2 | BFF maps backend response fields into the UI-facing DTO. | Bruno smoke, DPS-lite testautomation. |
-| AC3 | UI renders signal, reason, next action, evidence prompts, and checklist. | Browser evidence. |
-| AC4 | Representative `truce`, `sparring`, and `shield-wall` cases are covered. | Bruno smoke and DPS-lite testautomation. |
-| AC5 | HLD/LLD explain behavior before implementation. | Design review against `delivery-pack/design/`. |
-| AC6 | Scope stays inside briefing behavior and verification surfaces. | Diff boundary review. |
+| AC1 | A proposed change can include affected surfaces. | Backend/BFF/API smoke evidence. |
+| AC2 | A proposed change can include available evidence. | Backend/BFF/API smoke evidence. |
+| AC3 | A proposed change can include a risk profile. | Backend/BFF/API smoke evidence. |
+| AC4 | The system returns one signal: `truce`, `sparring`, or `shield-wall`. | Bruno smoke, DPS-lite automation. |
+| AC5 | The system returns required evidence for the selected surfaces and risk profile. | DPS-lite automation. |
+| AC6 | The system returns missing evidence explicitly. | DPS-lite automation. |
+| AC7 | The system returns a stop condition and next action. | Bruno smoke, DPS-lite automation, browser evidence. |
+| AC8 | The UI shows a review readiness matrix grouped by affected surface. | Browser evidence. |
+| AC9 | The UI makes required gates present or missing clear at a glance. | Browser evidence, accessibility check. |
+| AC10 | The site structure and UI follow WCAG expectations relevant to this slice. | Browser keyboard/readability check. |
+| AC11 | Bruno smoke covers representative `truce`, `sparring`, and `shield-wall` cases. | `mise run api:smoke`. |
+| AC12 | DPS-lite automation checks required evidence and missing evidence. | `mise run api:testautomation`. |
+| AC13 | The PR or handoff includes command evidence, browser evidence, risks, and known gaps. | Handoff review. |
 
 ## Verification Layers
 
@@ -22,8 +29,9 @@ testautomation visible in one place.
 | Offline gates | mise | `mise run verify` | Developer / agent |
 | Quick API smoke | Bruno CLI | `mise run api:smoke` | Developer / manual tester |
 | Manual API check | Bruno app | `manual-api/cobold-local` | Developer / manual tester |
-| Heavy API automation | DPS-lite pytest | `mise run api:testautomation` | Tester / CI candidate |
-| Browser evidence | Agent Browser, Playwright, or manual screen share | See browser checks below | Tester / reviewer |
+| Heavy API automation | DPS-lite pytest | `mise run api:testautomation` | QA / CI candidate |
+| Browser evidence | Agent Browser, Playwright, or manual screen share | See browser checks below | QA / reviewer |
+| Accessibility evidence | Browser keyboard/readability pass | See accessibility checks below | QA / reviewer |
 | Diff boundary | Git | `git diff --stat` | Reviewer |
 
 ## Preconditions
@@ -32,7 +40,15 @@ testautomation visible in one place.
 - BFF is running on `http://localhost:3000`.
 - Frontend is running on `http://localhost:4200` for browser checks.
 
-## Quick Smoke Checks
+## Representative Smoke Cases
+
+| Case | Input shape | Expected result |
+| --- | --- | --- |
+| Truce | One low-risk surface with all required evidence selected. | `signal=truce`, no missing evidence for the selected surface. |
+| Sparring | One or more surfaces selected with a non-blocking evidence gap. | `signal=sparring`, missing evidence and next action are specific. |
+| Shield-wall | Production/customer/data risk with required gates missing. | `signal=shield-wall`, stop condition tells the team to pause before implementation or merge. |
+
+## Quick API Smoke
 
 Run after backend and BFF are running:
 
@@ -42,9 +58,12 @@ mise run api:smoke
 
 Expected:
 
-- `01-truce-briefing` returns `200`, `signal=truce`, and a clear verification reason.
-- `02-sparring-briefing` returns `200`, `signal=sparring`, and evidence prompts.
-- `03-shield-wall-briefing` returns `200`, `signal=shield-wall`, and a smaller-slice reason.
+- Truce case returns `200`, `signal=truce`, required evidence, and no blocking
+  missing evidence.
+- Sparring case returns `200`, `signal=sparring`, required evidence, missing
+  evidence, and a focused next action.
+- Shield-wall case returns `200`, `signal=shield-wall`, missing required gates,
+  a stop condition, and a split-or-prove next action.
 
 ## Heavy API Testautomation
 
@@ -56,24 +75,42 @@ mise run api:testautomation
 
 Expected:
 
-- Three representative pytest cases pass.
-- Failures become feedback for the next implementation iteration.
+- Representative cases pass for `truce`, `sparring`, and `shield-wall`.
+- Required evidence changes when affected surfaces change.
+- Missing evidence changes when provided evidence changes.
+- Production or high-risk profiles require stronger evidence than dev-only
+  profiles.
 
 ## Browser Checks
 
 1. Open `http://localhost:4200`.
-2. Submit a truce input.
-3. Verify the page shows:
+2. Verify the input view has three sections on the main page:
+   - affected area
+   - provided evidence
+   - risk profile
+3. Submit a truce case.
+4. Verify the result view shows:
    - `truce`
-   - reason text
-   - next action
-   - evidence prompts
-4. Submit a shield-wall input.
-5. Verify the page shows:
+   - required evidence
+   - no blocking missing evidence
+   - matrix rows grouped by affected surface
+5. Submit a shield-wall case.
+6. Verify the result view shows:
    - `shield-wall`
-   - smaller-slice reason
-   - split-task checklist item
-6. Capture one screenshot of the result panel.
+   - missing required gates
+   - stop condition
+   - next action
+   - matrix rows grouped by affected surface
+7. Capture one screenshot of the matrix.
+
+## Accessibility Checks
+
+- Inputs have visible labels and can be reached by keyboard.
+- The submit path works without a mouse.
+- The matrix has a clear heading and readable row/column labels.
+- Present and missing gates are not communicated by color alone.
+- Text remains readable at common workshop screen-share widths.
+- Focus indicators are visible.
 
 ## Evidence Note
 
@@ -82,8 +119,11 @@ Record:
 - browser target
 - input used
 - visible signal
-- screenshot path or recording note
+- matrix screenshot path or recording note
 - Bruno smoke result
-- DPS-lite testautomation result
+- DPS-lite automation result
+- offline gate result, if run
 - diff boundary summary
+- HLD/LLD/OpenAPI drift note, because phase 1 intentionally defers those
+  artifacts
 - gaps that still need human verification

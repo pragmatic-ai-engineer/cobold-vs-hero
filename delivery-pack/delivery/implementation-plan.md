@@ -1,39 +1,111 @@
-# Implementation Plan
+# Implementation Plan - Review Readiness Matrix
 
-## Slice 0 - Lightweight Design Artifacts
+This plan is preparation for the upcoming implementation loop. It replaces the
+baseline Review Signal Details slice with the next vertical slice: structured
+review readiness by affected surface, provided evidence, and risk profile.
 
-- Add HLD for system boundaries, flow, assumptions, and risks.
-- Add LLD for endpoint behavior, BFF mapping, examples, and test cases.
-- Keep both documents short enough to review during the workshop.
+## Phase 1 - Scope And Plan
 
-## Slice 1 - Contract And Backend Signal Details
+- Treat the existing briefing flow as the baseline.
+- Scope one vertical slice that reuses the current app shape.
+- Keep the user input on the main page with three sections:
+  - affected area
+  - provided evidence
+  - risk profile
+- Return a single readiness signal plus required evidence, missing evidence,
+  stop condition, next action, and matrix rows grouped by surface.
+- Explicitly defer Swagger/OpenAPI, HLD, LLD, and extra documentation updates to
+  phase 2 unless the next planning pass changes that decision.
 
-- Add `reason` and `evidencePrompts` to the briefing response contract.
-- Update backend response generation.
-- Add focused backend tests for representative signals.
+## Slice 1 - Domain Rules
 
-## Slice 2 - BFF Mapping
+- Define the supported affected surfaces: frontend, BFF, backend.
+- Define supported evidence options for the slice:
+  - frontend build
+  - BFF build
+  - backend test
+  - API smoke
+  - DPS-lite automation
+  - browser evidence
+  - accessibility/readability check
+- Define supported risk profile options:
+  - dev-only
+  - production-facing
+  - customer-visible
+  - data/auth/payment/contract risk
+  - cross-surface coupling
+- Map affected surfaces and risk profile to required evidence.
+- Derive missing evidence by comparing required evidence with provided evidence.
 
-- Add a minimal NestJS BFF.
-- Proxy the briefing request to the backend.
-- Map backend fields to UI-facing names.
-- Keep BFF logic thin and testable by API smoke.
+## Slice 2 - Backend Behavior
 
-## Slice 3 - Frontend Rendering
+- Keep backend ownership of domain-specific readiness data handling.
+- Return structured required evidence, missing evidence, stop condition, next
+  action, and matrix rows.
+- Keep the readiness logic deterministic and small.
+- Do not add persistence, authentication, or a generic scoring engine.
+- Do not create a new backend service in this slice.
 
-- Route the Angular app through the BFF.
-- Render reason and evidence prompts.
-- Keep the UI small and readable in a screen share.
+## Slice 3 - BFF Transformation
 
-## Slice 4 - Verification Harness
+- Keep the BFF responsible for user-facing validation and transformation.
+- Map backend domain language into UI-facing labels and matrix rows.
+- Merge backend fragments into one UI response if the backend response is split.
+- Do not duplicate domain readiness rules in the BFF.
+- Do not create a new BFF endpoint in this slice unless phase 2 explicitly
+  changes the contract plan.
 
-- Add contract samples and PlantUML flow/state notes.
-- Add Bruno manual/API CLI smoke checks for fast local feedback.
-- Add DPS-lite Python API checks as the heavier testautomation gate.
-- Keep browser verification as a recipe or prepared replay for the workshop.
+## Slice 4 - Frontend Matrix
 
-## Slice 5 - Workshop Loop
+- Replace free-text briefing inputs with three main-page sections:
+  - affected area
+  - provided evidence
+  - risk profile
+- Render the readiness signal, required evidence, missing evidence, stop
+  condition, next action, and grouped matrix.
+- Keep the UI readable in a workshop screen share.
+- Keep state, labels, and keyboard flow aligned with WCAG expectations relevant
+  to the slice.
+- Do not redesign unrelated UI.
 
-- Use HLD/LLD as design gates before implementation.
-- Use the loop contract to run: plan, implement, verify, repair, review.
-- Capture command results, API smoke evidence, browser evidence, and diff notes.
+## Slice 5 - Verification Harness
+
+- Update Bruno smoke cases for representative `truce`, `sparring`, and
+  `shield-wall` readiness scenarios.
+- Update DPS-lite automation to assert required evidence and missing evidence.
+- Capture browser evidence proving the matrix is visible and readable.
+- Run offline gates after implementation:
+
+```bash
+mise run contracts:check
+mise run be:test
+mise run bff:build
+mise run fe:build
+mise run verify
+```
+
+- When backend and BFF are running, run:
+
+```bash
+mise run api:smoke
+mise run api:testautomation
+```
+
+## Stop Conditions
+
+- The plan requires a new endpoint or new backend service before phase 2 approves
+  that contract change.
+- Required evidence cannot be expressed without a broader scoring framework.
+- UI work turns into an unrelated redesign.
+- HLD, LLD, or OpenAPI drift becomes too large to defer safely.
+- Two repair attempts fail against the same verification gate.
+
+## Handoff Requirements
+
+- What changed.
+- What was intentionally not changed.
+- Commands run and results.
+- API and browser evidence.
+- HLD/LLD/OpenAPI drift.
+- Risks and open questions.
+- What reviewers should inspect first.
