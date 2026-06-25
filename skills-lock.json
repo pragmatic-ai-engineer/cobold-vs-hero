@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "qrspi": {
+      "source": "greg0x/qrspi-demo",
+      "sourceType": "github",
+      "skillPath": "skills/qrspi/SKILL.md",
+      "computedHash": "e0831cead0ef00f2ca6a59ac80287c468d93807b714643bc733dbf76a2a37754"
+    }
+  }
+}
