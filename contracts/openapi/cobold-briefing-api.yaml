@@ -88,6 +88,9 @@ components:
         - coboldConcern
         - heroMove
         - systemMood
+        - targetEnvironment
+        - implementationComplexity
+        - teamExperience
       properties:
         coboldConcern:
           type: string
@@ -95,6 +98,15 @@ components:
           type: string
         systemMood:
           type: string
+        targetEnvironment:
+          type: string
+          enum: [dev, staging, production]
+        implementationComplexity:
+          type: string
+          enum: [low, medium, high]
+        teamExperience:
+          type: string
+          enum: [junior, senior, expert]
     BriefingResponse:
       type: object
       required:

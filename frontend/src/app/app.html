@@ -65,10 +65,42 @@
 
       <label>
         <span>System mood</span>
-        <input name="systemMood" type="text" [(ngModel)]="systemMood" />
+        <input name="systemMood" type="text" [(ngModel)]="systemMood" required />
       </label>
 
-      <button type="button" [disabled]="loading()" (click)="requestBriefing()">
+      <fieldset class="project-context">
+        <legend class="eyebrow">Project Context</legend>
+        <div class="context-grid">
+          <label>
+            <span>Target Environment</span>
+            <select name="targetEnvironment" [(ngModel)]="targetEnvironment" required>
+              <option value="dev">Development</option>
+              <option value="staging">Staging</option>
+              <option value="production">Production</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Implementation Complexity</span>
+            <select name="implementationComplexity" [(ngModel)]="implementationComplexity" required>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Team Experience</span>
+            <select name="teamExperience" [(ngModel)]="teamExperience" required>
+              <option value="junior">Junior</option>
+              <option value="senior">Senior</option>
+              <option value="expert">Expert</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <button type="button" [disabled]="loading() || !isFormValid()" (click)="requestBriefing()">
         {{ loading() ? 'Reviewing the signal...' : 'Request briefing' }}
       </button>
     </form>

@@ -49,3 +49,20 @@ def test_shield_wall_briefing_requires_slice_split() -> None:
     assert response["signal"] == "shield-wall"
     assert "smaller slice" in response["reason"]
     assert response["checklist"][0] == "split the task"
+
+
+def test_multiplier_escalates_risk_to_shield_wall() -> None:
+    # This would be 4 points (prod) -> truce/sparring normally
+    # But with production multiplier (x2) it hits shield-wall (7+)
+    response = CoboldBriefingClient().create_briefing(
+        BriefingRequest(
+            cobold_concern="prod keyword",
+            hero_move="nothing special",
+            system_mood="calm",
+            target_environment="production",
+            implementation_complexity="low",
+            team_experience="expert",
+        )
+    )
+
+    assert response["signal"] == "shield-wall"

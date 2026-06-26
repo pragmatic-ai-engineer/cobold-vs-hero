@@ -12,12 +12,18 @@ class BriefingRequest:
     cobold_concern: str
     hero_move: str
     system_mood: str
+    target_environment: str = "dev"
+    implementation_complexity: str = "low"
+    team_experience: str = "senior"
 
     def to_payload(self) -> dict[str, str]:
         return {
             "coboldConcern": self.cobold_concern,
             "heroMove": self.hero_move,
             "systemMood": self.system_mood,
+            "targetEnvironment": self.target_environment,
+            "implementationComplexity": self.implementation_complexity,
+            "teamExperience": self.team_experience,
         }
 
 

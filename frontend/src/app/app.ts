@@ -40,6 +40,9 @@ export class App implements OnInit {
   coboldConcern = 'The billing retry job owns customer invoices and runs during release night.';
   heroMove = 'Add one small Java endpoint and one Angular panel with targeted tests.';
   systemMood = 'curious but tired';
+  targetEnvironment = 'dev';
+  implementationComplexity = 'low';
+  teamExperience = 'senior';
 
   readonly briefing = signal<BriefingResponse | null>(null);
   readonly loading = signal(false);
@@ -47,6 +50,17 @@ export class App implements OnInit {
   readonly systemStatus = signal<SystemStatusResponse | null>(null);
   readonly statusLoading = signal(false);
   readonly statusError = signal('');
+
+  isFormValid(): boolean {
+    return (
+      !!this.coboldConcern &&
+      !!this.heroMove &&
+      !!this.systemMood &&
+      !!this.targetEnvironment &&
+      !!this.implementationComplexity &&
+      !!this.teamExperience
+    );
+  }
 
   ngOnInit(): void {
     this.refreshStatus();
@@ -71,6 +85,11 @@ export class App implements OnInit {
   }
 
   requestBriefing(): void {
+    if (!this.isFormValid()) {
+      this.error.set('Please fill in all required fields.');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 
@@ -79,6 +98,9 @@ export class App implements OnInit {
         coboldConcern: this.coboldConcern,
         heroMove: this.heroMove,
         systemMood: this.systemMood,
+        targetEnvironment: this.targetEnvironment,
+        implementationComplexity: this.implementationComplexity,
+        teamExperience: this.teamExperience,
       })
       .subscribe({
         next: (briefing) => {

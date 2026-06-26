@@ -2,6 +2,9 @@ export interface BriefingRequestDto {
   coboldConcern: string;
   heroMove: string;
   systemMood: string;
+  targetEnvironment: string;
+  implementationComplexity: string;
+  teamExperience: string;
 }
 
 export interface BackendBriefingResponseDto {

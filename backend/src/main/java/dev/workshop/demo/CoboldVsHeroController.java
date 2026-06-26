@@ -48,28 +48,45 @@ class CoboldVsHeroController {
 		String concern = request.coboldConcern().toLowerCase();
 		String move = request.heroMove().toLowerCase();
 		String mood = request.systemMood().toLowerCase();
-		int score = 0;
+		int baseScore = 0;
 
 		if (concern.contains("prod") || concern.contains("release") || concern.contains("payment") || concern.contains("billing")) {
-			score += 4;
+			baseScore += 4;
 		}
 		if (concern.contains("auth") || concern.contains("customer") || concern.contains("data")) {
-			score += 3;
+			baseScore += 3;
 		}
 		if (concern.contains("batch") || concern.contains("integration") || concern.contains("contract")) {
-			score += 2;
+			baseScore += 2;
 		}
 		if (concern.contains("legacy") || concern.contains("migration") || concern.contains("refactor")) {
-			score += 3;
+			baseScore += 3;
 		}
 		if (mood.contains("panic") || mood.contains("chaos") || mood.contains("tired")) {
-			score += 3;
+			baseScore += 3;
 		}
 		if (move.contains("small") || move.contains("test") || move.contains("review") || move.contains("adapter")) {
-			score -= 2;
+			baseScore -= 2;
 		}
 
-		return Math.max(score, 0);
+		double multiplier = 1.0;
+		multiplier *= switch (request.targetEnvironment().toLowerCase()) {
+			case "production" -> 2.0;
+			case "staging" -> 1.5;
+			default -> 1.0;
+		};
+		multiplier *= switch (request.implementationComplexity().toLowerCase()) {
+			case "high" -> 1.5;
+			case "medium" -> 1.2;
+			default -> 1.0;
+		};
+		multiplier *= switch (request.teamExperience().toLowerCase()) {
+			case "junior" -> 1.2;
+			case "senior" -> 1.1;
+			default -> 1.0;
+		};
+
+		return (int) Math.max(baseScore * multiplier, 0);
 	}
 
 	private String headlineFor(String signal) {
@@ -120,7 +137,10 @@ class CoboldVsHeroController {
 	record BriefingRequest(
 			@NotBlank String coboldConcern,
 			@NotBlank String heroMove,
-			@NotBlank String systemMood) {
+			@NotBlank String systemMood,
+			@NotBlank String targetEnvironment,
+			@NotBlank String implementationComplexity,
+			@NotBlank String teamExperience) {
 	}
 
 	record BriefingResponse(
