@@ -35,7 +35,7 @@ interface SystemStatusResponse {
 })
 export class App implements OnInit {
   private readonly http = inject(HttpClient);
-  private readonly bffBaseUrl = new URLSearchParams(window.location.search).get('bffBaseUrl') ?? 'http://localhost:3000';
+  private readonly bffBaseUrl = new URLSearchParams(window.location.search).get('bffBaseUrl') ?? '';
 
   coboldConcern = 'The billing retry job owns customer invoices and runs during release night.';
   heroMove = 'Add one small Java endpoint and one Angular panel with targeted tests.';
@@ -71,14 +71,14 @@ export class App implements OnInit {
     this.statusError.set('');
 
     this.http
-      .get<SystemStatusResponse>(`${this.bffBaseUrl}/api/cobold-vs-hero/status`)
+      .get<SystemStatusResponse>(this.apiUrl('/api/cobold-vs-hero/status'))
       .subscribe({
         next: (systemStatus) => {
           this.systemStatus.set(systemStatus);
           this.statusLoading.set(false);
         },
         error: () => {
-          this.statusError.set('The BFF status endpoint is not reachable on port 3000.');
+          this.statusError.set('The BFF status endpoint is not reachable.');
           this.statusLoading.set(false);
         },
       });
@@ -94,7 +94,7 @@ export class App implements OnInit {
     this.error.set('');
 
     this.http
-      .post<BriefingResponse>(`${this.bffBaseUrl}/api/cobold-vs-hero/briefing`, {
+      .post<BriefingResponse>(this.apiUrl('/api/cobold-vs-hero/briefing'), {
         coboldConcern: this.coboldConcern,
         heroMove: this.heroMove,
         systemMood: this.systemMood,
@@ -108,10 +108,14 @@ export class App implements OnInit {
           this.loading.set(false);
         },
         error: () => {
-          this.error.set('The briefing flow is not reachable. Start the BFF on port 3000 and backend on port 8080.');
+          this.error.set('The briefing flow is not reachable. Start the BFF and backend.');
           this.loading.set(false);
         },
       });
+  }
+
+  private apiUrl(path: string): string {
+    return `${this.bffBaseUrl.replace(/\/$/, '')}${path}`;
   }
 
   statusFor(signal: string): string {

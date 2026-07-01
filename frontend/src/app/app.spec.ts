@@ -17,7 +17,7 @@ describe('App', () => {
 
   function flushStatus(): void {
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('http://localhost:3000/api/cobold-vs-hero/status').flush({
+    http.expectOne('/api/cobold-vs-hero/status').flush({
       checkedAt: '2026-06-18T20:00:00.000Z',
       services: [
         {

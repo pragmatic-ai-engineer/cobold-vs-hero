@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cobold-vs-hero.fullname" . }}-bff
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+spec:
+  replicas: {{ .Values.bff.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "cobold-vs-hero.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: bff
+  template:
+    metadata:
+      labels:
+        {{- include "cobold-vs-hero.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: bff
+    spec:
+      containers:
+        - name: bff
+          image: {{ include "cobold-vs-hero.image" (dict "root" . "image" .Values.bff.image) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          env:
+            - name: PORT
+              value: "3000"
+            - name: BACKEND_BASE_URL
+              value: http://{{ include "cobold-vs-hero.fullname" . }}-backend:8080
+          ports:
+            - name: http
+              containerPort: 3000
+          resources:
+            {{- toYaml .Values.resources.bff | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cobold-vs-hero.fullname" . }}-bff
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "cobold-vs-hero.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: bff
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http

@@ -1,0 +1,44 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "cobold-vs-hero.fullname" . }}
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    {{- if .host }}
+    - host: {{ .host | quote }}
+      http:
+    {{- else }}
+    - http:
+    {{- end }}
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "cobold-vs-hero.fullname" $ }}-bff
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "cobold-vs-hero.fullname" $ }}-frontend
+                port:
+                  name: http
+    {{- end }}
+{{- end }}

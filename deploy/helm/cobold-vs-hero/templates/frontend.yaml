@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cobold-vs-hero.fullname" . }}-frontend
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "cobold-vs-hero.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "cobold-vs-hero.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: {{ include "cobold-vs-hero.image" (dict "root" . "image" .Values.frontend.image) | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          env:
+            - name: BFF_PROXY_URL
+              value: http://{{ include "cobold-vs-hero.fullname" . }}-bff:3000
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            {{- toYaml .Values.resources.frontend | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cobold-vs-hero.fullname" . }}-frontend
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "cobold-vs-hero.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

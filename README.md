@@ -69,6 +69,44 @@ mise run fe:start
 
 Open `http://localhost:4200`.
 
+The Angular dev server proxies `/api` to the BFF on `http://localhost:3000`,
+which keeps local development aligned with the deployed ingress shape.
+
+## Container Images
+
+Build deployable images from the repo root:
+
+```bash
+docker build --platform linux/amd64 -t cobold-vs-hero-backend:local backend
+docker build --platform linux/amd64 -t cobold-vs-hero-bff:local bff
+docker build --platform linux/amd64 -t cobold-vs-hero-frontend:local frontend
+```
+
+The frontend uses relative `/api` calls. In Kubernetes, ingress routes `/api` to
+the BFF. The frontend nginx image also has a fallback `/api` proxy controlled by
+`BFF_PROXY_URL`.
+
+## Helm
+
+Render the chart locally:
+
+```bash
+helm template cobold-vs-hero deploy/helm/cobold-vs-hero --namespace cobold
+```
+
+Deploy to the `pai` K3s cluster after pushing images to a registry:
+
+```bash
+export KUBECONFIG=infra/ansible/.generated/kubeconfig-pai
+
+helm upgrade --install cobold-vs-hero deploy/helm/cobold-vs-hero \
+  --namespace cobold \
+  --set global.imageTag=<tag> \
+  --set backend.image.repository=<registry>/cobold-vs-hero-backend \
+  --set bff.image.repository=<registry>/cobold-vs-hero-bff \
+  --set frontend.image.repository=<registry>/cobold-vs-hero-frontend
+```
+
 ## Verify
 
 ```bash

@@ -1,0 +1,52 @@
+global:
+  imageTag: latest
+  imagePullPolicy: IfNotPresent
+
+backend:
+  image:
+    repository: ghcr.io/OWNER/cobold-vs-hero-backend
+    tag: ""
+  replicaCount: 1
+
+bff:
+  image:
+    repository: ghcr.io/OWNER/cobold-vs-hero-bff
+    tag: ""
+  replicaCount: 1
+
+frontend:
+  image:
+    repository: ghcr.io/OWNER/cobold-vs-hero-frontend
+    tag: ""
+  replicaCount: 1
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+  hosts:
+    - host: ""
+  tls: []
+
+resources:
+  backend:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 768Mi
+  bff:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+  frontend:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
