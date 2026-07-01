@@ -164,6 +164,14 @@ developer/manual tester check:
 mise run api:smoke
 ```
 
+With the backend, BFF, and frontend running, the Playwright UI smoke suite gives
+a quick browser-visible check:
+
+```bash
+mise run ui:smoke:install
+mise run ui:smoke
+```
+
 For the heavier DPS-like Python API automation gate:
 
 ```bash

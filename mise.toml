@@ -63,6 +63,25 @@ description = "Run Bruno CLI quick API smoke checks against the running BFF"
 dir = "smoke/api"
 run = "npx --yes --registry=https://registry.npmjs.org @usebruno/cli run --env local --bail"
 
+[tasks."ui:smoke:install"]
+description = "Install Playwright UI smoke dependencies"
+dir = "smoke/ui"
+run = "npm install --registry=https://registry.npmjs.org && npm run install:browsers"
+
+[tasks."ui:smoke"]
+description = "Run quick Playwright UI smoke checks against the running frontend, BFF, and backend"
+dir = "smoke/ui"
+run = "npm test"
+
+[tasks."ui:smoke:headed"]
+description = "Run quick Playwright UI smoke checks in a visible browser"
+dir = "smoke/ui"
+run = "npm run test:headed"
+
+[tasks."smoke:all"]
+description = "Run API and UI smoke checks against the running app stack"
+run = ["mise run api:smoke", "mise run ui:smoke"]
+
 [tasks."api:testautomation"]
 description = "Run DPS-like robust API testautomation against the running BFF"
 run = "PYTHONPATH=testautomation/api uv run --with pytest pytest testautomation/api"

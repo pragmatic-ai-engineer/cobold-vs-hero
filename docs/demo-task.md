@@ -19,8 +19,8 @@ proposed delivery move. The app returns a briefing signal:
 - It has lightweight HLD/LLD artifacts that connect design to implementation.
 - It creates natural review questions without requiring real company repo
   access.
-- It has verifier surfaces: backend tests, BFF build, Angular build, API smoke
-  checks, DPS-like API testautomation, and browser evidence.
+- It has verifier surfaces: backend tests, BFF build, Angular build, API/UI
+  smoke checks, DPS-like API testautomation, and browser evidence.
 
 ## Current API
 
