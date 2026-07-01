@@ -142,14 +142,30 @@ https://cobold.pragmatic-ai.engineer
 ```
 
 Cloudflare DNS is managed through the Terraform stack in
-`infra/terraform/cloudflare`. The intended DNS record is:
+`infra/terraform/cloudflare`. The intended DNS records are:
 
 ```text
 Type: A
 Name: cobold
 Content: <pai public IPv4>
+
+Type: A
+Name: *.cobold
+Content: <pai public IPv4>
+
+Type: A
+Name: *
+Content: <pai public IPv4>
+
 Proxy status: DNS only for direct origin testing, or proxied if Cloudflare TLS is configured
 ```
+
+Preview environments use hosts like
+`pr-42.cobold.pragmatic-ai.engineer`. TLS is provided by a DNS-01 wildcard
+certificate created during the Ansible TLS bootstrap. The certificate covers
+both `*.pragmatic-ai.engineer` and `*.cobold.pragmatic-ai.engineer`; the preview
+workflow copies that wildcard TLS secret into each PR namespace before Helm
+deploys the ingress.
 
 Prepare local Cloudflare values and preview the change:
 

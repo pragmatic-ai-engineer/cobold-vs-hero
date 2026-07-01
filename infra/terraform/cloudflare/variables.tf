@@ -72,3 +72,21 @@ variable "preview_wildcard_record_comment" {
   type        = string
   default     = "Managed by Terraform for cobold-vs-hero pull request previews."
 }
+
+variable "root_wildcard_enabled" {
+  description = "Whether to manage *.<zone_name> for flat app and preview hostnames."
+  type        = bool
+  default     = true
+}
+
+variable "root_wildcard_record_name" {
+  description = "Root wildcard DNS record name inside zone_name."
+  type        = string
+  default     = "*"
+}
+
+variable "root_wildcard_record_comment" {
+  description = "Cloudflare DNS record comment for flat wildcard hostnames."
+  type        = string
+  default     = "Managed by Terraform for pragmatic-ai.engineer wildcard app hostnames."
+}

@@ -365,6 +365,112 @@
       changed_when: false
       tags: tls
 
+    - name: Require Cloudflare API token for wildcard TLS
+      ansible.builtin.assert:
+        that:
+          - cert_manager_cloudflare_api_token | length > 0
+        fail_msg: Set CLOUDFLARE_API_TOKEN before running TLS bootstrap. The token needs Cloudflare Zone DNS Edit access for pragmatic-ai.engineer.
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure cert-manager Cloudflare API token Secret
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: {{ cert_manager_cloudflare_api_token_secret }}
+            namespace: {{ cert_manager_namespace }}
+          type: Opaque
+          stringData:
+            {{ cert_manager_cloudflare_api_token_secret_key }}: {{ cert_manager_cloudflare_api_token | quote }}
+      register: cert_manager_cloudflare_secret_apply
+      changed_when: "'created' in cert_manager_cloudflare_secret_apply.stdout or 'configured' in cert_manager_cloudflare_secret_apply.stdout"
+      no_log: true
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure Let's Encrypt DNS-01 ClusterIssuer
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: cert-manager.io/v1
+          kind: ClusterIssuer
+          metadata:
+            name: {{ cert_manager_dns01_cluster_issuer }}
+          spec:
+            acme:
+              email: {{ cert_manager_acme_email }}
+              server: {{ cert_manager_acme_server }}
+              privateKeySecretRef:
+                name: {{ cert_manager_dns01_cluster_issuer }}-account-key
+              solvers:
+                - selector:
+                    dnsZones:
+                      - {{ cert_manager_wildcard_tls_dns_zone | quote }}
+                  dns01:
+                    cloudflare:
+                      apiTokenSecretRef:
+                        name: {{ cert_manager_cloudflare_api_token_secret }}
+                        key: {{ cert_manager_cloudflare_api_token_secret_key }}
+      register: cert_manager_dns01_issuer_apply
+      changed_when: "'created' in cert_manager_dns01_issuer_apply.stdout or 'configured' in cert_manager_dns01_issuer_apply.stdout"
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Wait for Let's Encrypt DNS-01 ClusterIssuer
+      ansible.builtin.command: kubectl wait --for=condition=Ready clusterissuer/{{ cert_manager_dns01_cluster_issuer }} --timeout=120s
+      changed_when: false
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure pragmatic-ai.engineer wildcard Certificate
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: cert-manager.io/v1
+          kind: Certificate
+          metadata:
+            name: {{ cert_manager_wildcard_tls_certificate }}
+            namespace: {{ cert_manager_wildcard_tls_namespace }}
+          spec:
+            secretName: {{ cert_manager_wildcard_tls_secret }}
+            issuerRef:
+              name: {{ cert_manager_dns01_cluster_issuer }}
+              kind: ClusterIssuer
+            dnsNames:
+          {% for dns_name in cert_manager_wildcard_tls_dns_names %}
+              - {{ dns_name | quote }}
+          {% endfor %}
+      register: cert_manager_wildcard_certificate_apply
+      changed_when: "'created' in cert_manager_wildcard_certificate_apply.stdout or 'configured' in cert_manager_wildcard_certificate_apply.stdout"
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure Traefik default TLSStore
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: traefik.io/v1alpha1
+          kind: TLSStore
+          metadata:
+            name: default
+            namespace: {{ cert_manager_wildcard_tls_namespace }}
+          spec:
+            defaultCertificate:
+              secretName: {{ cert_manager_wildcard_tls_secret }}
+      register: traefik_tlsstore_apply
+      changed_when: "'created' in traefik_tlsstore_apply.stdout or 'configured' in traefik_tlsstore_apply.stdout"
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Wait for pragmatic-ai.engineer wildcard Certificate
+      ansible.builtin.command: kubectl -n {{ cert_manager_wildcard_tls_namespace }} wait --for=condition=Ready certificate/{{ cert_manager_wildcard_tls_certificate }} --timeout=300s
+      changed_when: false
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
     - name: Install Docker for GitHub Actions image builds
       ansible.builtin.apt:
         name:

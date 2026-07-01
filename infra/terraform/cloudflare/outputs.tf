@@ -22,3 +22,13 @@ output "preview_wildcard_record_id" {
   description = "Cloudflare DNS wildcard record ID for pull request previews."
   value       = var.preview_wildcard_enabled ? cloudflare_dns_record.cobold_preview_wildcard[0].id : null
 }
+
+output "root_wildcard_hostname" {
+  description = "Root wildcard hostname for flat app and preview hostnames."
+  value       = var.root_wildcard_enabled ? "${var.root_wildcard_record_name}.${var.zone_name}" : null
+}
+
+output "root_wildcard_record_id" {
+  description = "Cloudflare DNS wildcard record ID for flat app and preview hostnames."
+  value       = var.root_wildcard_enabled ? cloudflare_dns_record.root_wildcard[0].id : null
+}

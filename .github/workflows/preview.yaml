@@ -23,8 +23,10 @@ env:
   RELEASE_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}
   RELEASE_NAMESPACE: cobold-pr-${{ github.event.pull_request.number }}
   APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.pragmatic-ai.engineer
-  CLUSTER_ISSUER: letsencrypt-prod
-  TLS_SECRET_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}-tls
+  WILDCARD_TLS_NAMESPACE: kube-system
+  WILDCARD_TLS_CERTIFICATE: pragmatic-ai-engineer-wildcard
+  WILDCARD_TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
+  TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
   IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/config
 
@@ -96,17 +98,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Copy wildcard TLS secret
+        run: |
+          kubectl create namespace "$RELEASE_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n "$WILDCARD_TLS_NAMESPACE" wait --for=condition=Ready certificate/"$WILDCARD_TLS_CERTIFICATE" --timeout=300s
+
+          TLS_CERT="$(kubectl -n "$WILDCARD_TLS_NAMESPACE" get secret "$WILDCARD_TLS_SECRET_NAME" -o jsonpath='{.data.tls\.crt}')"
+          TLS_KEY="$(kubectl -n "$WILDCARD_TLS_NAMESPACE" get secret "$WILDCARD_TLS_SECRET_NAME" -o jsonpath='{.data.tls\.key}')"
+
+          kubectl -n "$RELEASE_NAMESPACE" apply -f - <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: $TLS_SECRET_NAME
+          type: kubernetes.io/tls
+          data:
+            tls.crt: $TLS_CERT
+            tls.key: $TLS_KEY
+          EOF
+
       - name: Deploy with Helm
         run: |
           helm upgrade --install "$RELEASE_NAME" deploy/helm/cobold-vs-hero \
             --namespace "$RELEASE_NAMESPACE" \
-            --create-namespace \
+            --reset-values \
             --set global.imageTag="$IMAGE_TAG" \
             --set backend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-backend" \
             --set bff.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-bff" \
             --set frontend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-frontend" \
             --set-string ingress.hosts[0].host="$APP_HOST" \
-            --set-string 'ingress.annotations.cert-manager\.io/cluster-issuer'="$CLUSTER_ISSUER" \
+            --set ingress.certManager.enabled=false \
             --set-string 'ingress.tls[0].secretName'="$TLS_SECRET_NAME" \
             --set-string 'ingress.tls[0].hosts[0]'="$APP_HOST"
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s

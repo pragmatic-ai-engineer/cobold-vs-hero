@@ -4,3 +4,6 @@ record_name = "cobold"
 origin_ipv4 = "203.0.113.10"
 proxied     = false
 ttl         = 1
+
+preview_wildcard_enabled = true
+root_wildcard_enabled    = true
