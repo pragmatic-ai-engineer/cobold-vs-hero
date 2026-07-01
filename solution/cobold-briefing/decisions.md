@@ -1,85 +1,76 @@
 # Solution Decisions
 
-## D01 - Review Signal Contract
+## D01 - Review Readiness Matrix As Baseline
 
 Status: Accepted
 
 ### Context
 
-The workshop needs a clean vertical slice that spans backend, BFF, frontend, and
-verification without copying enterprise implementation complexity.
-
-The response must be strong enough for loop engineering. A signal and headline
-alone are not enough because the reason and evidence target would be partly
-hidden in frontend wording.
+The workshop repo should start from a complete vertical slice rather than a
+half-documented intermediate state. The current teaching goal is to show idea
+to deployed, reviewable software with visible evidence.
 
 ### Decision
 
-Make the backend response carry explicit review-signal details:
-
-- `reason`: why the signal was selected.
-- `evidencePrompts`: questions that guide proof collection.
-- `checklist`: concrete review checks tied to the signal.
-
-The BFF maps backend fields into UI-facing names, and the frontend renders the
-mapped result.
+Treat the Review Readiness Matrix as the baseline feature. It supersedes the
+older free-text review-signal-only flow.
 
 ### Consequences
 
-- API smoke can assert behavior without inspecting frontend code.
-- The BFF has a real mapping responsibility.
-- The UI can show evidence prompts without duplicating business reason logic.
-- The loop contract has a measurable target for API, UI, and review evidence.
+- Participants see backend, BFF, frontend, contracts, smoke checks, automation,
+  and deployment operating on one feature shape.
+- The numbered historical workshop branches remain useful as history, but the
+  main repo describes the current baseline.
+- Documentation and tests should prefer matrix language: affected surfaces,
+  provided evidence, missing evidence, stop condition, and review matrix rows.
 
-## D02 - Solution Package Before Implementation
+## D02 - Backend Owns Readiness Rules
 
 Status: Accepted
 
 ### Context
 
-The workshop mirrors a workflow where a solution architect first writes the
-end-to-end plan, then the implementation team expands it into lower-level
-details and contract artifacts.
-
-The previous `delivery-pack/design` folder was too broad and was removed during
-repo cleanup, which also removed the HLD and LLD checks from the visible flow.
+The matrix needs deterministic behavior that can be verified by backend tests,
+API smoke tests, DPS-like automation, and browser evidence.
 
 ### Decision
 
-Use `solution/cobold-briefing/` for pre-implementation solution artifacts:
+The Spring Boot backend owns readiness rule evaluation:
 
-- `hld.md`
-- `lld.md`
-- `decisions.md`
-- `acceptance-and-test-plan.md`
+- derive required evidence from affected surfaces
+- add risk-driven evidence requirements
+- compute missing evidence
+- derive the readiness signal
+- build review matrix rows
+- return stop condition and next action
 
-Keep executable contract artifacts in `contracts/`.
+The BFF maps field names and keeps the UI contract stable. It does not duplicate
+readiness rules.
 
 ### Consequences
 
-- `solution/` avoids confusion with frontend/Figma design.
-- HLD/LLD are visible before code changes.
-- Contract artifacts stay close to the swagger-style workflow.
-- CI can check that the solution layer exists.
+- API-level tests can prove the core behavior without inspecting frontend code.
+- The BFF has a meaningful but thin mapping responsibility.
+- UI changes remain focused on rendering and readability.
 
-## D03 - Deterministic Scoring For The Demo
+## D03 - Contracts And Harnesses Are Part Of The Baseline
 
 Status: Accepted
 
 ### Context
 
-The briefing tool is a workshop target. Participants need to understand how a
-request turns into a signal and how tests prove the behavior.
+The workshop needs a real feedback loop, not just an implementation prompt.
 
 ### Decision
 
-Use deterministic keyword and context scoring in the backend instead of model
-output or a persisted risk framework.
+Keep OpenAPI, PlantUML, sample payloads, Bruno smoke, Playwright UI smoke,
+DPS-like API automation, and OneCare-like UI automation aligned with the matrix
+contract.
 
 ### Consequences
 
-- The slice is predictable and testable.
-- Backend tests and API smoke checks can assert exact signals.
-- The demo stays focused on solution-to-contract-to-code flow.
-- This is explicitly not a production-grade risk model.
+- Drift between solution, contract, code, and tests becomes visible quickly.
+- Failed smoke or automation checks can be pasted directly into a repair prompt.
+- The final repo demonstrates target, error, correction, evidence, and human
+  review as one loop.
 

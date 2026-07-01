@@ -1,7 +1,7 @@
-# Cobold Briefing Solution Package
+# Cobold Review Readiness Solution Package
 
 This folder is the pre-implementation solution surface for the Cobold vs Hero
-briefing slice.
+review readiness matrix.
 
 It intentionally uses `solution`, not `design`, because frontend design can mean
 Figma, visual direction, or UI layout. These files describe the technical
@@ -12,7 +12,7 @@ solution that should exist before implementation starts.
 | Artifact | Primary owner | Purpose |
 | --- | --- | --- |
 | `hld.md` | Solution architect | End-to-end intent, boundaries, participants, major flow, risks, and non-goals. |
-| `lld.md` | Implementation-team designer / senior developer | Endpoint details, mapping rules, status behavior, scoring details, validation, and implementation notes. |
+| `lld.md` | Implementation-team designer / senior developer | Endpoint details, evidence rules, mapping rules, validation, and implementation notes. |
 | `decisions.md` | Team | Accepted technical decisions and consequences. |
 | `acceptance-and-test-plan.md` | Team + tester | Acceptance criteria and evidence required before the slice is considered done. |
 
@@ -29,8 +29,8 @@ against:
 
 When the solution changes, update the relevant contract artifacts before or
 alongside implementation. When implementation changes behavior, review whether
-the HLD, LLD, OpenAPI, PlantUML, samples, Bruno smoke checks, and automation
-still describe the same thing.
+the HLD, LLD, OpenAPI, PlantUML, samples, Bruno smoke checks, UI smoke checks,
+and automation still describe the same thing.
 
 ## Workshop Loop
 
@@ -38,6 +38,7 @@ still describe the same thing.
 draft HLD
 -> refine LLD
 -> update contracts
+-> write smoke and automation expectations
 -> implement the smallest vertical slice
 -> run code gates and smoke checks
 -> capture evidence

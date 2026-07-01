@@ -23,9 +23,9 @@ mise run api:smoke
 
 Requests:
 
-1. Truce briefing
-2. Sparring briefing
-3. Shield-wall briefing
+1. Truce readiness
+2. Sparring readiness
+3. Shield-wall readiness
 
 These mirror the heavier DPS-like Python testautomation suite under
 `testautomation/api`.

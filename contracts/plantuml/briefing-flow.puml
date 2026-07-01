@@ -1,20 +1,20 @@
 @startuml
-title Cobold vs Hero briefing flow
+title Review readiness matrix flow
 
 actor "Hero proposer" as hero
+actor "Cobold reviewer" as cobold
 participant "Angular UI" as ui
 participant "NestJS BFF" as bff
 participant "Spring Boot API" as api
-participant "Cobold reviewer" as cobold
 
-hero -> ui: Enter risk concern + proposed move
+hero -> ui: Enter change details\nselect surfaces, evidence, risks
 ui -> bff: POST /api/cobold-vs-hero/briefing
 bff -> api: POST /api/cobold-vs-hero/briefing
-api -> api: classify signal\nbuild reason + evidence prompts
-api --> bff: signal, reason, next action, checklist
+api -> api: derive required evidence\ncompare provided evidence\nbuild matrix
+api --> bff: signal, required/missing evidence,\nstop condition, next action, matrix
 bff -> bff: map backend contract to UI DTO
-bff --> ui: UI briefing response
-ui -> cobold: review signal, reason, evidence prompts
-cobold --> hero: accept, sharpen, or split the slice
+bff --> ui: UI readiness response
+ui -> cobold: review matrix + evidence gaps
+cobold --> hero: start, sharpen, or split the slice
 
 @enduml

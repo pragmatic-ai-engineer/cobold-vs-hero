@@ -5,9 +5,10 @@ from outside the app with richer checks than the Bruno smoke collection.
 
 Coverage:
 
-- representative `truce`, `sparring`, and `shield-wall` requests
+- representative `truce`, `sparring`, and `shield-wall` readiness requests
 - response signal
-- reason and evidence prompts
+- required evidence and missing evidence
+- review matrix rows
 
 Run it after backend and BFF are running:
 

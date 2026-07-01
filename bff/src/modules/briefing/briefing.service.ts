@@ -27,13 +27,13 @@ export class BriefingService {
     const backendResponse = (await response.json()) as BackendBriefingResponseDto;
 
     return {
-      checklist: backendResponse.checklist,
-      evidencePrompts: backendResponse.evidencePrompts,
       headline: backendResponse.headline,
+      missingEvidence: backendResponse.missingEvidence,
       nextAction: backendResponse.heroNextStep,
-      reason: backendResponse.reason,
-      reviewerNote: backendResponse.coboldWisdom,
+      requiredEvidence: backendResponse.requiredEvidence,
+      reviewMatrix: backendResponse.reviewMatrix,
       signal: backendResponse.signal,
+      stopCondition: backendResponse.stopCondition,
     };
   }
 

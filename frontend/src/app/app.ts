@@ -5,11 +5,19 @@ import { FormsModule } from '@angular/forms';
 interface BriefingResponse {
   signal: string;
   headline: string;
-  reviewerNote: string;
-  reason: string;
+  requiredEvidence: string[];
+  missingEvidence: string[];
+  stopCondition: string;
   nextAction: string;
-  evidencePrompts: string[];
-  checklist: string[];
+  reviewMatrix: ReviewMatrixRow[];
+}
+
+interface ReviewMatrixRow {
+  surface: string;
+  expectedEvidence: string[];
+  providedEvidence: string[];
+  gap: string;
+  nextAction: string;
 }
 
 interface ServiceStatus {
@@ -37,12 +45,34 @@ export class App implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly bffBaseUrl = new URLSearchParams(window.location.search).get('bffBaseUrl') ?? '';
 
-  coboldConcern = 'The billing retry job owns customer invoices and runs during release night.';
-  heroMove = 'Add one small Java endpoint and one Angular panel with targeted tests.';
-  systemMood = 'curious but tired';
-  targetEnvironment = 'dev';
-  implementationComplexity = 'low';
-  teamExperience = 'senior';
+  changeTitle = 'Status panel mapping';
+  changeDescription = 'Add one backend field, one BFF mapper, and one Angular status panel.';
+  affectedSurfaces = ['backend', 'bff', 'frontend'];
+  providedEvidence = ['backend-test', 'hld', 'lld'];
+  riskFlags: string[] = [];
+
+  readonly surfaceOptions = [
+    { value: 'backend', label: 'Backend' },
+    { value: 'bff', label: 'BFF' },
+    { value: 'frontend', label: 'Frontend' },
+    { value: 'contract', label: 'Contract' },
+    { value: 'testing', label: 'Testing' },
+  ];
+  readonly evidenceOptions = [
+    { value: 'backend-test', label: 'Backend test' },
+    { value: 'bruno-smoke', label: 'Bruno smoke' },
+    { value: 'dps-testautomation', label: 'DPS-like automation' },
+    { value: 'browser-screenshot', label: 'Browser screenshot' },
+    { value: 'hld', label: 'HLD' },
+    { value: 'lld', label: 'LLD' },
+  ];
+  readonly riskOptions = [
+    { value: 'production', label: 'Production' },
+    { value: 'customer-data', label: 'Customer data' },
+    { value: 'auth', label: 'Auth' },
+    { value: 'payment', label: 'Payment' },
+    { value: 'unclear-scope', label: 'Unclear scope' },
+  ];
 
   readonly briefing = signal<BriefingResponse | null>(null);
   readonly loading = signal(false);
@@ -52,14 +82,7 @@ export class App implements OnInit {
   readonly statusError = signal('');
 
   isFormValid(): boolean {
-    return (
-      !!this.coboldConcern &&
-      !!this.heroMove &&
-      !!this.systemMood &&
-      !!this.targetEnvironment &&
-      !!this.implementationComplexity &&
-      !!this.teamExperience
-    );
+    return !!this.changeTitle && !!this.changeDescription && this.affectedSurfaces.length > 0;
   }
 
   ngOnInit(): void {
@@ -86,7 +109,7 @@ export class App implements OnInit {
 
   requestBriefing(): void {
     if (!this.isFormValid()) {
-      this.error.set('Please fill in all required fields.');
+      this.error.set('Enter a title, description, and at least one affected surface.');
       return;
     }
 
@@ -95,12 +118,11 @@ export class App implements OnInit {
 
     this.http
       .post<BriefingResponse>(this.apiUrl('/api/cobold-vs-hero/briefing'), {
-        coboldConcern: this.coboldConcern,
-        heroMove: this.heroMove,
-        systemMood: this.systemMood,
-        targetEnvironment: this.targetEnvironment,
-        implementationComplexity: this.implementationComplexity,
-        teamExperience: this.teamExperience,
+        affectedSurfaces: this.affectedSurfaces,
+        changeDescription: this.changeDescription,
+        changeTitle: this.changeTitle,
+        providedEvidence: this.providedEvidence,
+        riskFlags: this.riskFlags,
       })
       .subscribe({
         next: (briefing) => {
@@ -131,5 +153,20 @@ export class App implements OnInit {
 
   serviceLabel(service: ServiceStatus): string {
     return service.service === 'be-java' ? 'BE Java' : 'BFF NestJS';
+  }
+
+  toggleSelection(values: string[], value: string): void {
+    const index = values.indexOf(value);
+
+    if (index >= 0) {
+      values.splice(index, 1);
+      return;
+    }
+
+    values.push(value);
+  }
+
+  hasSelection(values: string[], value: string): boolean {
+    return values.includes(value);
   }
 }

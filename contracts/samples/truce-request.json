@@ -1,5 +1,7 @@
 {
-  "coboldConcern": "one label is confusing in a support screen",
-  "heroMove": "make a small text change and verify with a focused test",
-  "systemMood": "calm and curious"
+  "changeTitle": "Backend label endpoint",
+  "changeDescription": "Add one small backend endpoint and attach the backend unit test.",
+  "affectedSurfaces": ["backend"],
+  "providedEvidence": ["backend-test"],
+  "riskFlags": []
 }

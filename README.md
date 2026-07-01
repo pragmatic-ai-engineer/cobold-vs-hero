@@ -8,8 +8,8 @@ The theme is intentionally light:
 
 - **Cobold reviewer**: a risk-aware adversary that asks what could go wrong.
 - **Hero proposer**: the delivery role proposing a useful change.
-- **Goal**: turn a vague or risky request into a small, reviewable slice with
-  context, verification, and reviewer notes.
+- **Goal**: turn a proposed delivery move into a review readiness matrix with
+  required evidence, missing evidence, stop conditions, and next actions.
 
 ## Structure
 
@@ -22,14 +22,14 @@ demo/
   contracts/           # OpenAPI, PlantUML, sample payloads
   smoke/
     api/               # Bruno API smoke checks for devs/manual testers
-    ui/                # placeholder for quick browser smoke checks
+    ui/                # Playwright browser smoke checks
   testautomation/
     api/               # DPS-like robust Python API automation
     ui/                # OneCare-like robust Python UI automation
   deploy/              # Helm chart for the K3s deployment
   infra/               # Ansible bootstrap and Cloudflare Terraform
   docs/                # workshop task notes
-  shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist
+  ai-runbook/          # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
 ```
 
@@ -44,7 +44,7 @@ solution/cobold-briefing/
 Use it before implementation:
 
 ```text
-HLD -> LLD -> contracts -> code -> smoke checks -> evidence
+HLD -> LLD -> contracts -> smoke checks -> code -> evidence
 ```
 
 `contracts/` stays the swagger-style package: OpenAPI, PlantUML, and sample

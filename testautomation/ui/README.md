@@ -4,6 +4,9 @@ This is the OneCare-like Python browser automation lane. It keeps the
 business-readable scenario, page object layer, step helpers, and test metadata
 together without copying the enterprise framework.
 
+It verifies the review readiness matrix that the API automation already checks:
+signal, missing evidence, and matrix rows.
+
 Layout:
 
 ```text

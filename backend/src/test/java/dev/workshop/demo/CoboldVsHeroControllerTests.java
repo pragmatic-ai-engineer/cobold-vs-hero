@@ -2,6 +2,8 @@ package dev.workshop.demo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 class CoboldVsHeroControllerTests {
@@ -20,55 +22,57 @@ class CoboldVsHeroControllerTests {
 	}
 
 	@Test
-	void returnsTruceForSmallReviewedMove() {
+	void returnsTruceWhenRequiredEvidenceIsCovered() {
 		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
 				new CoboldVsHeroController.BriefingRequest(
-						"one label is confusing in a support screen",
-						"make a small text change and verify with a focused test",
-						"calm and curious",
-						"dev",
-						"low",
-						"senior"));
+						"Backend label endpoint",
+						"Add one small backend endpoint and attach the backend unit test.",
+						List.of("backend"),
+						List.of("backend-test"),
+						List.of()));
 
 		assertThat(response.signal()).isEqualTo("truce");
-		assertThat(response.headline()).contains("review-ready starter slice");
-		assertThat(response.reason()).contains("clear verification path");
-		assertThat(response.evidencePrompts()).isNotEmpty();
+		assertThat(response.requiredEvidence()).containsExactly("backend-test");
+		assertThat(response.missingEvidence()).isEmpty();
+		assertThat(response.reviewMatrix()).first()
+				.extracting(CoboldVsHeroController.ReviewMatrixRow::gap)
+				.isEqualTo("covered");
 	}
 
 	@Test
-	void returnsShieldWallForRiskyProductionPaymentRelease() {
+	void returnsSparringWhenUsefulSliceHasMissingUiAndBffEvidence() {
 		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
 				new CoboldVsHeroController.BriefingRequest(
-						"production payment integration refactor goes to release",
-						"rewrite the flow quickly",
-						"panic",
-						"dev",
-						"low",
-						"senior"));
+						"Status panel mapping",
+						"Add one backend field, one BFF mapper, and one Angular status panel.",
+						List.of("backend", "bff", "frontend"),
+						List.of("backend-test", "hld", "lld"),
+						List.of()));
 
-		assertThat(response.signal()).isEqualTo("shield-wall");
-		assertThat(response.checklist()).first().isEqualTo("split the task");
-		assertThat(response.reason()).contains("smaller slice");
+		assertThat(response.signal()).isEqualTo("sparring");
+		assertThat(response.requiredEvidence()).containsExactly("backend-test", "bruno-smoke", "browser-screenshot", "hld", "lld");
+		assertThat(response.missingEvidence()).containsExactly("bruno-smoke", "browser-screenshot");
+		assertThat(response.heroNextStep()).contains("browser evidence");
 	}
 
 	@Test
-	void returnsShieldWallDueToProductionMultiplier() {
-		// Base score for this would be 4 (prod) - 2 (test) = 2 (truce)
-		// But production multiplier (2.0) and junior multiplier (1.2)
-		// and medium complexity (1.2) makes it 2 * 2 * 1.2 * 1.2 = 5.76 -> 5 (sparring)
-		// Wait, let's make it more extreme to hit shield-wall (7+)
-		// Base score: 4 (prod)
-		// Multiplier: production (2.0) -> 8 (shield-wall)
+	void returnsShieldWallWhenHighRiskWorkMissesRequiredProof() {
 		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
 				new CoboldVsHeroController.BriefingRequest(
-						"prod change",
-						"some move",
-						"calm",
-						"production",
-						"low",
-						"expert"));
+						"Payment retry refactor",
+						"Refactor production payment retry flow and auth callback in one release.",
+						List.of("backend", "bff", "frontend", "contract", "testing"),
+						List.of("hld"),
+						List.of("production", "payment", "auth", "unclear-scope")));
 
 		assertThat(response.signal()).isEqualTo("shield-wall");
+		assertThat(response.missingEvidence()).containsExactly(
+				"backend-test",
+				"bruno-smoke",
+				"browser-screenshot",
+				"dps-testautomation",
+				"lld");
+		assertThat(response.stopCondition()).contains("Split the work");
+		assertThat(response.reviewMatrix()).hasSize(5);
 	}
 }

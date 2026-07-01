@@ -9,15 +9,11 @@ def runtime_status_is_visible(pom: CoboldBriefingPOM) -> None:
     pom.assert_runtime_status_up()
 
 
-def request_sparring_briefing(pom: CoboldBriefingPOM) -> None:
+def request_sparring_readiness_matrix(pom: CoboldBriefingPOM) -> None:
     pom.fill_briefing_form(
         BriefingFormData(
-            cobold_concern="customer status mapping is inconsistent between API and UI",
-            hero_move="add a mapper adapter and review targeted tests",
-            system_mood="tired",
-            target_environment="dev",
-            implementation_complexity="low",
-            team_experience="senior",
+            change_title="Status panel mapping",
+            change_description="Add one backend field, one BFF mapper, and one Angular status panel.",
         )
     )
     pom.request_briefing()
@@ -25,5 +21,9 @@ def request_sparring_briefing(pom: CoboldBriefingPOM) -> None:
 
 def sparring_signal_is_visible(pom: CoboldBriefingPOM) -> None:
     pom.assert_visible_signal("sparring")
-    pom.assert_evidence_prompt_mentions("acceptance criterion")
-    pom.assert_review_note_mentions("customer status mapping")
+
+
+def missing_evidence_is_visible(pom: CoboldBriefingPOM) -> None:
+    pom.assert_missing_evidence_mentions("bruno-smoke")
+    pom.assert_missing_evidence_mentions("browser-screenshot")
+    pom.assert_matrix_mentions("frontend")

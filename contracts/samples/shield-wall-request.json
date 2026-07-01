@@ -1,5 +1,7 @@
 {
-  "coboldConcern": "production payment integration refactor goes to release",
-  "heroMove": "rewrite the flow quickly",
-  "systemMood": "panic"
+  "changeTitle": "Payment retry refactor",
+  "changeDescription": "Refactor production payment retry flow and auth callback in one release.",
+  "affectedSurfaces": ["backend", "bff", "frontend", "contract", "testing"],
+  "providedEvidence": ["hld"],
+  "riskFlags": ["production", "payment", "auth", "unclear-scope"]
 }

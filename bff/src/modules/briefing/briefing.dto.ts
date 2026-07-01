@@ -1,20 +1,27 @@
 export interface BriefingRequestDto {
-  coboldConcern: string;
-  heroMove: string;
-  systemMood: string;
-  targetEnvironment: string;
-  implementationComplexity: string;
-  teamExperience: string;
+  changeTitle: string;
+  changeDescription: string;
+  affectedSurfaces: string[];
+  providedEvidence: string[];
+  riskFlags: string[];
+}
+
+export interface BackendReviewMatrixRowDto {
+  surface: string;
+  expectedEvidence: string[];
+  providedEvidence: string[];
+  gap: string;
+  nextAction: string;
 }
 
 export interface BackendBriefingResponseDto {
   signal: string;
   headline: string;
-  reason: string;
-  coboldWisdom: string;
+  requiredEvidence: string[];
+  missingEvidence: string[];
+  stopCondition: string;
   heroNextStep: string;
-  evidencePrompts: string[];
-  checklist: string[];
+  reviewMatrix: BackendReviewMatrixRowDto[];
 }
 
 export interface BackendStatusResponseDto {
@@ -25,14 +32,22 @@ export interface BackendStatusResponseDto {
   port: number;
 }
 
+export interface ReviewMatrixRowDto {
+  surface: string;
+  expectedEvidence: string[];
+  providedEvidence: string[];
+  gap: string;
+  nextAction: string;
+}
+
 export interface BriefingResponseDto {
   signal: string;
   headline: string;
-  reason: string;
-  reviewerNote: string;
+  requiredEvidence: string[];
+  missingEvidence: string[];
+  stopCondition: string;
   nextAction: string;
-  evidencePrompts: string[];
-  checklist: string[];
+  reviewMatrix: ReviewMatrixRowDto[];
 }
 
 export interface ServiceStatusDto {

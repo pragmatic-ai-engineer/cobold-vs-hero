@@ -1,5 +1,5 @@
 meta {
-  name: 01 Truce briefing
+  name: 01 Truce readiness
   type: http
   seq: 1
 }
@@ -16,17 +16,19 @@ headers {
 
 body:json {
   {
-    "coboldConcern": "one label is confusing in a support screen",
-    "heroMove": "make a small text change and verify with a focused test",
-    "systemMood": "calm and curious",
-    "targetEnvironment": "dev",
-    "implementationComplexity": "low",
-    "teamExperience": "senior"
+    "changeTitle": "Backend label endpoint",
+    "changeDescription": "Add one small backend endpoint and attach the backend unit test.",
+    "affectedSurfaces": ["backend"],
+    "providedEvidence": ["backend-test"],
+    "riskFlags": []
   }
 }
 
 assert {
   res.status: eq 200
   res.body.signal: eq truce
-  res.body.reason: contains clear verification path
+  res.body.requiredEvidence: isNotEmpty
+  res.body.missingEvidence: isEmpty
+  res.body.reviewMatrix: isNotEmpty
+  res.body.reviewMatrix[0].gap: eq covered
 }

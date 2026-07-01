@@ -3,8 +3,8 @@
 Quick Playwright browser checks for developers and manual testers.
 
 This lane is intentionally shallow. It proves that the deployed UI loads, can
-reach the BFF through `/api`, and can render one briefing result. Robust browser
-coverage belongs under `testautomation/ui`.
+reach the BFF through `/api`, and can render one review readiness matrix.
+Robust browser coverage belongs under `testautomation/ui`.
 
 ## Install
 
