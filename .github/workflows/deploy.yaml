@@ -114,6 +114,21 @@ jobs:
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
 
+      - name: Wait for deployed API
+        run: |
+          for attempt in {1..30}; do
+            status="$(curl -skS --max-time 5 "https://$APP_HOST/api/cobold-vs-hero/status" | jq -r '.status // empty' || true)"
+            if [ "$status" = "UP" ]; then
+              exit 0
+            fi
+
+            echo "Deployed API status is ${status:-unavailable}; waiting ($attempt/30)..."
+            sleep 2
+          done
+
+          curl -skS --max-time 5 "https://$APP_HOST/api/cobold-vs-hero/status" || true
+          exit 1
+
       - name: Set up mise
         uses: jdx/mise-action@v3
         with:
