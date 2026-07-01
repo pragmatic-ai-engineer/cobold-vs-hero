@@ -4,5 +4,9 @@ Check rollout status:
 
   kubectl -n {{ .Release.Namespace }} get pods
 
-If using the default no-host ingress, open the server IP once DNS/firewall
-points at this cluster.
+Open the app:
+{{- range .Values.ingress.hosts }}
+{{- if .host }}
+  http://{{ .host }}
+{{- end }}
+{{- end }}

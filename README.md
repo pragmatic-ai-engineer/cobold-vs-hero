@@ -112,6 +112,21 @@ builds and pushes these images to GHCR, then deploys the pushed image tag to the
 local K3s server with Helm. Keep GHCR packages public for the simplest demo
 setup, or configure `global.imagePullSecrets` if you want private images.
 
+The default deployed host is:
+
+```text
+http://cobold.pragmatic-ai.engineer
+```
+
+In Cloudflare DNS, point this host at the `pai` server:
+
+```text
+Type: A
+Name: cobold
+Content: <pai public IPv4>
+Proxy status: DNS only for direct origin testing, or proxied if Cloudflare TLS is configured
+```
+
 ## Verify
 
 ```bash

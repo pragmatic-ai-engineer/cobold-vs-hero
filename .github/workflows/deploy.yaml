@@ -19,6 +19,7 @@ env:
   IMAGE_NAMESPACE: ghcr.io/greg0x
   RELEASE_NAME: cobold-vs-hero
   RELEASE_NAMESPACE: cobold
+  APP_HOST: cobold.pragmatic-ai.engineer
   IMAGE_TAG: ${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/config
 
@@ -93,7 +94,8 @@ jobs:
             --set global.imageTag="$IMAGE_TAG" \
             --set backend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-backend" \
             --set bff.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-bff" \
-            --set frontend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-frontend"
+            --set frontend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-frontend" \
+            --set-string ingress.hosts[0].host="$APP_HOST"
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s

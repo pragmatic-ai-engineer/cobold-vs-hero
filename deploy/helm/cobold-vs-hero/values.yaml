@@ -26,7 +26,7 @@ ingress:
   className: traefik
   annotations: {}
   hosts:
-    - host: ""
+    - host: cobold.pragmatic-ai.engineer
   tls: []
 
 resources:
