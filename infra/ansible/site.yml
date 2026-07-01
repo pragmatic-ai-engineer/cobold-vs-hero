@@ -8,9 +8,11 @@
     - name: Ensure Python is available for Ansible modules
       ansible.builtin.raw: test -e /usr/bin/python3 || (apt-get update && apt-get install -y python3)
       changed_when: false
+      tags: always
 
     - name: Gather facts
       ansible.builtin.setup:
+      tags: always
 
     - name: Require host-specific public IPv4
       ansible.builtin.assert:
@@ -19,6 +21,7 @@
           - public_ipv4 | length > 0
           - public_ipv4 is match('^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$')
         fail_msg: Set public_ipv4 in ignored host_vars/pai/local.yml before running this playbook.
+      tags: always
 
   tasks:
     - name: Set hostname
@@ -303,6 +306,164 @@
         - /opt/pai/apps
         - /opt/pai/backups
         - /opt/pai/state
+
+    - name: Install Docker for GitHub Actions image builds
+      ansible.builtin.apt:
+        name:
+          - acl
+          - docker.io
+        state: present
+        update_cache: true
+      tags: github_runner
+
+    - name: Ensure Docker is enabled and running
+      ansible.builtin.systemd:
+        name: docker
+        enabled: true
+        state: started
+      tags: github_runner
+
+    - name: Ensure GitHub runner user exists
+      ansible.builtin.user:
+        name: "{{ github_runner_user }}"
+        home: "/home/{{ github_runner_user }}"
+        shell: /bin/bash
+        groups:
+          - docker
+        append: true
+        create_home: true
+      tags: github_runner
+
+    - name: Ensure GitHub runner directory exists
+      ansible.builtin.file:
+        path: "{{ github_runner_dir }}"
+        state: directory
+        owner: "{{ github_runner_user }}"
+        group: "{{ github_runner_user }}"
+        mode: "0750"
+      tags: github_runner
+
+    - name: Download GitHub Actions runner
+      ansible.builtin.get_url:
+        url: "https://github.com/actions/runner/releases/download/v{{ github_runner_version }}/actions-runner-linux-{{ github_runner_arch }}-{{ github_runner_version }}.tar.gz"
+        dest: "/tmp/actions-runner-linux-{{ github_runner_arch }}-{{ github_runner_version }}.tar.gz"
+        checksum: "{{ github_runner_checksum }}"
+        mode: "0644"
+      tags: github_runner
+
+    - name: Extract GitHub Actions runner
+      ansible.builtin.unarchive:
+        src: "/tmp/actions-runner-linux-{{ github_runner_arch }}-{{ github_runner_version }}.tar.gz"
+        dest: "{{ github_runner_dir }}"
+        remote_src: true
+        owner: "{{ github_runner_user }}"
+        group: "{{ github_runner_user }}"
+        creates: "{{ github_runner_dir }}/config.sh"
+      tags: github_runner
+
+    - name: Install GitHub Actions runner package dependencies
+      ansible.builtin.command: ./bin/installdependencies.sh
+      args:
+        chdir: "{{ github_runner_dir }}"
+      changed_when: false
+      tags: github_runner
+
+    - name: Check whether GitHub Actions runner is configured
+      ansible.builtin.stat:
+        path: "{{ github_runner_dir }}/.runner"
+      register: github_runner_config
+      tags: github_runner
+
+    - name: Require GitHub runner registration token for first install
+      ansible.builtin.assert:
+        that:
+          - github_runner_registration_token is defined
+          - github_runner_registration_token | length > 0
+        fail_msg: Export GITHUB_RUNNER_REGISTRATION_TOKEN before first runner registration.
+      when: not github_runner_config.stat.exists
+      no_log: true
+      tags: github_runner
+
+    - name: Register GitHub Actions runner
+      ansible.builtin.command: >
+        ./config.sh
+        --url {{ github_runner_repo_url }}
+        --token {{ github_runner_registration_token }}
+        --name {{ github_runner_name }}
+        --labels {{ github_runner_labels | join(',') }}
+        --work _work
+        --unattended
+        --replace
+      args:
+        chdir: "{{ github_runner_dir }}"
+      become_user: "{{ github_runner_user }}"
+      when: not github_runner_config.stat.exists
+      no_log: true
+      tags: github_runner
+
+    - name: Check whether GitHub Actions runner service is installed
+      ansible.builtin.stat:
+        path: "{{ github_runner_dir }}/.service"
+      register: github_runner_service_marker
+      tags: github_runner
+
+    - name: Install GitHub Actions runner systemd service
+      ansible.builtin.command: "./svc.sh install {{ github_runner_user }}"
+      args:
+        chdir: "{{ github_runner_dir }}"
+      when: not github_runner_service_marker.stat.exists
+      tags: github_runner
+
+    - name: Read GitHub Actions runner service name
+      ansible.builtin.slurp:
+        path: "{{ github_runner_dir }}/.service"
+      register: github_runner_service_name_file
+      tags: github_runner
+
+    - name: Ensure GitHub Actions runner service is enabled and running
+      ansible.builtin.systemd:
+        name: "{{ github_runner_service_name_file.content | b64decode | trim }}"
+        enabled: true
+        state: started
+      tags: github_runner
+
+    - name: Ensure needrestart does not restart runner during jobs
+      ansible.builtin.file:
+        path: /etc/needrestart/conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      tags: github_runner
+
+    - name: Configure needrestart runner service override
+      ansible.builtin.copy:
+        dest: /etc/needrestart/conf.d/actions_runner_services.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          $nrconf{override_rc}{qr(^actions\.runner\..+\.service$)} = 0;
+      tags: github_runner
+
+    - name: Ensure GitHub runner kube directory exists
+      ansible.builtin.file:
+        path: "/home/{{ github_runner_user }}/.kube"
+        state: directory
+        owner: "{{ github_runner_user }}"
+        group: "{{ github_runner_user }}"
+        mode: "0700"
+      tags: github_runner
+
+    - name: Copy K3s kubeconfig for GitHub runner
+      ansible.builtin.copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "/home/{{ github_runner_user }}/.kube/config"
+        remote_src: true
+        owner: "{{ github_runner_user }}"
+        group: "{{ github_runner_user }}"
+        mode: "0600"
+      tags: github_runner
 
     - name: Ensure local generated directory exists
       ansible.builtin.file:

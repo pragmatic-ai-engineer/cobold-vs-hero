@@ -107,11 +107,10 @@ helm upgrade --install cobold-vs-hero deploy/helm/cobold-vs-hero \
   --set frontend.image.repository=ghcr.io/greg0x/cobold-vs-hero-frontend
 ```
 
-The `Deploy` GitHub Actions workflow builds and pushes these images to GHCR.
-If repository secrets `PAI_HOST` and `PAI_SSH_PRIVATE_KEY` are set, the workflow
-also deploys the pushed image tag to the `pai` K3s server. Keep GHCR packages
-public for the simplest demo setup, or configure `global.imagePullSecrets` if
-you want private images.
+The `Deploy` GitHub Actions workflow runs on the `pai` self-hosted runner,
+builds and pushes these images to GHCR, then deploys the pushed image tag to the
+local K3s server with Helm. Keep GHCR packages public for the simplest demo
+setup, or configure `global.imagePullSecrets` if you want private images.
 
 ## Verify
 

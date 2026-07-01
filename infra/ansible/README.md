@@ -46,6 +46,33 @@ ansible-playbook -i inventory.yml site.yml
 The runner uses `ansible-playbook` when available and falls back to
 `uvx --from ansible-core ansible-playbook`.
 
+## GitHub Actions Runner
+
+The playbook can install a repo-level self-hosted GitHub Actions runner on
+`pai`. The runner is registered as `pai` and has the labels `self-hosted`,
+`pai`, `k3s`, and `docker`.
+
+For the first registration, create a one-hour registration token:
+
+```bash
+export GITHUB_RUNNER_REGISTRATION_TOKEN="$(
+  gh api \
+    --method POST \
+    repos/greg0x/cobold-vs-hero/actions/runners/registration-token \
+    --jq .token
+)"
+```
+
+Then apply only the runner-related tasks:
+
+```bash
+./scripts/run.sh -i inventory.yml site.yml --tags github_runner
+```
+
+After the runner is registered once, the token is not needed for normal
+playbook runs. The runner runs as the `github-runner` user, has Docker access
+for image builds, and has a local K3s kubeconfig for Helm deploys.
+
 ## What It Installs
 
 - Ubuntu base packages for operations and repo work.
@@ -55,6 +82,8 @@ The runner uses `ansible-playbook` when available and falls back to
 - `mise`, so repo-local `mise.toml` files can install Java, Node, and `uv`.
 - K3s single-node Kubernetes with bundled Traefik and local-path storage.
 - Namespaces for `cobold`, `centaur`, `data`, and `ci`.
+- Optional repo-level GitHub Actions runner for building images and deploying
+  locally on `pai`.
 
 The playbook fetches a local kubeconfig to:
 
