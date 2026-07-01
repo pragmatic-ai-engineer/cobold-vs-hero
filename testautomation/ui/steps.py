@@ -1,4 +1,4 @@
-from cobold_qa.ui.page_objects import BriefingFormData, CoboldBriefingPOM
+from page_objects import BriefingFormData, CoboldBriefingPOM
 
 
 def navigate_to_cobold_briefing(pom: CoboldBriefingPOM) -> None:

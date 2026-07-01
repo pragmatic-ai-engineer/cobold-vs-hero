@@ -19,8 +19,12 @@ demo/
   bff/                 # NestJS BFF, TypeScript
   frontend/            # Angular app
   contracts/           # OpenAPI, PlantUML, sample payloads
-  manual-api/          # Bruno collection for local/manual API smoke checks
-  testautomation/      # DPS-lite API + OneCare-lite UI testautomation
+  smoke/
+    api/               # Bruno API smoke checks for devs/manual testers
+    ui/                # placeholder for quick browser smoke checks
+  testautomation/
+    api/               # DPS-like robust Python API automation
+    ui/                # OneCare-like robust Python UI automation
   deploy/              # Helm chart for the K3s deployment
   infra/               # Ansible bootstrap and Cloudflare Terraform
   docs/                # workshop task notes
@@ -153,20 +157,20 @@ mise run fe:build
 After frontend and BFF dependencies are installed, `mise run verify` runs the
 offline verification gates.
 
-With the backend and BFF running, Bruno CLI gives a quick developer/manual
-tester smoke check:
+With the backend and BFF running, the Bruno API smoke collection gives a quick
+developer/manual tester check:
 
 ```bash
 mise run api:smoke
 ```
 
-For the heavier DPS-lite Python automation gate:
+For the heavier DPS-like Python API automation gate:
 
 ```bash
 mise run api:testautomation
 ```
 
-For the toy OneCare-style browser UI automation gate, install the Playwright
+For the heavier OneCare-like browser UI automation gate, install the Playwright
 browser once, then run the UI testautomation while the backend, BFF, and
 frontend are running:
 

@@ -1,4 +1,4 @@
-from cobold_qa.ui.poms import briefing_pom
+from poms import briefing_pom
 
 
 class TestCaseCfg:

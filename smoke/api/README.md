@@ -3,7 +3,7 @@
 Open this folder in Bruno:
 
 ```text
-manual-api/cobold-local
+smoke/api
 ```
 
 Use the `local` environment.
@@ -27,5 +27,5 @@ Requests:
 2. Sparring briefing
 3. Shield-wall briefing
 
-These mirror the heavier DPS-lite Python testautomation suite under
-`testautomation/`.
+These mirror the heavier DPS-like Python testautomation suite under
+`testautomation/api`.

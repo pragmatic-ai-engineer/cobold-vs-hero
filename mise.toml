@@ -60,20 +60,24 @@ run = "test -s docs/demo-task.md && test -s shared-ai-runbook/README.md && test 
 
 [tasks."api:smoke"]
 description = "Run Bruno CLI quick API smoke checks against the running BFF"
-dir = "manual-api/cobold-local"
+dir = "smoke/api"
 run = "npx --yes --registry=https://registry.npmjs.org @usebruno/cli run --env local --bail"
 
 [tasks."api:testautomation"]
-description = "Run DPS-lite heavyweight API testautomation against the running BFF"
-run = "PYTHONPATH=testautomation uv run --with pytest pytest testautomation/tests/test_briefing_api.py"
+description = "Run DPS-like robust API testautomation against the running BFF"
+run = "PYTHONPATH=testautomation/api uv run --with pytest pytest testautomation/api"
 
 [tasks."ui:install-browsers"]
 description = "Install the Chromium browser used by Playwright UI testautomation"
 run = "uv run --with playwright python -m playwright install chromium"
 
 [tasks."ui:testautomation"]
-description = "Run OneCare-lite browser UI testautomation against the running frontend, BFF, and backend"
-run = "PYTHONPATH=testautomation uv run --with pytest --with playwright pytest testautomation/tests/test_briefing_ui.py"
+description = "Run OneCare-like browser UI testautomation against the running frontend, BFF, and backend"
+run = "PYTHONPATH=testautomation/ui uv run --with pytest --with playwright pytest testautomation/ui"
+
+[tasks."testautomation:all"]
+description = "Run robust API and UI testautomation against the running app stack"
+run = ["mise run api:testautomation", "mise run ui:testautomation"]
 
 [tasks.verify]
 description = "Run the demo verification gates"

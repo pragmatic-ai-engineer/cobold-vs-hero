@@ -1,4 +1,4 @@
-from cobold_qa.client import BriefingRequest, CoboldBriefingClient
+from client import BriefingRequest, CoboldBriefingClient
 
 
 def test_status_reports_bff_and_backend_up() -> None:

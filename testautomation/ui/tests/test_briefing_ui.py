@@ -8,8 +8,8 @@ pytest.importorskip("playwright.sync_api", reason="UI automation needs the playw
 
 from playwright.sync_api import Error as PlaywrightError, sync_playwright  # noqa: E402
 
-from cobold_qa.ui.page_objects import CoboldBriefingPOM  # noqa: E402
-from cobold_qa.ui.steps import (  # noqa: E402
+from page_objects import CoboldBriefingPOM  # noqa: E402
+from steps import (  # noqa: E402
     navigate_to_cobold_briefing,
     request_sparring_briefing,
     runtime_status_is_visible,
