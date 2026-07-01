@@ -392,15 +392,6 @@
         create_home: true
       tags: github_runner
 
-    - name: Ensure GitHub runner directory exists
-      ansible.builtin.file:
-        path: "{{ github_runner_dir }}"
-        state: directory
-        owner: "{{ github_runner_user }}"
-        group: "{{ github_runner_user }}"
-        mode: "0750"
-      tags: github_runner
-
     - name: Download GitHub Actions runner
       ansible.builtin.get_url:
         url: "https://github.com/actions/runner/releases/download/v{{ github_runner_version }}/actions-runner-linux-{{ github_runner_arch }}-{{ github_runner_version }}.tar.gz"
@@ -409,80 +400,19 @@
         mode: "0644"
       tags: github_runner
 
-    - name: Extract GitHub Actions runner
-      ansible.builtin.unarchive:
-        src: "/tmp/actions-runner-linux-{{ github_runner_arch }}-{{ github_runner_version }}.tar.gz"
-        dest: "{{ github_runner_dir }}"
-        remote_src: true
-        owner: "{{ github_runner_user }}"
-        group: "{{ github_runner_user }}"
-        creates: "{{ github_runner_dir }}/config.sh"
-      tags: github_runner
-
-    - name: Install GitHub Actions runner package dependencies
-      ansible.builtin.command: ./bin/installdependencies.sh
-      args:
-        chdir: "{{ github_runner_dir }}"
-      changed_when: false
-      tags: github_runner
-
-    - name: Check whether GitHub Actions runner is configured
-      ansible.builtin.stat:
-        path: "{{ github_runner_dir }}/.runner"
-      register: github_runner_config
-      tags: github_runner
-
-    - name: Require GitHub runner registration token for first install
-      ansible.builtin.assert:
-        that:
-          - github_runner_registration_token is defined
-          - github_runner_registration_token | length > 0
-        fail_msg: Export GITHUB_RUNNER_REGISTRATION_TOKEN before first runner registration.
-      when: not github_runner_config.stat.exists
-      no_log: true
-      tags: github_runner
-
-    - name: Register GitHub Actions runner
-      ansible.builtin.command: >
-        ./config.sh
-        --url {{ github_runner_repo_url }}
-        --token {{ github_runner_registration_token }}
-        --name {{ github_runner_name }}
-        --labels {{ github_runner_labels | join(',') }}
-        --work _work
-        --unattended
-        --replace
-      args:
-        chdir: "{{ github_runner_dir }}"
-      become_user: "{{ github_runner_user }}"
-      when: not github_runner_config.stat.exists
-      no_log: true
-      tags: github_runner
-
-    - name: Check whether GitHub Actions runner service is installed
-      ansible.builtin.stat:
-        path: "{{ github_runner_dir }}/.service"
-      register: github_runner_service_marker
-      tags: github_runner
-
-    - name: Install GitHub Actions runner systemd service
-      ansible.builtin.command: "./svc.sh install {{ github_runner_user }}"
-      args:
-        chdir: "{{ github_runner_dir }}"
-      when: not github_runner_service_marker.stat.exists
-      tags: github_runner
-
-    - name: Read GitHub Actions runner service name
-      ansible.builtin.slurp:
-        path: "{{ github_runner_dir }}/.service"
-      register: github_runner_service_name_file
-      tags: github_runner
-
-    - name: Ensure GitHub Actions runner service is enabled and running
-      ansible.builtin.systemd:
-        name: "{{ github_runner_service_name_file.content | b64decode | trim }}"
-        enabled: true
-        state: started
+    - name: Configure GitHub Actions runner instances
+      ansible.builtin.include_tasks:
+        file: tasks/github-runner-instance.yml
+        apply:
+          tags: github_runner
+      loop: "{{ range(1, github_runner_count + 1) | list }}"
+      loop_control:
+        loop_var: github_runner_instance_index
+      vars:
+        github_runner_instance_name: >-
+          {{ github_runner_name if github_runner_instance_index == 1 else github_runner_name ~ '-' ~ (github_runner_instance_index | string) }}
+        github_runner_instance_dir: >-
+          {{ github_runner_dir if github_runner_instance_index == 1 else github_runner_dir ~ '-' ~ (github_runner_instance_index | string) }}
       tags: github_runner
 
     - name: Ensure needrestart does not restart runner during jobs
