@@ -1,0 +1,136 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ghcr.io/greg0x
+  RELEASE_NAME: cobold-vs-hero
+  RELEASE_NAMESPACE: cobold
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  build:
+    name: Build and push ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: backend
+            context: backend
+            image: cobold-vs-hero-backend
+          - service: bff
+            context: bff
+            image: cobold-vs-hero-bff
+          - service: frontend
+            context: frontend
+            image: cobold-vs-hero-frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:main
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  deploy:
+    name: Deploy to pai
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    env:
+      PAI_HOST: ${{ secrets.PAI_HOST }}
+      PAI_SSH_PRIVATE_KEY: ${{ secrets.PAI_SSH_PRIVATE_KEY }}
+      PAI_USER: ${{ secrets.PAI_USER || 'root' }}
+      PAI_SSH_PORT: ${{ secrets.PAI_SSH_PORT || '22' }}
+
+    steps:
+      - name: Check deploy secrets
+        id: deploy_secrets
+        run: |
+          if [ -n "$PAI_HOST" ] && [ -n "$PAI_SSH_PRIVATE_KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "PAI_HOST and/or PAI_SSH_PRIVATE_KEY are not set; skipping deploy."
+          fi
+
+      - name: Checkout
+        if: steps.deploy_secrets.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        if: steps.deploy_secrets.outputs.enabled == 'true'
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$PAI_SSH_PRIVATE_KEY" > ~/.ssh/pai_deploy_key
+          chmod 600 ~/.ssh/pai_deploy_key
+          ssh-keyscan -p "$PAI_SSH_PORT" "$PAI_HOST" >> ~/.ssh/known_hosts
+
+      - name: Package Helm chart
+        if: steps.deploy_secrets.outputs.enabled == 'true'
+        run: |
+          tar -czf /tmp/cobold-vs-hero-chart.tgz -C deploy/helm cobold-vs-hero
+
+      - name: Copy Helm chart to pai
+        if: steps.deploy_secrets.outputs.enabled == 'true'
+        run: |
+          scp -i ~/.ssh/pai_deploy_key -P "$PAI_SSH_PORT" /tmp/cobold-vs-hero-chart.tgz \
+            "$PAI_USER@$PAI_HOST:/tmp/cobold-vs-hero-chart.tgz"
+
+      - name: Deploy with Helm on pai
+        if: steps.deploy_secrets.outputs.enabled == 'true'
+        run: |
+          ssh -i ~/.ssh/pai_deploy_key -p "$PAI_SSH_PORT" "$PAI_USER@$PAI_HOST" \
+            IMAGE_TAG="$IMAGE_TAG" IMAGE_NAMESPACE="$IMAGE_NAMESPACE" RELEASE_NAME="$RELEASE_NAME" RELEASE_NAMESPACE="$RELEASE_NAMESPACE" \
+            'set -eu
+             rm -rf /tmp/cobold-vs-hero-chart
+             mkdir -p /tmp/cobold-vs-hero-chart
+             tar -xzf /tmp/cobold-vs-hero-chart.tgz -C /tmp/cobold-vs-hero-chart
+             helm upgrade --install "$RELEASE_NAME" /tmp/cobold-vs-hero-chart/cobold-vs-hero \
+               --namespace "$RELEASE_NAMESPACE" \
+               --create-namespace \
+               --set global.imageTag="$IMAGE_TAG" \
+               --set backend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-backend" \
+               --set bff.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-bff" \
+               --set frontend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-frontend"
+             kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
+             kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
+             kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s'

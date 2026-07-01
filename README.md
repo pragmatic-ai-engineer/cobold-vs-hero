@@ -102,10 +102,16 @@ export KUBECONFIG=infra/ansible/.generated/kubeconfig-pai
 helm upgrade --install cobold-vs-hero deploy/helm/cobold-vs-hero \
   --namespace cobold \
   --set global.imageTag=<tag> \
-  --set backend.image.repository=<registry>/cobold-vs-hero-backend \
-  --set bff.image.repository=<registry>/cobold-vs-hero-bff \
-  --set frontend.image.repository=<registry>/cobold-vs-hero-frontend
+  --set backend.image.repository=ghcr.io/greg0x/cobold-vs-hero-backend \
+  --set bff.image.repository=ghcr.io/greg0x/cobold-vs-hero-bff \
+  --set frontend.image.repository=ghcr.io/greg0x/cobold-vs-hero-frontend
 ```
+
+The `Deploy` GitHub Actions workflow builds and pushes these images to GHCR.
+If repository secrets `PAI_HOST` and `PAI_SSH_PRIVATE_KEY` are set, the workflow
+also deploys the pushed image tag to the `pai` K3s server. Keep GHCR packages
+public for the simplest demo setup, or configure `global.imagePullSecrets` if
+you want private images.
 
 ## Verify
 

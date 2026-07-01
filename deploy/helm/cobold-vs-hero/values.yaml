@@ -1,22 +1,23 @@
 global:
   imageTag: latest
   imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
 
 backend:
   image:
-    repository: ghcr.io/OWNER/cobold-vs-hero-backend
+    repository: ghcr.io/greg0x/cobold-vs-hero-backend
     tag: ""
   replicaCount: 1
 
 bff:
   image:
-    repository: ghcr.io/OWNER/cobold-vs-hero-bff
+    repository: ghcr.io/greg0x/cobold-vs-hero-bff
     tag: ""
   replicaCount: 1
 
 frontend:
   image:
-    repository: ghcr.io/OWNER/cobold-vs-hero-frontend
+    repository: ghcr.io/greg0x/cobold-vs-hero-frontend
     tag: ""
   replicaCount: 1
 

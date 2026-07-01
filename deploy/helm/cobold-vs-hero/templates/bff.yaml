@@ -17,6 +17,10 @@ spec:
         {{- include "cobold-vs-hero.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: bff
     spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: bff
           image: {{ include "cobold-vs-hero.image" (dict "root" . "image" .Values.bff.image) | quote }}
