@@ -7,6 +7,6 @@ Check rollout status:
 Open the app:
 {{- range .Values.ingress.hosts }}
 {{- if .host }}
-  http://{{ .host }}
+  https://{{ .host }}
 {{- end }}
 {{- end }}

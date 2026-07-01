@@ -307,6 +307,64 @@
         - /opt/pai/backups
         - /opt/pai/state
 
+    - name: Install cert-manager with CRDs
+      ansible.builtin.command: >
+        helm upgrade --install cert-manager cert-manager
+        --repo https://charts.jetstack.io
+        --namespace {{ cert_manager_namespace }}
+        --create-namespace
+        --version {{ cert_manager_chart_version }}
+        --set crds.enabled=true
+        --set crds.keep=true
+        --wait
+        --timeout 5m
+      register: cert_manager_install
+      changed_when: "'has been installed' in cert_manager_install.stdout or 'has been upgraded' in cert_manager_install.stdout"
+      tags: tls
+
+    - name: Wait for cert-manager deployments
+      ansible.builtin.command: kubectl -n {{ cert_manager_namespace }} rollout status deploy/{{ item }} --timeout=180s
+      changed_when: false
+      loop:
+        - cert-manager
+        - cert-manager-cainjector
+        - cert-manager-webhook
+      tags: tls
+
+    - name: Configure Let's Encrypt ClusterIssuer
+      ansible.builtin.copy:
+        dest: /tmp/pai-letsencrypt-clusterissuer.yaml
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          apiVersion: cert-manager.io/v1
+          kind: ClusterIssuer
+          metadata:
+            name: {{ cert_manager_cluster_issuer }}
+          spec:
+            acme:
+              email: {{ cert_manager_acme_email }}
+              server: {{ cert_manager_acme_server }}
+              privateKeySecretRef:
+                name: {{ cert_manager_cluster_issuer }}-account-key
+              solvers:
+                - http01:
+                    ingress:
+                      ingressClassName: {{ cert_manager_http01_ingress_class }}
+      tags: tls
+
+    - name: Apply Let's Encrypt ClusterIssuer
+      ansible.builtin.command: kubectl apply -f /tmp/pai-letsencrypt-clusterissuer.yaml
+      register: cert_manager_issuer_apply
+      changed_when: "'created' in cert_manager_issuer_apply.stdout or 'configured' in cert_manager_issuer_apply.stdout"
+      tags: tls
+
+    - name: Wait for Let's Encrypt ClusterIssuer
+      ansible.builtin.command: kubectl wait --for=condition=Ready clusterissuer/{{ cert_manager_cluster_issuer }} --timeout=120s
+      changed_when: false
+      tags: tls
+
     - name: Install Docker for GitHub Actions image builds
       ansible.builtin.apt:
         name:

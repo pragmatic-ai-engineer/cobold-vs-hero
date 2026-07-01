@@ -55,6 +55,13 @@ github_runner_labels:
   - docker
 github_runner_registration_token: "{{ lookup('env', 'GITHUB_RUNNER_REGISTRATION_TOKEN') }}"
 
+cert_manager_namespace: cert-manager
+cert_manager_chart_version: v1.20.3
+cert_manager_cluster_issuer: letsencrypt-prod
+cert_manager_acme_email: admin@pragmatic-ai.engineer
+cert_manager_acme_server: https://acme-v02.api.letsencrypt.org/directory
+cert_manager_http01_ingress_class: traefik
+
 helm_apt_key_id: DDF78C3E6EBB2D2CC223C95C62BA89D07698DBC6
 helm_apt_key_url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
 helm_apt_keyring: /usr/share/keyrings/helm.gpg

@@ -24,10 +24,14 @@ frontend:
 ingress:
   enabled: true
   className: traefik
-  annotations: {}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
   hosts:
     - host: cobold.pragmatic-ai.engineer
-  tls: []
+  tls:
+    - secretName: cobold-pragmatic-ai-engineer-tls
+      hosts:
+        - cobold.pragmatic-ai.engineer
 
 resources:
   backend:
