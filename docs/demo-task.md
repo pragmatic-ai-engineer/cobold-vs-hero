@@ -16,7 +16,8 @@ proposed delivery move. The app returns a briefing signal:
 - It is Java + NestJS + Angular, matching the target shop shape.
 - It is domain-light and funny enough to be memorable.
 - It has a clear backend/API/frontend split.
-- It has lightweight HLD/LLD artifacts that connect design to implementation.
+- It has lightweight solution HLD/LLD artifacts that connect planning to
+  implementation.
 - It creates natural review questions without requiring real company repo
   access.
 - It has verifier surfaces: backend tests, BFF build, Angular build, API/UI
@@ -32,7 +33,10 @@ Request:
 {
   "coboldConcern": "production payment integration refactor goes to release",
   "heroMove": "rewrite the flow quickly",
-  "systemMood": "panic"
+  "systemMood": "panic",
+  "targetEnvironment": "production",
+  "implementationComplexity": "high",
+  "teamExperience": "junior"
 }
 ```
 

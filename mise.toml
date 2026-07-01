@@ -55,8 +55,8 @@ dir = "bff"
 run = "npm run build"
 
 [tasks."contracts:check"]
-description = "Check that workshop contract and runbook artifacts exist"
-run = "test -s docs/demo-task.md && test -s shared-ai-runbook/README.md && test -s contracts/openapi/cobold-briefing-api.yaml && test -s contracts/plantuml/briefing-flow.puml && test -s contracts/plantuml/briefing-state.puml && test -s contracts/samples/status-response.json && test -s contracts/samples/truce-request.json && test -s contracts/samples/truce-response.json && test -s contracts/samples/sparring-request.json && test -s contracts/samples/shield-wall-request.json"
+description = "Check that workshop solution, contract, and runbook artifacts exist"
+run = "test -s docs/demo-task.md && test -s shared-ai-runbook/README.md && test -s solution/cobold-briefing/README.md && test -s solution/cobold-briefing/hld.md && test -s solution/cobold-briefing/lld.md && test -s solution/cobold-briefing/decisions.md && test -s solution/cobold-briefing/acceptance-and-test-plan.md && test -s contracts/openapi/cobold-briefing-api.yaml && test -s contracts/plantuml/briefing-flow.puml && test -s contracts/plantuml/briefing-state.puml && test -s contracts/samples/status-response.json && test -s contracts/samples/truce-request.json && test -s contracts/samples/truce-response.json && test -s contracts/samples/sparring-request.json && test -s contracts/samples/shield-wall-request.json"
 
 [tasks."api:smoke"]
 description = "Run Bruno CLI quick API smoke checks against the running BFF"

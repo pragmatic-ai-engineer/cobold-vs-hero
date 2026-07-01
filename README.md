@@ -18,6 +18,7 @@ demo/
   backend/             # Spring Boot API, Java 17, Gradle
   bff/                 # NestJS BFF, TypeScript
   frontend/            # Angular app
+  solution/            # HLD, LLD, decisions, acceptance plan
   contracts/           # OpenAPI, PlantUML, sample payloads
   smoke/
     api/               # Bruno API smoke checks for devs/manual testers
@@ -31,6 +32,23 @@ demo/
   shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
 ```
+
+## Solution Flow
+
+The pre-implementation solution package lives in:
+
+```text
+solution/cobold-briefing/
+```
+
+Use it before implementation:
+
+```text
+HLD -> LLD -> contracts -> code -> smoke checks -> evidence
+```
+
+`contracts/` stays the swagger-style package: OpenAPI, PlantUML, and sample
+payloads that implementation and tests execute against.
 
 ## Setup
 
