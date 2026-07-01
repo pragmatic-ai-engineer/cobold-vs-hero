@@ -118,7 +118,8 @@ The default deployed host is:
 http://cobold.pragmatic-ai.engineer
 ```
 
-In Cloudflare DNS, point this host at the `pai` server:
+Cloudflare DNS is managed through the Terraform stack in
+`infra/terraform/cloudflare`. The intended DNS record is:
 
 ```text
 Type: A
@@ -126,6 +127,18 @@ Name: cobold
 Content: <pai public IPv4>
 Proxy status: DNS only for direct origin testing, or proxied if Cloudflare TLS is configured
 ```
+
+Prepare local Cloudflare values and preview the change:
+
+```bash
+cp infra/terraform/cloudflare/terraform.tfvars.example infra/terraform/cloudflare/terraform.tfvars
+$EDITOR infra/terraform/cloudflare/terraform.tfvars
+mise run cf:tf:init
+mise run cf:tf:plan:op
+```
+
+If the DNS record already exists, import it before the first apply; see
+`infra/terraform/cloudflare/README.md`.
 
 ## Verify
 

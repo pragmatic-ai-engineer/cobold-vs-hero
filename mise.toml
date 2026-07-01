@@ -1,6 +1,7 @@
 [tools]
 java = "zulu-17"
 node = "24"
+terraform = "latest"
 uv = "latest"
 
 [tasks."be:start"]
@@ -81,3 +82,31 @@ run = ["mise run contracts:check", "mise run be:test", "mise run bff:build", "mi
 [tasks.ci]
 description = "Run the GitHub Actions verification gates"
 run = ["mise run fe:ci-install", "mise run bff:ci-install", "mise run verify"]
+
+[tasks."cf:tf:init"]
+description = "Initialize the Cloudflare Terraform working directory"
+run = "terraform -chdir=infra/terraform/cloudflare init"
+
+[tasks."cf:tf:fmt"]
+description = "Format Cloudflare Terraform files"
+run = "terraform -chdir=infra/terraform/cloudflare fmt -recursive"
+
+[tasks."cf:tf:validate"]
+description = "Validate Cloudflare Terraform configuration"
+run = "terraform -chdir=infra/terraform/cloudflare validate"
+
+[tasks."cf:tf:plan"]
+description = "Preview Cloudflare Terraform changes"
+run = "terraform -chdir=infra/terraform/cloudflare plan"
+
+[tasks."cf:tf:apply"]
+description = "Apply reviewed Cloudflare Terraform changes"
+run = "terraform -chdir=infra/terraform/cloudflare apply"
+
+[tasks."cf:tf:plan:op"]
+description = "Preview Cloudflare Terraform changes with the API token loaded from 1Password"
+run = "./infra/terraform/cloudflare/scripts/terraform-with-op-token.sh plan"
+
+[tasks."cf:tf:apply:op"]
+description = "Apply reviewed Cloudflare Terraform changes with the API token loaded from 1Password"
+run = "./infra/terraform/cloudflare/scripts/terraform-with-op-token.sh apply"

@@ -1,0 +1,6 @@
+zone_id     = "your-cloudflare-zone-id"
+zone_name   = "pragmatic-ai.engineer"
+record_name = "cobold"
+origin_ipv4 = "203.0.113.10"
+proxied     = false
+ttl         = 1
