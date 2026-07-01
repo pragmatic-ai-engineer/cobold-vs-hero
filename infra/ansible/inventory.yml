@@ -1,0 +1,7 @@
+---
+all:
+  hosts:
+    pai:
+      ansible_host: pai
+      ansible_user: root
+      ansible_ssh_common_args: -o StrictHostKeyChecking=accept-new

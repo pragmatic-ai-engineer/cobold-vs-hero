@@ -1,0 +1,361 @@
+---
+- name: Bootstrap the pai single-node K3s server
+  hosts: pai
+  gather_facts: false
+  become: true
+
+  pre_tasks:
+    - name: Ensure Python is available for Ansible modules
+      ansible.builtin.raw: test -e /usr/bin/python3 || (apt-get update && apt-get install -y python3)
+      changed_when: false
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Require host-specific public IPv4
+      ansible.builtin.assert:
+        that:
+          - public_ipv4 is defined
+          - public_ipv4 | length > 0
+          - public_ipv4 is match('^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$')
+        fail_msg: Set public_ipv4 in ignored host_vars/pai/local.yml before running this playbook.
+
+  tasks:
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: "{{ server_hostname }}"
+
+    - name: Read current timezone
+      ansible.builtin.command: timedatectl show -p Timezone --value
+      register: current_timezone
+      changed_when: false
+
+    - name: Set timezone
+      ansible.builtin.command: timedatectl set-timezone {{ server_timezone }}
+      when: current_timezone.stdout != server_timezone
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install base packages
+      ansible.builtin.apt:
+        name: "{{ base_packages }}"
+        state: present
+
+    - name: Ensure SSH config directory exists
+      ansible.builtin.file:
+        path: /etc/ssh/sshd_config.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Ensure journald config directory exists
+      ansible.builtin.file:
+        path: /etc/systemd/journald.conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Check mise apt repository
+      ansible.builtin.shell: |
+        grep -R "ppa.launchpadcontent.net/jdxcode/mise" /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null || true
+      register: mise_apt_repo
+      changed_when: false
+
+    - name: Install mise apt repository
+      ansible.builtin.command: add-apt-repository -y ppa:jdxcode/mise
+      when: mise_apt_repo.stdout == ""
+      register: mise_apt_repo_added
+
+    - name: Refresh apt cache after mise repository change
+      ansible.builtin.apt:
+        update_cache: true
+      when: mise_apt_repo_added.changed
+
+    - name: Install mise
+      ansible.builtin.apt:
+        name: mise
+        state: present
+
+    - name: Configure mise activation for interactive bash shells
+      ansible.builtin.copy:
+        dest: /etc/profile.d/mise.sh
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          if command -v mise >/dev/null 2>&1; then
+            eval "$(mise activate bash 2>/dev/null || true)"
+          fi
+
+    - name: Harden SSH daemon
+      ansible.builtin.copy:
+        dest: /etc/ssh/sshd_config.d/99-pai-hardening.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          PasswordAuthentication no
+          KbdInteractiveAuthentication no
+          PermitRootLogin prohibit-password
+          X11Forwarding no
+      notify: Restart ssh
+
+    - name: Limit journald disk usage
+      ansible.builtin.copy:
+        dest: /etc/systemd/journald.conf.d/99-pai-size.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Journal]
+          SystemMaxUse=1G
+          RuntimeMaxUse=512M
+      notify: Restart journald
+
+    - name: Load Kubernetes kernel modules at boot
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k8s.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          br_netfilter
+          overlay
+
+    - name: Load Kubernetes kernel modules now
+      ansible.builtin.command: modprobe {{ item }}
+      changed_when: false
+      loop:
+        - br_netfilter
+        - overlay
+
+    - name: Configure sysctl for Kubernetes and local databases
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/99-pai-kubernetes.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward = 1
+          fs.inotify.max_user_watches = 1048576
+          fs.inotify.max_user_instances = 1024
+          vm.max_map_count = 262144
+      notify: Apply sysctl
+
+    - name: Flush handlers before K3s install
+      ansible.builtin.meta: flush_handlers
+
+    - name: Download Helm apt key
+      ansible.builtin.get_url:
+        url: "{{ helm_apt_key_url }}"
+        dest: /tmp/helm.gpg
+        mode: "0644"
+
+    - name: Read Helm apt key fingerprint
+      ansible.builtin.command: gpg --show-keys --with-colons /tmp/helm.gpg
+      register: helm_key
+      changed_when: false
+
+    - name: Verify Helm apt key fingerprint
+      ansible.builtin.assert:
+        that:
+          - helm_apt_key_id in helm_key.stdout
+        fail_msg: Helm apt key fingerprint did not match the expected upstream key.
+
+    - name: Install Helm apt keyring
+      ansible.builtin.command: gpg --dearmor --yes --output {{ helm_apt_keyring }} /tmp/helm.gpg
+      args:
+        creates: "{{ helm_apt_keyring }}"
+
+    - name: Add Helm apt repository
+      ansible.builtin.deb822_repository:
+        name: helm-stable-debian
+        types:
+          - deb
+        uris:
+          - "{{ helm_apt_uri }}"
+        suites:
+          - any
+        components:
+          - main
+        signed_by: "{{ helm_apt_keyring }}"
+        state: present
+      register: helm_apt_repo_added
+
+    - name: Refresh apt cache after Helm repository change
+      ansible.builtin.apt:
+        update_cache: true
+      when: helm_apt_repo_added.changed
+
+    - name: Install Helm
+      ansible.builtin.apt:
+        name: helm
+        state: present
+
+    - name: Ensure K3s config directory exists
+      ansible.builtin.file:
+        path: /etc/rancher/k3s
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Configure K3s server
+      ansible.builtin.copy:
+        dest: /etc/rancher/k3s/config.yaml
+        owner: root
+        group: root
+        mode: "0600"
+        content: |
+          node-name: "{{ k3s_node_name }}"
+          write-kubeconfig-mode: "0600"
+          secrets-encryption: true
+          tls-san:
+            - "{{ public_ipv4 }}"
+            - "{{ k3s_node_name }}"
+      notify: Restart k3s
+
+    - name: Download K3s installer
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: /usr/local/src/k3s-install.sh
+        mode: "0755"
+
+    - name: Check for K3s binary
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s
+      register: k3s_binary
+
+    - name: Install K3s
+      ansible.builtin.command: /usr/local/src/k3s-install.sh
+      environment:
+        INSTALL_K3S_CHANNEL: "{{ k3s_channel }}"
+      when: not k3s_binary.stat.exists
+
+    - name: Ensure K3s is enabled and running
+      ansible.builtin.systemd:
+        name: k3s
+        enabled: true
+        state: started
+
+    - name: Flush K3s restart handler if config changed
+      ansible.builtin.meta: flush_handlers
+
+    - name: Configure root kubeconfig environment
+      ansible.builtin.copy:
+        dest: /etc/profile.d/k3s.sh
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+    - name: Ensure root kube directory exists
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: Link root kubeconfig
+      ansible.builtin.file:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: /root/.kube/config
+        state: link
+        force: true
+
+    - name: Wait for K3s node to be ready
+      ansible.builtin.command: /usr/local/bin/k3s kubectl get nodes
+      register: k3s_nodes
+      changed_when: false
+      retries: 30
+      delay: 5
+      until: k3s_nodes.rc == 0
+
+    - name: Create platform namespaces
+      ansible.builtin.shell: |
+        set -o pipefail
+        /usr/local/bin/k3s kubectl create namespace {{ item }} --dry-run=client -o yaml |
+        /usr/local/bin/k3s kubectl apply -f -
+      args:
+        executable: /bin/bash
+      loop: "{{ admin_namespaces }}"
+      changed_when: false
+      register: namespace_result
+
+    - name: Ensure operational directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+      loop:
+        - /opt/pai
+        - /opt/pai/apps
+        - /opt/pai/backups
+        - /opt/pai/state
+
+    - name: Ensure local generated directory exists
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/.generated"
+        state: directory
+        mode: "0700"
+      delegate_to: localhost
+      become: false
+
+    - name: Fetch admin kubeconfig
+      ansible.builtin.fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ playbook_dir }}/.generated/kubeconfig-{{ inventory_hostname }}"
+        flat: true
+
+    - name: Point fetched kubeconfig at the public API endpoint
+      ansible.builtin.replace:
+        path: "{{ playbook_dir }}/.generated/kubeconfig-{{ inventory_hostname }}"
+        regexp: "https://(127\\.0\\.0\\.1|localhost):6443"
+        replace: "https://{{ public_ipv4 }}:6443"
+      delegate_to: localhost
+      become: false
+
+    - name: Check whether reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Show bootstrap summary
+      ansible.builtin.debug:
+        msg:
+          - "K3s is installed on {{ inventory_hostname }}."
+          - "Fetched kubeconfig: {{ playbook_dir }}/.generated/kubeconfig-{{ inventory_hostname }}"
+          - "Remote kubectl: ssh {{ inventory_hostname }} 'kubectl get nodes -o wide'"
+          - "Reboot required: {{ reboot_required.stat.exists }}"
+
+  handlers:
+    - name: Restart ssh
+      ansible.builtin.systemd:
+        name: ssh
+        state: restarted
+
+    - name: Restart journald
+      ansible.builtin.systemd:
+        name: systemd-journald
+        state: restarted
+
+    - name: Apply sysctl
+      ansible.builtin.command: sysctl --system
+      changed_when: true
+
+    - name: Restart k3s
+      ansible.builtin.systemd:
+        name: k3s
+        state: restarted
+      when: k3s_binary is defined and k3s_binary.stat.exists

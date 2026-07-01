@@ -1,0 +1,48 @@
+---
+server_hostname: pai
+server_timezone: Etc/UTC
+
+k3s_node_name: pai
+k3s_channel: stable
+
+admin_namespaces:
+  - cobold
+  - centaur
+  - data
+  - ci
+
+base_packages:
+  - apt-transport-https
+  - bash-completion
+  - build-essential
+  - ca-certificates
+  - conntrack
+  - curl
+  - fd-find
+  - git
+  - gnupg
+  - htop
+  - iptables
+  - jq
+  - lsb-release
+  - make
+  - pkg-config
+  - pipx
+  - python3
+  - python3-apt
+  - python3-launchpadlib
+  - python3-pip
+  - python3-venv
+  - ripgrep
+  - rsync
+  - socat
+  - software-properties-common
+  - tmux
+  - unattended-upgrades
+  - unzip
+  - zip
+
+helm_apt_key_id: DDF78C3E6EBB2D2CC223C95C62BA89D07698DBC6
+helm_apt_key_url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
+helm_apt_keyring: /usr/share/keyrings/helm.gpg
+helm_apt_uri: https://packages.buildkite.com/helm-linux/helm-debian/any/

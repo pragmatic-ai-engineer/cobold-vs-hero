@@ -7,3 +7,5 @@ frontend/node_modules/
 testautomation/.pytest_cache/
 testautomation/**/__pycache__/
 screenshots/
+infra/ansible/.generated/
+infra/ansible/host_vars/*/local.yml
