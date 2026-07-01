@@ -19,9 +19,10 @@ demo/
   bff/                 # NestJS BFF, TypeScript
   frontend/            # Angular app
   contracts/           # OpenAPI, PlantUML, sample payloads
-  delivery-pack/       # product, design, testing, delivery, prompts
   manual-api/          # Bruno collection for local/manual API smoke checks
   testautomation/      # DPS-lite API + OneCare-lite UI testautomation
+  deploy/              # Helm chart for the K3s deployment
+  infra/               # Ansible bootstrap and Cloudflare Terraform
   docs/                # workshop task notes
   shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
@@ -115,7 +116,7 @@ setup, or configure `global.imagePullSecrets` if you want private images.
 The default deployed host is:
 
 ```text
-http://cobold.pragmatic-ai.engineer
+https://cobold.pragmatic-ai.engineer
 ```
 
 Cloudflare DNS is managed through the Terraform stack in
