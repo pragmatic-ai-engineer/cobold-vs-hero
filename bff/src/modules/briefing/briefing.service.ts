@@ -55,6 +55,14 @@ export class BriefingService {
     };
   }
 
+  async checkReadiness(): Promise<void> {
+    const backendStatus = await this.getBackendStatus();
+
+    if (backendStatus.status !== 'UP') {
+      throw new ServiceUnavailableException(backendStatus.detail ?? 'Backend is not ready');
+    }
+  }
+
   private async getBackendStatus(): Promise<ServiceStatusDto> {
     const endpoint = `${this.backendBaseUrl}/api/cobold-vs-hero/status`;
 

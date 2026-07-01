@@ -16,4 +16,10 @@ export class BriefingController {
   getStatus(): Promise<SystemStatusResponseDto> {
     return this.briefingService.getStatus();
   }
+
+  @Get('/readiness')
+  @HttpCode(204)
+  checkReadiness(): Promise<void> {
+    return this.briefingService.checkReadiness();
+  }
 }
