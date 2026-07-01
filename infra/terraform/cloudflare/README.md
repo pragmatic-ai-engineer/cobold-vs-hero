@@ -4,6 +4,7 @@ This stack manages the Cloudflare DNS record for the deployed workshop app:
 
 ```text
 cobold.pragmatic-ai.engineer -> pai public IPv4
+*.cobold.pragmatic-ai.engineer -> pai public IPv4
 ```
 
 It intentionally starts with DNS only. Add WAF, cache, TLS, or redirect rules as
@@ -62,6 +63,12 @@ $EDITOR infra/terraform/cloudflare/terraform.tfvars
 
 `terraform.tfvars` is ignored by Git. The server IP should stay local, matching
 the existing Ansible pattern in `infra/ansible/host_vars/pai/local.yml`.
+
+The wildcard record supports PR preview hosts such as:
+
+```text
+pr-42.cobold.pragmatic-ai.engineer
+```
 
 ## Review Loop
 

@@ -59,14 +59,19 @@ description = "Check that workshop solution, contract, and runbook artifacts exi
 run = "test -s docs/demo-task.md && test -s ai-runbook/README.md && test -s solution/cobold-briefing/README.md && test -s solution/cobold-briefing/hld.md && test -s solution/cobold-briefing/lld.md && test -s solution/cobold-briefing/decisions.md && test -s solution/cobold-briefing/acceptance-and-test-plan.md && test -s contracts/openapi/cobold-briefing-api.yaml && test -s contracts/plantuml/briefing-flow.puml && test -s contracts/plantuml/briefing-state.puml && test -s contracts/samples/status-response.json && test -s contracts/samples/truce-request.json && test -s contracts/samples/truce-response.json && test -s contracts/samples/sparring-request.json && test -s contracts/samples/sparring-response.json && test -s contracts/samples/shield-wall-request.json && test -s contracts/samples/shield-wall-response.json"
 
 [tasks."api:smoke"]
-description = "Run Bruno CLI quick API smoke checks against the running BFF"
+description = "Run Bruno CLI quick API smoke checks against the running BFF or COBOLD_API_BASE_URL"
 dir = "smoke/api"
-run = "npx --yes --registry=https://registry.npmjs.org @usebruno/cli run --env local --bail"
+run = "npx --yes --registry=https://registry.npmjs.org @usebruno/cli run --env local --env-var baseUrl=${COBOLD_API_BASE_URL:-http://localhost:3000} --bail"
 
 [tasks."ui:smoke:install"]
 description = "Install Playwright UI smoke dependencies"
 dir = "smoke/ui"
 run = "npm install --registry=https://registry.npmjs.org && npm run install:browsers"
+
+[tasks."ui:smoke:ci-install"]
+description = "Install Playwright UI smoke dependencies for CI"
+dir = "smoke/ui"
+run = "npm ci --registry=https://registry.npmjs.org && npm run install:browsers"
 
 [tasks."ui:smoke"]
 description = "Run quick Playwright UI smoke checks against the running frontend, BFF, and backend"

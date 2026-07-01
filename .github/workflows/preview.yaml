@@ -1,35 +1,39 @@
-name: Deploy
+name: Preview
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
 
 permissions:
   contents: read
+  deployments: write
   packages: write
 
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: preview-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: ghcr.io/greg0x
-  RELEASE_NAME: cobold-vs-hero
-  RELEASE_NAMESPACE: cobold
-  APP_HOST: cobold.pragmatic-ai.engineer
+  RELEASE_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}
+  RELEASE_NAMESPACE: cobold-pr-${{ github.event.pull_request.number }}
+  APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.pragmatic-ai.engineer
   CLUSTER_ISSUER: letsencrypt-prod
-  TLS_SECRET_NAME: cobold-pragmatic-ai-engineer-tls
-  IMAGE_TAG: ${{ github.sha }}
+  TLS_SECRET_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}-tls
+  IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/config
 
 jobs:
   build:
-    name: Build and push ${{ matrix.service }}
+    name: Build preview ${{ matrix.service }}
     runs-on: [self-hosted, pai]
     timeout-minutes: 30
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       fail-fast: false
       matrix:
@@ -68,21 +72,23 @@ jobs:
           context: ${{ matrix.context }}
           platforms: linux/amd64
           push: true
-          tags: |
-            ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
-            ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:main
+          tags: ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.ref.name=pr-${{ github.event.pull_request.number }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
   deploy:
-    name: Deploy to pai
+    name: Deploy preview
     runs-on: [self-hosted, pai]
     timeout-minutes: 20
     needs: build
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+      url: https://${{ env.APP_HOST }}
 
     steps:
       - name: Checkout
@@ -111,11 +117,23 @@ jobs:
           install: true
           cache: true
 
-      - name: Install smoke UI dependencies
-        run: mise run ui:smoke:ci-install
+      - name: Install Playwright browser
+        run: mise run ui:install-browsers
 
-      - name: Run deployed smoke
+      - name: Run preview testautomation
         env:
           COBOLD_API_BASE_URL: https://${{ env.APP_HOST }}
           COBOLD_UI_BASE_URL: https://${{ env.APP_HOST }}
-        run: mise run smoke:all
+        run: mise run testautomation:all
+
+  cleanup:
+    name: Cleanup preview
+    runs-on: [self-hosted, pai]
+    timeout-minutes: 10
+    if: github.event.action == 'closed'
+
+    steps:
+      - name: Remove preview release
+        run: |
+          helm uninstall "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --ignore-not-found
+          kubectl delete namespace "$RELEASE_NAMESPACE" --ignore-not-found

@@ -54,3 +54,21 @@ variable "record_comment" {
   type        = string
   default     = "Managed by Terraform for cobold-vs-hero workshop deployment."
 }
+
+variable "preview_wildcard_enabled" {
+  description = "Whether to manage *.cobold.<zone_name> for pull request preview deployments."
+  type        = bool
+  default     = true
+}
+
+variable "preview_wildcard_record_name" {
+  description = "Wildcard DNS record name for pull request preview deployments."
+  type        = string
+  default     = "*.cobold"
+}
+
+variable "preview_wildcard_record_comment" {
+  description = "Cloudflare DNS record comment for pull request preview deployments."
+  type        = string
+  default     = "Managed by Terraform for cobold-vs-hero pull request previews."
+}
