@@ -21,7 +21,7 @@ demo/
   contracts/           # OpenAPI, PlantUML, sample payloads
   delivery-pack/       # product, design, testing, delivery, prompts
   manual-api/          # Bruno collection for local/manual API smoke checks
-  testautomation/      # DPS-lite Python API testautomation
+  testautomation/      # DPS-lite API + OneCare-lite UI testautomation
   docs/                # workshop task notes
   shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
@@ -92,4 +92,13 @@ For the heavier DPS-lite Python automation gate:
 
 ```bash
 mise run api:testautomation
+```
+
+For the toy OneCare-style browser UI automation gate, install the Playwright
+browser once, then run the UI testautomation while the backend, BFF, and
+frontend are running:
+
+```bash
+mise run ui:install-browsers
+mise run ui:testautomation
 ```

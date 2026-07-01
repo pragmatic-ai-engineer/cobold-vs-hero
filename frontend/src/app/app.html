@@ -8,13 +8,19 @@
     </p>
   </section>
 
-  <section class="status-page" aria-label="Service status">
+  <section class="status-page" aria-label="Service status" data-test="status-page">
     <header class="status-header">
       <div>
         <p class="eyebrow">Runtime status</p>
         <h2>BFF NestJS + BE Java</h2>
       </div>
-      <button type="button" class="status-refresh" [disabled]="statusLoading()" (click)="refreshStatus()">
+      <button
+        type="button"
+        class="status-refresh"
+        data-test="status-refresh-button"
+        [disabled]="statusLoading()"
+        (click)="refreshStatus()"
+      >
         {{ statusLoading() ? 'Refreshing...' : 'Refresh status' }}
       </button>
     </header>
@@ -23,7 +29,11 @@
       <p class="error">{{ statusError() }}</p>
     } @else if (systemStatus(); as current) {
       <p class="empty">
-        <span class="proof-status" [class.proof-status--warn]="current.status === 'DEGRADED'">
+        <span
+          class="proof-status"
+          data-test="system-status"
+          [class.proof-status--warn]="current.status === 'DEGRADED'"
+        >
           {{ current.status }}
         </span>
         <span>&nbsp;|&nbsp;</span>
@@ -32,7 +42,7 @@
 
       <ul class="evidence-list">
         @for (service of current.services; track service.service) {
-          <li>
+          <li [attr.data-test]="'service-status-' + service.service">
             <strong>{{ serviceLabel(service) }}</strong>
             <span>&nbsp;|&nbsp;</span>
             <span class="proof-status" [class.proof-status--warn]="service.status === 'DOWN'">
@@ -52,20 +62,25 @@
   </section>
 
   <section class="workspace" aria-label="Cobold vs Hero briefing form">
-    <form class="briefing-form" (submit)="$event.preventDefault()">
+    <form class="briefing-form" data-test="briefing-form" (submit)="$event.preventDefault()">
       <label>
         <span>Cobold concern</span>
-        <textarea name="coboldConcern" rows="4" [(ngModel)]="coboldConcern"></textarea>
+        <textarea
+          name="coboldConcern"
+          rows="4"
+          data-test="cobold-concern-input"
+          [(ngModel)]="coboldConcern"
+        ></textarea>
       </label>
 
       <label>
         <span>Hero move</span>
-        <textarea name="heroMove" rows="4" [(ngModel)]="heroMove"></textarea>
+        <textarea name="heroMove" rows="4" data-test="hero-move-input" [(ngModel)]="heroMove"></textarea>
       </label>
 
       <label>
         <span>System mood</span>
-        <input name="systemMood" type="text" [(ngModel)]="systemMood" required />
+        <input name="systemMood" type="text" data-test="system-mood-input" [(ngModel)]="systemMood" required />
       </label>
 
       <fieldset class="project-context">
@@ -73,7 +88,12 @@
         <div class="context-grid">
           <label>
             <span>Target Environment</span>
-            <select name="targetEnvironment" [(ngModel)]="targetEnvironment" required>
+            <select
+              name="targetEnvironment"
+              data-test="target-environment-select"
+              [(ngModel)]="targetEnvironment"
+              required
+            >
               <option value="dev">Development</option>
               <option value="staging">Staging</option>
               <option value="production">Production</option>
@@ -82,7 +102,12 @@
 
           <label>
             <span>Implementation Complexity</span>
-            <select name="implementationComplexity" [(ngModel)]="implementationComplexity" required>
+            <select
+              name="implementationComplexity"
+              data-test="implementation-complexity-select"
+              [(ngModel)]="implementationComplexity"
+              required
+            >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
@@ -91,7 +116,7 @@
 
           <label>
             <span>Team Experience</span>
-            <select name="teamExperience" [(ngModel)]="teamExperience" required>
+            <select name="teamExperience" data-test="team-experience-select" [(ngModel)]="teamExperience" required>
               <option value="junior">Junior</option>
               <option value="senior">Senior</option>
               <option value="expert">Expert</option>
@@ -100,30 +125,40 @@
         </div>
       </fieldset>
 
-      <button type="button" [disabled]="loading() || !isFormValid()" (click)="requestBriefing()">
+      <button
+        type="button"
+        data-test="request-briefing-button"
+        [disabled]="loading() || !isFormValid()"
+        (click)="requestBriefing()"
+      >
         {{ loading() ? 'Reviewing the signal...' : 'Request briefing' }}
       </button>
     </form>
 
-    <article class="briefing-card" [class.briefing-card--active]="briefing()" aria-live="polite">
+    <article
+      class="briefing-card"
+      data-test="briefing-card"
+      [class.briefing-card--active]="briefing()"
+      aria-live="polite"
+    >
       @if (error()) {
         <p class="error">{{ error() }}</p>
       } @else if (briefing(); as result) {
         <header class="result-header">
-          <p class="signal">{{ result.signal }}</p>
-          <p class="proof-status">{{ statusFor(result.signal) }}</p>
+          <p class="signal" data-test="briefing-signal">{{ result.signal }}</p>
+          <p class="proof-status" data-test="briefing-status">{{ statusFor(result.signal) }}</p>
         </header>
-        <h2>{{ result.headline }}</h2>
-        <p>{{ result.reviewerNote }}</p>
+        <h2 data-test="briefing-headline">{{ result.headline }}</h2>
+        <p data-test="briefing-reviewer-note">{{ result.reviewerNote }}</p>
         <section class="reason-block" aria-label="Reason evidence">
           <div class="reason-mark">MR</div>
           <div>
             <p class="reason-title">Reason / evidence</p>
-            <p>{{ result.reason }}</p>
+            <p data-test="briefing-reason">{{ result.reason }}</p>
           </div>
         </section>
-        <p class="next-step">{{ result.nextAction }}</p>
-        <section class="prompt-block" aria-label="Evidence prompts">
+        <p class="next-step" data-test="briefing-next-step">{{ result.nextAction }}</p>
+        <section class="prompt-block" aria-label="Evidence prompts" data-test="evidence-prompts">
           <p class="prompt-title">Evidence prompts</p>
           <ul>
             @for (item of result.evidencePrompts; track item) {
@@ -131,7 +166,7 @@
             }
           </ul>
         </section>
-        <ul class="evidence-list">
+        <ul class="evidence-list" data-test="briefing-checklist">
           @for (item of result.checklist; track item) {
             <li>{{ item }}</li>
           }

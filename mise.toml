@@ -64,7 +64,15 @@ run = "npx --yes --registry=https://registry.npmjs.org @usebruno/cli run --env l
 
 [tasks."api:testautomation"]
 description = "Run DPS-lite heavyweight API testautomation against the running BFF"
-run = "PYTHONPATH=testautomation uv run --with pytest pytest testautomation"
+run = "PYTHONPATH=testautomation uv run --with pytest pytest testautomation/tests/test_briefing_api.py"
+
+[tasks."ui:install-browsers"]
+description = "Install the Chromium browser used by Playwright UI testautomation"
+run = "uv run --with playwright python -m playwright install chromium"
+
+[tasks."ui:testautomation"]
+description = "Run OneCare-lite browser UI testautomation against the running frontend, BFF, and backend"
+run = "PYTHONPATH=testautomation uv run --with pytest --with playwright pytest testautomation/tests/test_briefing_ui.py"
 
 [tasks.verify]
 description = "Run the demo verification gates"
