@@ -1,59 +1,66 @@
 # Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.27.
+Angular UI for the Cobold vs Hero Review Readiness Matrix.
 
-## Development server
+## Responsibilities
 
-To start a local development server, run:
+- Render the BFF/backend runtime status panel.
+- Collect change title, description, affected surfaces, provided evidence, and
+  risk flags.
+- Call the BFF through `/api/cobold-vs-hero/*`.
+- Render signal, stop condition, next action, required evidence, missing
+  evidence, and matrix rows.
+- Initialize Datadog browser RUM/logs from runtime config when deployed with
+  observability enabled.
 
-```bash
-ng serve
-```
+The frontend does not own readiness rules. It displays the BFF contract.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Main Files
 
-## Code scaffolding
+| Path | Purpose |
+| --- | --- |
+| `src/app/app.ts` | UI state, form options, API calls, status helpers. |
+| `src/app/app.html` | Page structure, status panel, form, result matrix. |
+| `src/app/app.scss` | Component styling. |
+| `src/datadog.ts` | Browser observability initialization. |
+| `proxy.conf.json` | Local `/api` proxy to the BFF. |
+| `nginx.conf.template` | Container nginx config and deployed `/api` proxy fallback. |
+| `Dockerfile` | Deployable frontend image. |
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Run
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Install dependencies once:
 
 ```bash
-ng test
+mise run fe:install
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+Start the dev server:
 
 ```bash
-ng e2e
+mise run fe:start
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Open `http://localhost:4200`.
 
-## Additional Resources
+The dev server proxies `/api` to `http://localhost:3000`.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Build
+
+```bash
+mise run fe:build
+```
+
+## Smoke
+
+With backend, BFF, and frontend running:
+
+```bash
+mise run ui:smoke
+```
+
+For the heavier Python/Playwright UI lane:
+
+```bash
+mise run ui:testautomation
+```

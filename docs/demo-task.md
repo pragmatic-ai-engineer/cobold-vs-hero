@@ -1,5 +1,7 @@
 # Demo Task: Cobold vs Hero Review Readiness Matrix
 
+Hungarian version: [demo-task.hu.md](demo-task.hu.md).
+
 ## Starting Point
 
 The repo starts with a working Cobold vs Hero review readiness tool.

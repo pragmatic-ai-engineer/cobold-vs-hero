@@ -4,6 +4,8 @@ Small umbrella-style demo repo for the Pragmatic AI Engineer workshop. It keeps
 the same delivery shape as the participant environment without copying
 enterprise code or legacy complexity.
 
+Hungarian version: [README.hu.md](README.hu.md).
+
 The theme is intentionally light:
 
 - **Cobold reviewer**: a risk-aware adversary that asks what could go wrong.
@@ -14,7 +16,7 @@ The theme is intentionally light:
 ## Structure
 
 ```text
-demo/
+cobold-vs-hero/
   backend/             # Spring Boot API, Java 17, Gradle
   bff/                 # NestJS BFF, TypeScript
   frontend/            # Angular app
@@ -28,10 +30,27 @@ demo/
     ui/                # OneCare-like robust Python UI automation
   deploy/              # Helm chart for the K3s deployment
   infra/               # Ansible bootstrap and Cloudflare Terraform
-  docs/                # workshop task notes
+  docs/                # participant docs and reference notes
   ai-runbook/          # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
 ```
+
+## Start Here
+
+Use these docs in order when you are new to the repo:
+
+1. `docs/onboarding/README.md` - repo tour, runtime map, verification path, and
+   change workflow.
+2. `docs/README.md` - documentation index.
+3. `docs/demo-task.md` - workshop baseline, feature intent, API shape, and
+   acceptance criteria.
+4. `solution/cobold-briefing/README.md` - HLD, LLD, decisions, and test plan.
+5. Component READMEs for the area you are changing: `backend/`, `bff/`,
+   `frontend/`, `contracts/`, `smoke/`, `testautomation/`, `deploy/`, and
+   `infra/`.
+
+Hungarian companions exist for the highest-signal participant docs, not every
+component README.
 
 ## Solution Flow
 
@@ -64,7 +83,7 @@ https://mise.jdx.dev/installing-mise.html
 Then install the pinned Java and Node versions and frontend dependencies:
 
 ```bash
-cd demo
+# from this repo root
 mise install
 mise run fe:install
 mise run bff:install

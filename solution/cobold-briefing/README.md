@@ -1,5 +1,7 @@
 # Cobold Review Readiness Solution Package
 
+Hungarian version: [README.hu.md](README.hu.md).
+
 This folder is the pre-implementation solution surface for the Cobold vs Hero
 review readiness matrix.
 
@@ -44,4 +46,3 @@ draft HLD
 -> capture evidence
 -> review drift between solution, contracts, code, and tests
 ```
-
