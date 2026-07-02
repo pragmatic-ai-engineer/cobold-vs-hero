@@ -7,6 +7,8 @@ the component they describe.
 
 ## Start Here
 
+- `../llms-full.txt` - single-file agent context pack for participants,
+  facilitators, developers, testers, and reviewers.
 - `onboarding/README.md` - full repo tour for a new contributor or workshop
   participant.
 - `demo-task.md` - current workshop feature baseline and acceptance criteria.

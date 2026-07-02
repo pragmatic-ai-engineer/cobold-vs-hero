@@ -20,14 +20,17 @@ deployment és infrastruktúra.
 
 Új résztvevőként ezt a sorrendet kövesd:
 
-1. [docs/onboarding/README.hu.md](docs/onboarding/README.hu.md) - repo túra,
+1. [llms-full.hu.txt](llms-full.hu.txt) - egyfájlos magyar agent
+   kontextuscsomag résztvevőknek, facilitatoroknak, fejlesztőknek,
+   tesztelőknek és reviewereknek.
+2. [docs/onboarding/README.hu.md](docs/onboarding/README.hu.md) - repo túra,
    runtime térkép, ellenőrzési út és változtatási workflow.
-2. [docs/README.hu.md](docs/README.hu.md) - dokumentációs index.
-3. [docs/demo-task.hu.md](docs/demo-task.hu.md) - workshop baseline, feature
+3. [docs/README.hu.md](docs/README.hu.md) - dokumentációs index.
+4. [docs/demo-task.hu.md](docs/demo-task.hu.md) - workshop baseline, feature
    szándék, API forma és elfogadási feltételek.
-4. [solution/cobold-briefing/README.hu.md](solution/cobold-briefing/README.hu.md)
+5. [solution/cobold-briefing/README.hu.md](solution/cobold-briefing/README.hu.md)
    - HLD, LLD, döntések és tesztterv belépési pontja.
-5. Az érintett komponens README-je: `backend/`, `bff/`, `frontend/`,
+6. Az érintett komponens README-je: `backend/`, `bff/`, `frontend/`,
    `contracts/`, `smoke/`, `testautomation/`, `deploy/`, `infra/`.
 
 Nem minden README kap magyar változatot. A magyar doksik a workshophoz

@@ -39,13 +39,15 @@ cobold-vs-hero/
 
 Use these docs in order when you are new to the repo:
 
-1. `docs/onboarding/README.md` - repo tour, runtime map, verification path, and
+1. `llms-full.txt` - single-file agent context pack for participants,
+   facilitators, developers, testers, and reviewers.
+2. `docs/onboarding/README.md` - repo tour, runtime map, verification path, and
    change workflow.
-2. `docs/README.md` - documentation index.
-3. `docs/demo-task.md` - workshop baseline, feature intent, API shape, and
+3. `docs/README.md` - documentation index.
+4. `docs/demo-task.md` - workshop baseline, feature intent, API shape, and
    acceptance criteria.
-4. `solution/cobold-briefing/README.md` - HLD, LLD, decisions, and test plan.
-5. Component READMEs for the area you are changing: `backend/`, `bff/`,
+5. `solution/cobold-briefing/README.md` - HLD, LLD, decisions, and test plan.
+6. Component READMEs for the area you are changing: `backend/`, `bff/`,
    `frontend/`, `contracts/`, `smoke/`, `testautomation/`, `deploy/`, and
    `infra/`.
 

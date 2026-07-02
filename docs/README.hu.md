@@ -7,6 +7,9 @@ az adott komponens mellett vannak.
 
 ## Kezdés
 
+- [../llms-full.hu.txt](../llms-full.hu.txt) - egyfájlos magyar agent
+  kontextuscsomag résztvevőknek, facilitatoroknak, fejlesztőknek,
+  tesztelőknek és reviewereknek.
 - [onboarding/README.hu.md](onboarding/README.hu.md) - teljes repo túra új
   résztvevőnek vagy közreműködőnek.
 - [demo-task.hu.md](demo-task.hu.md) - aktuális workshop baseline és

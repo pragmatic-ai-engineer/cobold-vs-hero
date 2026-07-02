@@ -1,0 +1,879 @@
+# Cobold vs Hero - LLM Context Pack
+
+Last refreshed: 2026-07-02
+
+This is the single-file, agent-readable context pack for the Cobold vs Hero
+workshop repo. It is meant to be uploaded to, linked for, or pasted into an AI
+assistant when a participant, facilitator, developer, tester, or reviewer needs
+to understand the repo quickly.
+
+It follows the same idea as a public `llms-full.txt`: one plain text file that
+captures the product intent, system shape, repo map, runtime commands,
+verification ladder, and workshop background. It is not a replacement for the
+source tree. If a file is available locally, inspect the real file before making
+changes.
+
+Hungarian companion: `llms-full.hu.txt`.
+
+
+Recommended Agent Instruction
+=============================
+
+When using this file with an AI assistant, use this instruction:
+
+```text
+Use this document as primary context for the Cobold vs Hero workshop repo.
+Answer from the current repo facts in this file and from files I explicitly
+provide. If you need exact implementation details, ask to inspect the source or
+run the repo-owned commands. Do not invent hidden enterprise behavior, workshop
+2 content, persistence, authentication, or a real risk engine. Keep guidance
+practical, evidence-based, and tied to the repo's delivery loop.
+```
+
+
+Purpose
+=======
+
+Cobold vs Hero is a small but complete software delivery demo for the Pragmatic
+AI Engineer workshop. The app is intentionally simple, but the repo keeps the
+important boundaries of a real delivery system:
+
+- Spring Boot backend.
+- NestJS BFF.
+- Angular frontend.
+- OpenAPI, PlantUML, and sample payload contracts.
+- Bruno API smoke checks.
+- Playwright UI smoke checks.
+- Python API and UI testautomation lanes.
+- Helm deployment.
+- K3s, Cloudflare, and optional Datadog infrastructure.
+- Shared `mise` commands for humans, CI, and agents.
+
+The teaching goal is not the fantasy theme. The teaching goal is controlled
+AI-assisted delivery:
+
+```text
+vague request
+-> scoped task
+-> HLD and LLD
+-> executable contracts
+-> small vertical implementation
+-> layered verification
+-> evidence
+-> review decision
+```
+
+The key lesson:
+
+```text
+The agent can propose. The delivery loop decides.
+```
+
+The app gives participants a concrete object to inspect while discussing how
+AI-assisted work should be scoped, verified, reviewed, and shipped.
+
+
+What This File Intentionally Excludes
+=====================================
+
+This file describes the current Cobold vs Hero repo and current workshop
+baseline only.
+
+It intentionally does not include:
+
+- Planned Workshop 2 material from older Omni workshop notes.
+- Private enterprise code or real customer system details.
+- Secrets, local IP values, kubeconfigs, Cloudflare tokens, Datadog API keys, or
+  personal access tokens.
+- A claim that the app has persistence, authentication, user management,
+  historical reporting, or a real scoring engine.
+
+If a question depends on content outside this repo, say that the context pack
+does not contain enough information.
+
+
+Product Mental Model
+====================
+
+The product behavior is the Review Readiness Matrix.
+
+```text
+Angular UI
+-> NestJS BFF
+-> Spring Boot API
+-> deterministic readiness rules
+-> signal + evidence + matrix
+```
+
+The user describes a proposed delivery change, selects affected surfaces,
+available evidence, and risk flags, then receives one readiness signal:
+
+- `truce` - safe starter slice, review-ready if evidence stays attached.
+- `sparring` - useful slice, but evidence is incomplete.
+- `shield-wall` - too risky or too broad; split before implementation.
+
+The Hero proposer is the delivery role proposing a useful change.
+
+The Cobold reviewer is the adversarial review role asking what can go wrong.
+
+The matrix makes the disagreement productive: it turns a vague "is this safe?"
+discussion into required evidence, missing evidence, stop condition, next
+action, and surface-by-surface review rows.
+
+
+Current Workshop Baseline
+=========================
+
+The repo starts from a working Review Readiness Matrix tool. Participants do
+not need to bootstrap the app from nothing. They can practice improving the AI
+delivery loop on a complete slice.
+
+The baseline includes:
+
+- Java backend classification.
+- NestJS BFF mapping.
+- Angular UI rendering.
+- OpenAPI contract.
+- PlantUML flow and state diagrams.
+- Sample request and response payloads.
+- Bruno API smoke checks.
+- Playwright UI smoke checks.
+- DPS-like Python API testautomation.
+- OneCare-like Python UI testautomation.
+- HLD, LLD, decisions, and acceptance/test plan.
+
+Original task framing:
+
+```text
+The briefing is too vague. Make it useful enough that a team can decide
+whether a proposed change is safe to start, needs sharper acceptance criteria,
+or must be split before implementation.
+```
+
+Implemented scope:
+
+```text
+For a proposed delivery move, let the user choose affected surfaces and
+available evidence. The system should return a readiness signal, required
+evidence, missing evidence, stop condition, next action, and a review readiness
+matrix. The UI should make the matrix readable, and the behavior should be
+verified through Bruno, DPS-like automation, and browser evidence.
+```
+
+
+Repo Map
+========
+
+```text
+cobold-vs-hero/
+  backend/             Spring Boot API, Java 17, Gradle
+  bff/                 NestJS BFF, TypeScript
+  frontend/            Angular app
+  solution/            HLD, LLD, decisions, acceptance plan
+  contracts/           OpenAPI, PlantUML, sample payloads
+  smoke/
+    api/               Bruno API smoke checks
+    ui/                Playwright browser smoke checks
+  testautomation/
+    api/               Python API automation
+    ui/                Python UI automation
+  deploy/              Helm chart and Datadog deployment support
+  infra/               Ansible, Cloudflare Terraform, Centaur notes
+  docs/                participant docs and reference notes
+  ai-runbook/          shared AI-assisted work instructions
+  mise.toml            shared tool versions and commands
+  llms-full.txt        this English agent context pack
+  llms-full.hu.txt     Hungarian participant context pack
+```
+
+Start with these docs:
+
+1. `docs/onboarding/README.md` - repo tour, runtime map, verification path,
+   change workflow.
+2. `docs/demo-task.md` - workshop baseline, feature intent, API shape,
+   acceptance criteria.
+3. `solution/cobold-briefing/README.md` - HLD, LLD, decisions, and test plan.
+4. `contracts/README.md` - executable API and diagram contract.
+5. Component README files in the area being changed.
+
+
+Component Responsibilities
+==========================
+
+Angular frontend:
+
+- Collects change title and description.
+- Lets the user select affected surfaces, provided evidence, and risk flags.
+- Calls the BFF through `/api/cobold-vs-hero/status`.
+- Calls the BFF through `/api/cobold-vs-hero/briefing`.
+- Renders service status, signal, stop condition, next action, evidence
+  summary, and matrix rows.
+
+NestJS BFF:
+
+- Keeps the UI-facing API stable.
+- Proxies briefing requests to the backend.
+- Maps backend `heroNextStep` to UI `nextAction`.
+- Aggregates BFF and backend runtime status.
+- Does not own readiness rules.
+
+Spring Boot backend:
+
+- Owns readiness rules.
+- Derives required evidence from affected surfaces and risk flags.
+- Calculates missing evidence.
+- Calculates the final signal.
+- Creates one review matrix row per affected surface.
+- Exposes backend runtime status.
+
+Contracts:
+
+- OpenAPI is the API shape.
+- PlantUML diagrams explain flow and state.
+- Sample payloads anchor representative `truce`, `sparring`, and
+  `shield-wall` cases.
+
+Verification lanes:
+
+- `smoke/api` is the fast Bruno API check.
+- `smoke/ui` is the fast Playwright browser check.
+- `testautomation/api` is the deeper Python API suite.
+- `testautomation/ui` is the deeper Python browser suite.
+
+
+Runtime Shape
+=============
+
+Local development uses three processes:
+
+```text
+Backend   Spring Boot   http://localhost:8080
+BFF       NestJS        http://localhost:3000
+Frontend  Angular      http://localhost:4200
+```
+
+Request path in local development:
+
+```text
+Browser
+-> Angular dev server
+-> /api proxy
+-> NestJS BFF
+-> Spring Boot API
+```
+
+The Angular app uses relative `/api` URLs. The Angular dev server proxies those
+requests to the BFF. The BFF calls `BACKEND_BASE_URL`, defaulting to
+`http://localhost:8080`.
+
+
+API Surface
+===========
+
+Status endpoint:
+
+```text
+GET /api/cobold-vs-hero/status
+```
+
+The UI calls the BFF status endpoint. The BFF reports itself, probes the
+backend, and returns aggregate status:
+
+- `UP` when both services are reachable.
+- `DEGRADED` when the backend status probe fails.
+
+Briefing endpoint:
+
+```text
+POST /api/cobold-vs-hero/briefing
+```
+
+Request:
+
+```json
+{
+  "changeTitle": "Billing retry status panel",
+  "changeDescription": "Add one backend endpoint, one BFF mapper, and one Angular panel.",
+  "affectedSurfaces": ["backend", "bff", "frontend", "contract", "testing"],
+  "providedEvidence": ["backend-test", "hld", "lld"],
+  "riskFlags": ["customer-data", "unclear-scope"]
+}
+```
+
+Response:
+
+```json
+{
+  "signal": "sparring",
+  "headline": "Useful slice, but evidence is incomplete.",
+  "requiredEvidence": ["backend-test", "bruno-smoke", "dps-testautomation", "browser-screenshot", "hld", "lld"],
+  "missingEvidence": ["bruno-smoke", "dps-testautomation", "browser-screenshot"],
+  "stopCondition": "Do not request implementation review until API smoke and browser evidence are planned.",
+  "heroNextStep": "Add Bruno smoke and browser evidence before implementation review.",
+  "reviewMatrix": [
+    {
+      "surface": "backend",
+      "expectedEvidence": ["backend-test"],
+      "providedEvidence": ["backend-test"],
+      "gap": "covered",
+      "nextAction": "Keep backend assertion attached to the PR."
+    }
+  ]
+}
+```
+
+BFF field mapping:
+
+```text
+backend.heroNextStep -> ui.nextAction
+all other briefing fields keep their names
+```
+
+
+Readiness Inputs
+================
+
+Affected surfaces:
+
+- `backend`
+- `bff`
+- `frontend`
+- `contract`
+- `testing`
+
+Provided evidence:
+
+- `backend-test`
+- `bruno-smoke`
+- `dps-testautomation`
+- `browser-screenshot`
+- `hld`
+- `lld`
+
+Risk flags:
+
+- `production`
+- `customer-data`
+- `auth`
+- `payment`
+- `unclear-scope`
+
+
+Evidence Rules
+==============
+
+Base evidence by surface:
+
+| Surface | Required evidence |
+| --- | --- |
+| `backend` | `backend-test` |
+| `bff` | `bruno-smoke` |
+| `frontend` | `browser-screenshot` |
+| `contract` | `bruno-smoke` |
+| `testing` | `dps-testautomation` |
+
+Design evidence:
+
+- Any multi-surface change requires `hld` and `lld`.
+- `unclear-scope` requires `hld` and `lld`.
+
+Risk evidence:
+
+| Risk flag | Additional evidence |
+| --- | --- |
+| `production` | `dps-testautomation`, `browser-screenshot` |
+| `customer-data` | `dps-testautomation` |
+| `auth` | `dps-testautomation` |
+| `payment` | `dps-testautomation`, `browser-screenshot` |
+| `unclear-scope` | `hld`, `lld` |
+
+High-risk flags:
+
+- `production`
+- `payment`
+- `auth`
+
+
+Signal Rules
+============
+
+The backend applies deterministic rules:
+
+| Condition | Signal |
+| --- | --- |
+| no missing evidence and no high-risk flags | `truce` |
+| one or two missing evidence items and no high-risk flags | `sparring` |
+| any high-risk flag with complete evidence | `sparring` |
+| more than two missing evidence items | `shield-wall` |
+| any high-risk flag with missing evidence | `shield-wall` |
+
+Important teaching point: this is not model output. The rules are transparent
+so participants can inspect cause and effect.
+
+
+Why The App Is Simple
+=====================
+
+The app is intentionally simple because it is a workshop instrument, not a
+production risk platform.
+
+Simplicity lets participants see the full delivery loop:
+
+- A vague request becomes a scoped feature.
+- HLD and LLD make the intended behavior reviewable before code.
+- OpenAPI and samples make the service boundary executable.
+- Backend rules keep domain behavior in one place.
+- BFF mapping shows how UI contracts are stabilized without duplicating domain
+  logic.
+- UI rendering turns API facts into reviewable evidence.
+- Smoke checks and automation prove behavior at different costs.
+- Deployment files show how a local app becomes a running service.
+
+The repo demonstrates production-shaped delivery boundaries without adding
+production-sized business complexity.
+
+
+Continuous Delivery Background
+==============================
+
+The workshop models this loop:
+
+```text
+Idea -> solution -> contracts -> implementation -> verification -> package -> deploy -> evidence -> learning
+```
+
+Good delivery practice in this repo means:
+
+- Start from scope, non-goals, risks, and acceptance criteria.
+- Make HLD, LLD, decisions, and contracts visible before implementation.
+- Keep the change thin enough to pass through every layer.
+- Use the cheapest useful verification first.
+- Preserve evidence rather than reconstructing it from memory.
+- Keep CI, local commands, manual smoke, and agent workflows aligned.
+- Treat AI as part of the delivery system, not a separate chat transcript.
+
+The key scorecard is not "did the AI produce code?" The scorecard is "can the
+team understand, verify, review, and safely ship the change?"
+
+
+High-Signal Research Signals
+============================
+
+The research notes behind this workshop converge on a few operating rules.
+Use these rules when explaining why the repo is shaped this way or when turning
+the demo into a team practice.
+
+## QRSPI As The Work-Shaping Loop
+
+For substantial AI-assisted coding work, prefer a staged workflow over one
+large prompt:
+
+```text
+Questions
+-> Research
+-> Design Discussion
+-> Structure Outline
+-> Plan
+-> Worktree / Vertical Slices
+-> Implement
+-> Validate / Review / PR / Handoff
+```
+
+The important point is not the acronym. The important point is splitting hidden
+prompt control flow into real reviewable stages:
+
+- Ask questions before research.
+- Research facts about the current system before proposing solutions.
+- Review design before writing a tactical plan.
+- Structure vertical slices before implementation.
+- Define evidence before trusting output.
+- Use fresh context or durable handoff artifacts when the session gets crowded.
+
+In this repo, `docs/demo-task.md`, `solution/cobold-briefing/`, `contracts/`,
+and the smoke/testautomation lanes are the lightweight Cobold version of that
+sequence.
+
+## Context, Harness, Loop
+
+The workshop shorthand is:
+
+```text
+prompt -> context -> harness -> loop
+```
+
+Prompt is the request. Context is what the agent needs to know. Harness is the
+system of guides and sensors around the agent. Loop is the repeated cycle of
+act, check, learn, and improve.
+
+A practical harness has two halves:
+
+- Guides before the agent acts: task scope, architecture rules, examples,
+  `README` files, HLD/LLD, contracts, coding standards, and run commands.
+- Sensors after the agent acts: tests, type checks, linters, smoke checks,
+  browser evidence, logs, review findings, and manual QA.
+
+Prefer deterministic sensors early. Use semantic or AI review later when the
+question needs judgment. A second AI reviewer can help, but it is not a
+substitute for executable evidence.
+
+Behavior is the hardest thing to harness. Green generated tests can still test
+the wrong behavior, so product judgment, acceptance criteria, and browser/user
+evidence remain part of the loop.
+
+## Files As Workflow Architecture
+
+For sequential, human-reviewed AI workflows, files are often the clearest
+orchestration layer:
+
+- Stable references: conventions, policies, examples, context packs, standards,
+  and reusable notes.
+- Run-specific artifacts: questions, research, design notes, plans, evidence,
+  validation reports, and handoffs.
+
+Do not rely on a long chat transcript as the only memory of the work. Convert
+important decisions into durable files that the next agent or teammate can
+inspect.
+
+This `llms-full.txt` file is a context pack, not a transcript. It should tell an
+agent what matters enough to start well, while exact implementation details
+still come from inspecting the live repo.
+
+## Cost, Routing, And Legroom
+
+The useful economic unit is not "tokens." It is:
+
+```text
+cost per accepted, verified engineering outcome
+```
+
+Good routing starts with the cheapest setup that can probably complete the task
+with acceptable rework. Escalate when there is concrete evidence:
+
+- failed tests or type checks after a simple retry
+- conflicting architectural assumptions
+- hallucinated files, APIs, or business rules
+- repeated low-signal tool use
+- security, data, payment, auth, or production risk
+- planning or review omissions that require another full pass
+
+Bad routing means using the premium model for everything, retrying the same
+failed prompt without changing context, or treating benchmark rank as a
+replacement for task-specific verification.
+
+Legroom is the local project that makes this concrete. In current form, it is a
+local-first Rust control plane for AI coding harnesses, starting with a Claude
+Code proxy. Its product loop is:
+
+```text
+enable useful models
+-> observe real model traffic
+-> identify waste or friction
+-> test one optimization
+-> settle better local defaults
+-> make the result portable
+```
+
+For workshop participants, the important Legroom lesson is not "use this one
+proxy." The important lesson is that model choice, context pressure, cache
+behavior, cost, route metadata, and verification evidence should become visible
+engineering signals. Routing should be explainable before it becomes automatic.
+
+## Compound Engineering
+
+AI-assisted work should make future work easier, not only finish the current
+task faster.
+
+The useful loop is:
+
+```text
+decide what matters
+-> make a plan
+-> let agents do bounded work
+-> review and verify
+-> extract reusable knowledge
+-> make the next run cheaper or better
+```
+
+In this repo, compounding means:
+
+- keep solution and contract artifacts aligned with code
+- turn repeated review feedback into clearer instructions or tests
+- preserve evidence from commands, smoke checks, browser checks, and review
+- keep context packs discoverable
+- measure whether a later run reused prior artifacts or rediscovered the same
+  facts
+
+If future work does not become clearer, cheaper, safer, or easier to review,
+the process is producing ceremony rather than compounding value.
+
+## Background Agent Lessons
+
+Background agents work best when their environment is good enough to close the
+loop:
+
+- dependencies installed
+- services start reliably
+- tests and smoke checks are known
+- browser or visual verification exists for UI work
+- logs, telemetry, feature flags, and docs are reachable when relevant
+- repo setup is reproducible
+
+Agent quality depends on environment quality. Missing setup makes the model
+look worse and increases retries.
+
+This repo is intentionally small enough that the environment can be understood
+and verified during a workshop, while still showing the same boundaries a larger
+enterprise setup needs.
+
+
+Setup
+=====
+
+From the repo root:
+
+```bash
+brew install mise
+mise install
+mise run fe:install
+mise run bff:install
+```
+
+Start the stack in three terminals:
+
+```bash
+mise run be:start
+mise run bff:start
+mise run fe:start
+```
+
+Open:
+
+```text
+http://localhost:4200
+```
+
+
+Verification Ladder
+===================
+
+Use the smallest useful check first.
+
+Offline checks:
+
+```bash
+mise run contracts:check
+mise run be:test
+mise run bff:build
+mise run fe:build
+mise run verify
+```
+
+Smoke checks when the app stack is running:
+
+```bash
+mise run api:smoke
+mise run ui:smoke:install
+mise run ui:smoke
+```
+
+Heavier testautomation when the app stack is running:
+
+```bash
+mise run api:testautomation
+mise run ui:install-browsers
+mise run ui:testautomation
+```
+
+CI-style check:
+
+```bash
+mise run ci
+```
+
+Expected evidence for a non-trivial change:
+
+- Command run.
+- Target URL or service.
+- Visible signal or asserted API field.
+- Missing evidence, if any.
+- Screenshot or browser note for UI behavior.
+- Remaining gap or human-review item.
+
+
+Change Workflow
+===============
+
+1. Read `docs/demo-task.md` and the relevant component README.
+2. Check `solution/cobold-briefing/` and `contracts/` before changing behavior.
+3. If behavior changes, update solution or contract artifacts before or
+   alongside implementation.
+4. Keep readiness logic in `backend/`.
+5. Keep BFF mapping thin.
+6. Keep the UI focused on rendering and interaction.
+7. Run the smallest useful verification gate.
+8. Add smoke or testautomation when the change crosses service boundaries.
+9. Attach evidence.
+10. Review drift between solution, contract, code, tests, and docs.
+
+
+Non-Goals
+=========
+
+Do not add these unless the workshop task explicitly changes:
+
+- Persistence.
+- Authentication.
+- User management.
+- Real risk scoring engine.
+- Historical reporting.
+- Enterprise workflow integration.
+- Large UI redesign.
+
+Do not duplicate readiness rules in the BFF or frontend.
+
+Do not treat generated build folders or `node_modules` as source.
+
+Do not commit secrets, local IPs, Cloudflare tokens, Datadog API keys,
+kubeconfig changes, or local Terraform values.
+
+
+Deployment Shape
+================
+
+The deployed app runs on the `pai` K3s host.
+
+Production host:
+
+```text
+https://cobold.pragmatic-ai.engineer
+```
+
+Preview host pattern:
+
+```text
+https://pr-<number>.cobold.pragmatic-ai.engineer
+```
+
+Runtime and deployment surfaces:
+
+- Images are published under `ghcr.io/greg0x`.
+- GitHub Actions builds and deploys.
+- The self-hosted runner deploys to local K3s with Helm.
+- App Helm chart lives in `deploy/helm/cobold-vs-hero/`.
+- K3s bootstrap lives in `infra/ansible/`.
+- Cloudflare DNS lives in `infra/terraform/cloudflare/`.
+- Datadog setup is optional and documented in `docs/observability-datadog.md`.
+
+For deployment changes, inspect the real files before acting. Deployment state,
+DNS, TLS, runner state, and credentials can drift.
+
+
+Workshop Facilitation Notes
+===========================
+
+Useful questions for participants:
+
+- What is the smallest useful slice?
+- Which surfaces does it touch?
+- What evidence would convince a reviewer?
+- Which evidence can be checked cheaply?
+- Which risk flags should stop the implementation before it starts?
+- Does the contract match the code and smoke checks?
+- Is the BFF mapping thin, or did domain behavior leak into it?
+- Does the UI show enough evidence for a reviewer?
+- What command proves the claim?
+- What gap remains after the command passes?
+
+Useful agent prompts:
+
+```text
+Read llms-full.txt and docs/demo-task.md. Explain the app flow to a new
+participant in 10 bullets.
+```
+
+```text
+Read llms-full.txt and inspect the backend controller. Find any drift between
+the documented evidence rules and implementation.
+```
+
+```text
+Read llms-full.txt and propose the cheapest verification path for a change that
+touches backend, BFF, frontend, and contract.
+```
+
+```text
+Read llms-full.txt. Act as the Cobold reviewer for this proposed change:
+<change>. Return required evidence, likely missing evidence, stop condition,
+and the first command to run.
+```
+
+
+How Agents Should Work In This Repo
+===================================
+
+Good agent behavior:
+
+- Inspect the real file before editing it.
+- Keep changes scoped to the requested layer.
+- Prefer repo-owned `mise` commands over one-off shell recipes.
+- Update contracts and solution notes when behavior changes.
+- Run targeted tests before broader gates.
+- Report command, result, and remaining gaps.
+- Cite file paths and line numbers during review.
+- Treat passing tests as evidence, not as proof that product scope is correct.
+
+Bad agent behavior:
+
+- Inventing hidden business requirements.
+- Copying old Omni workshop material into this repo.
+- Adding persistence, auth, or a risk engine without being asked.
+- Moving readiness rules into BFF or frontend.
+- Calling a change complete without evidence.
+- Rewriting unrelated docs or infrastructure.
+- Committing local secrets or machine-specific values.
+
+
+Glossary
+========
+
+`Cobold reviewer`
+: Risk-aware review persona. It asks what can go wrong and what evidence is
+missing.
+
+`Hero proposer`
+: Delivery persona proposing a useful change.
+
+`Review Readiness Matrix`
+: Surface-by-surface view of expected evidence, provided evidence, gap, and next
+action.
+
+`truce`
+: Signal for a small review-ready slice.
+
+`sparring`
+: Signal for a useful slice with missing or high-risk evidence that needs
+sharper proof.
+
+`shield-wall`
+: Signal for a broad or risky change that should be split before
+implementation.
+
+`HLD`
+: High-level design. Explains intent, boundaries, participants, flow, risks,
+and non-goals.
+
+`LLD`
+: Low-level design. Explains endpoint behavior, mapping, validation, edge cases,
+and implementation details.
+
+`Bruno smoke`
+: Fast participant-friendly API smoke collection under `smoke/api`.
+
+`DPS-like testautomation`
+: Deeper Python API automation lane under `testautomation/api`.
+
+`OneCare-like testautomation`
+: Deeper Python browser automation lane under `testautomation/ui`.
+
+`mise`
+: Shared task runner and tool-version surface for humans, agents, and CI.

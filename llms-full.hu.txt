@@ -1,0 +1,883 @@
+# Cobold vs Hero - magyar agent kontextuscsomag
+
+Frissitve: 2026-07-02
+
+Ez a Cobold vs Hero workshop repo egyfajlos, agentnek feltoltheto vagy
+belinkelheto kontextuscsomagja. Arra valo, hogy egy resztvevo, facilitator,
+fejleszto, tesztelo vagy reviewer gyorsan megertse a repo celjat, app flow-jat,
+runtime formajat, ellenorzesi lepcsoit es workshop hatteret.
+
+Ez nem helyettesiti a source tree-t. Ha egy fajl elerheto lokalisan, valtoztatas
+elott a valodi fajlt kell megnezni.
+
+Angol kanonikus verzio: `llms-full.txt`.
+
+
+Ajanlott agent instrukcio
+=========================
+
+Ha ezt a fajlt feltoltod egy agentnek, ezt add melle:
+
+```text
+Ezt a dokumentumot kezeld elsodleges kontextusnak a Cobold vs Hero workshop
+reporol. Magyarul valaszolj. A valaszod a dokumentum es az explicit megadott
+repo-fajlok alapjan add. Ha pontos implementacios reszlet kell, kerd a source
+fajl megnezeset vagy repo-owned parancs futtatasat. Ne talalj ki rejtett
+enterprise mukodest, workshop 2 tartalmat, persistence-t, authenticationt vagy
+valodi risk engine-t. Maradj gyakorlatias, evidence-alapu es a repo delivery
+loopjahoz kotott.
+```
+
+
+Cel
+===
+
+A Cobold vs Hero a Pragmatic AI Engineer workshop kicsi, de vegigfuttathato
+software delivery demorepoja. Az app szandekosan egyszeru, de a repo megtartja
+egy valosabb delivery rendszer fontos hatarait:
+
+- Spring Boot backend.
+- NestJS BFF.
+- Angular frontend.
+- OpenAPI, PlantUML es minta payload contractok.
+- Bruno API smoke ellenorzesek.
+- Playwright UI smoke ellenorzesek.
+- Python API es UI testautomation savok.
+- Helm deployment.
+- K3s, Cloudflare es opcionalis Datadog infrastruktura.
+- Kozos `mise` parancsok embereknek, CI-nak es agenteknek.
+
+A tanitasi cel nem a fantasy tema. A tanitasi cel a kontrollalt AI-asszisztalt
+delivery:
+
+```text
+homalyos keres
+-> scope-olt feladat
+-> HLD es LLD
+-> futtathato contractok
+-> kis vertikalis implementacio
+-> retegezett ellenorzes
+-> bizonyitek
+-> review dontes
+```
+
+Kozponti mondat:
+
+```text
+Az agent javasolhat. A delivery loop dont.
+```
+
+Az app konkret targyat ad annak a beszelgetesnek, hogy az AI-asszisztalt munkat
+hogyan kell scope-olni, ellenorizni, review-zni es szallitani.
+
+
+Mit nem tartalmaz ez a fajl
+==========================
+
+Ez a fajl csak az aktualis Cobold vs Hero repot es az aktualis workshop
+baseline-t irja le.
+
+Szandekosan nincs benne:
+
+- Korabbi Omni jegyzetekbol szarmazo, csak tervezett Workshop 2 tartalom.
+- Privat enterprise kod vagy valodi ugyfelrendszer reszlet.
+- Secret, lokalis IP, kubeconfig, Cloudflare token, Datadog API key vagy
+  personal access token.
+- Allitas arrol, hogy az appban van persistence, authentication, user
+  management, historical reporting vagy valodi scoring engine.
+
+Ha egy kerdes repo-n kivuli tartalomtol fugg, mondd azt, hogy a
+kontextuscsomag alapjan nincs eleg informacio.
+
+
+Termek mentalis modell
+======================
+
+A termek viselkedese: Review Readiness Matrix.
+
+```text
+Angular UI
+-> NestJS BFF
+-> Spring Boot API
+-> determinisztikus readiness szabalyok
+-> signal + evidence + matrix
+```
+
+A felhasznalo leir egy tervezett delivery valtoztatast, kivalasztja az erintett
+feluleteket, a rendelkezesre allo bizonyitekokat es a risk flag-eket. A rendszer
+egy readiness signalt ad:
+
+- `truce` - biztonsagos kezdo szelet, review-ready ha a bizonyitek is megmarad.
+- `sparring` - hasznos szelet, de hianyos a bizonyitek.
+- `shield-wall` - tul kockazatos vagy tul szeles; implementacio elott szet
+  kell bontani.
+
+A Hero proposer a delivery szerep, aki hasznos valtoztatast javasol.
+
+A Cobold reviewer az adversarial review szerep, aki azt kerdezi: mi romolhat
+el, es milyen bizonyitek hianyzik?
+
+A matrix produktivva teszi a vitat: a "biztonsagos ez?" kerdesbol szukseges
+bizonyitek, hianyzo bizonyitek, stop condition, kovetkezo lepes es
+feluletenkenti review sor lesz.
+
+
+Aktualis workshop baseline
+==========================
+
+A repo egy mukodo Review Readiness Matrix eszkozzel indul. A resztvevoknek nem
+nullarol kell appot bootstrapelniuk, hanem egy teljes szeleten gyakorolhatjak az
+AI delivery loop javitasat.
+
+A baseline tartalmazza:
+
+- Java backend osztalyozas.
+- NestJS BFF mapping.
+- Angular UI rendereles.
+- OpenAPI contract.
+- PlantUML flow es state diagramok.
+- Minta request es response payloadok.
+- Bruno API smoke ellenorzesek.
+- Playwright UI smoke ellenorzesek.
+- DPS-szeru Python API testautomation.
+- OneCare-szeru Python UI testautomation.
+- HLD, LLD, dontesek, acceptance es test plan.
+
+Kiindulo task:
+
+```text
+The briefing is too vague. Make it useful enough that a team can decide
+whether a proposed change is safe to start, needs sharper acceptance criteria,
+or must be split before implementation.
+```
+
+Implementalt scope:
+
+```text
+Egy tervezett delivery lepeshez a felhasznalo kivalasztja az erintett
+feluleteket es a rendelkezesre allo bizonyitekokat. A rendszer readiness
+signalt, szukseges bizonyitekokat, hianyzo bizonyitekokat, stop conditiont,
+kovetkezo lepest es review readiness matrixot ad vissza. A UI olvashatova
+teszi a matrixot, a viselkedest Bruno, DPS-szeru automatizacio es bongeszos
+bizonyitek ellenorzi.
+```
+
+
+Repo terkep
+===========
+
+```text
+cobold-vs-hero/
+  backend/             Spring Boot API, Java 17, Gradle
+  bff/                 NestJS BFF, TypeScript
+  frontend/            Angular app
+  solution/            HLD, LLD, dontesek, acceptance plan
+  contracts/           OpenAPI, PlantUML, minta payloadok
+  smoke/
+    api/               Bruno API smoke ellenorzesek
+    ui/                Playwright browser smoke ellenorzesek
+  testautomation/
+    api/               Python API automatizacio
+    ui/                Python UI automatizacio
+  deploy/              Helm chart es Datadog deployment support
+  infra/               Ansible, Cloudflare Terraform, Centaur jegyzetek
+  docs/                resztvevoi doksik es referencia jegyzetek
+  ai-runbook/          kozos AI-asszisztalt munkautasitasok
+  mise.toml            kozos tool verziok es parancsok
+  llms-full.txt        angol agent kontextuscsomag
+  llms-full.hu.txt     ez a magyar kontextuscsomag
+```
+
+Kezdeshez ezeket olvasd:
+
+1. `docs/onboarding/README.hu.md` - repo tura, runtime terkep, ellenorzesi ut,
+   valtoztatasi workflow.
+2. `docs/demo-task.hu.md` - workshop baseline, feature szandek, API forma,
+   elfogadasi feltetelek.
+3. `solution/cobold-briefing/README.hu.md` - HLD, LLD, dontesek es tesztterv.
+4. `contracts/README.md` - futtathato API es diagram contract.
+5. Az erintett komponens README-je.
+
+
+Komponens felelossegek
+======================
+
+Angular frontend:
+
+- Begyujti a change title es description mezoket.
+- Kivalaszthato az affected surfaces, provided evidence es risk flags.
+- Meghivja a BFF-et: `/api/cobold-vs-hero/status`.
+- Meghivja a BFF-et: `/api/cobold-vs-hero/briefing`.
+- Rendereli a service statust, signalt, stop conditiont, next actiont,
+  evidence summaryt es matrix sorokat.
+
+NestJS BFF:
+
+- Stabilan tartja a UI-facing API-t.
+- Tovabbitja a briefing requestet a backendnek.
+- A backend `heroNextStep` mezojet UI `nextAction` mezore mapeli.
+- Osszesiti a BFF es backend runtime statust.
+- Nem o birtokolja a readiness szabalyokat.
+
+Spring Boot backend:
+
+- O birtokolja a readiness szabalyokat.
+- Levezeti a szukseges bizonyitekot az erintett feluletekbol es risk
+  flag-ekbol.
+- Kiszamolja a hianyzo bizonyitekot.
+- Kiszamolja a vegso signalt.
+- Minden erintett felulethez review matrix sort keszit.
+- Backend runtime status endpointot ad.
+
+Contractok:
+
+- OpenAPI az API forma.
+- PlantUML diagramok magyarazzak a flow-t es state-et.
+- Minta payloadok rogzitik a reprezentativ `truce`, `sparring` es
+  `shield-wall` eseteket.
+
+Verification savok:
+
+- `smoke/api` - gyors Bruno API check.
+- `smoke/ui` - gyors Playwright browser check.
+- `testautomation/api` - melyebb Python API suite.
+- `testautomation/ui` - melyebb Python browser suite.
+
+
+Runtime forma
+=============
+
+Lokalis fejleszteshez harom processz kell:
+
+```text
+Backend   Spring Boot   http://localhost:8080
+BFF       NestJS        http://localhost:3000
+Frontend  Angular      http://localhost:4200
+```
+
+Lokalis request path:
+
+```text
+Browser
+-> Angular dev server
+-> /api proxy
+-> NestJS BFF
+-> Spring Boot API
+```
+
+Az Angular app relativ `/api` URL-eket hasznal. Az Angular dev server ezeket a
+BFF fele proxyzza. A BFF a `BACKEND_BASE_URL` valtozot hasznalja, vagy alapbol
+`http://localhost:8080` cimre megy.
+
+
+API felulet
+===========
+
+Status endpoint:
+
+```text
+GET /api/cobold-vs-hero/status
+```
+
+A UI a BFF status endpointot hivja. A BFF jelenti sajat magat, megprobalja
+eleresni a backendet, majd aggregate statust ad:
+
+- `UP`, ha mindket service elerheto.
+- `DEGRADED`, ha a backend status probe hibazik.
+
+Briefing endpoint:
+
+```text
+POST /api/cobold-vs-hero/briefing
+```
+
+Request:
+
+```json
+{
+  "changeTitle": "Billing retry status panel",
+  "changeDescription": "Add one backend endpoint, one BFF mapper, and one Angular panel.",
+  "affectedSurfaces": ["backend", "bff", "frontend", "contract", "testing"],
+  "providedEvidence": ["backend-test", "hld", "lld"],
+  "riskFlags": ["customer-data", "unclear-scope"]
+}
+```
+
+Response:
+
+```json
+{
+  "signal": "sparring",
+  "headline": "Useful slice, but evidence is incomplete.",
+  "requiredEvidence": ["backend-test", "bruno-smoke", "dps-testautomation", "browser-screenshot", "hld", "lld"],
+  "missingEvidence": ["bruno-smoke", "dps-testautomation", "browser-screenshot"],
+  "stopCondition": "Do not request implementation review until API smoke and browser evidence are planned.",
+  "heroNextStep": "Add Bruno smoke and browser evidence before implementation review.",
+  "reviewMatrix": [
+    {
+      "surface": "backend",
+      "expectedEvidence": ["backend-test"],
+      "providedEvidence": ["backend-test"],
+      "gap": "covered",
+      "nextAction": "Keep backend assertion attached to the PR."
+    }
+  ]
+}
+```
+
+BFF field mapping:
+
+```text
+backend.heroNextStep -> ui.nextAction
+minden mas briefing mezo neve valtozatlan
+```
+
+
+Readiness inputok
+=================
+
+Affected surfaces:
+
+- `backend`
+- `bff`
+- `frontend`
+- `contract`
+- `testing`
+
+Provided evidence:
+
+- `backend-test`
+- `bruno-smoke`
+- `dps-testautomation`
+- `browser-screenshot`
+- `hld`
+- `lld`
+
+Risk flags:
+
+- `production`
+- `customer-data`
+- `auth`
+- `payment`
+- `unclear-scope`
+
+
+Evidence szabalyok
+==================
+
+Alap bizonyitek feluletenkent:
+
+| Felulet | Szukseges bizonyitek |
+| --- | --- |
+| `backend` | `backend-test` |
+| `bff` | `bruno-smoke` |
+| `frontend` | `browser-screenshot` |
+| `contract` | `bruno-smoke` |
+| `testing` | `dps-testautomation` |
+
+Design evidence:
+
+- Barmilyen tobbfeluletes valtozas `hld` es `lld` bizonyitekot igenyel.
+- `unclear-scope` eseten szinten kell `hld` es `lld`.
+
+Risk evidence:
+
+| Risk flag | Plusz bizonyitek |
+| --- | --- |
+| `production` | `dps-testautomation`, `browser-screenshot` |
+| `customer-data` | `dps-testautomation` |
+| `auth` | `dps-testautomation` |
+| `payment` | `dps-testautomation`, `browser-screenshot` |
+| `unclear-scope` | `hld`, `lld` |
+
+High-risk flag-ek:
+
+- `production`
+- `payment`
+- `auth`
+
+
+Signal szabalyok
+================
+
+A backend determinisztikus szabalyokat hasznal:
+
+| Feltetel | Signal |
+| --- | --- |
+| nincs hianyzo bizonyitek es nincs high-risk flag | `truce` |
+| egy vagy ket hianyzo bizonyitek es nincs high-risk flag | `sparring` |
+| high-risk flag teljes bizonyitekkal | `sparring` |
+| kettinel tobb hianyzo bizonyitek | `shield-wall` |
+| barmely high-risk flag hianyzo bizonyitekkal | `shield-wall` |
+
+Fontos tanitasi pont: ez nem model output. A szabalyok atlathatoak, hogy a
+resztvevok lassak az ok-okozatot.
+
+
+Miert egyszeru az app
+====================
+
+Az app azert egyszeru, mert workshop instrumentum, nem production risk platform.
+
+Az egyszeruseg miatt a teljes delivery loop lathato:
+
+- Homalyos keresbol scope-olt feature lesz.
+- HLD es LLD review-olhatova teszi a szandekot kod elott.
+- OpenAPI es mintak futtathatova teszik a service hatart.
+- Backend szabalyok egy helyen tartjak a domain viselkedest.
+- BFF mapping megmutatja, hogyan stabilizaljuk a UI contractot domain logika
+  duplikalasa nelkul.
+- UI rendereles review-olhato evidence-e alakitja az API tenyeket.
+- Smoke checkek es automatizacio kulonbozo koltsegu bizonyitekot adnak.
+- Deployment fajlok megmutatjak, hogyan lesz a lokalis appbol futo service.
+
+A repo production-szeru delivery hatarokat mutat production-meretu uzleti
+komplexitas nelkul.
+
+
+Continuous Delivery hatter
+==========================
+
+A workshop ezt a loopot modellezi:
+
+```text
+Idea -> solution -> contracts -> implementation -> verification -> package -> deploy -> evidence -> learning
+```
+
+Jo delivery gyakorlat ebben a repoban:
+
+- Scope, non-goals, risks es acceptance criteria legyen eloszor.
+- HLD, LLD, dontesek es contractok legyenek lathatoak implementacio elott.
+- A valtozas legyen eleg vekony ahhoz, hogy minden retegen atmenjen.
+- Mindig a legolcsobb hasznos ellenorzessel kezdj.
+- Az evidence-et rogzitsd, ne emlekezetbol epitsd ujra.
+- CI, lokalis parancsok, manual smoke es agent workflow ugyanarra a feluletre
+  tamaszkodjon.
+- Az AI legyen a delivery rendszer resze, ne kulon chat transcript.
+
+A scorecard nem az, hogy "irt-e kodot az AI". A scorecard az, hogy a csapat
+erti, ellenorizni tudja, review-zni tudja es biztonsagosan shipelni tudja-e a
+valtozast.
+
+
+High-signal kutatasi jelek
+==========================
+
+A workshop mogotti kutatasi jegyzetek nehany kozponti mukodesi szabalyra
+futnak ki. Ezeket hasznald, amikor azt kell elmagyarazni, miert ilyen a repo,
+vagy amikor a demobol csapatgyakorlatot kell csinalni.
+
+## QRSPI mint munkaformalo loop
+
+Jelentosebb AI-asszisztalt coding munkanal egy nagy prompt helyett staged
+workflowt hasznalj:
+
+```text
+Questions
+-> Research
+-> Design Discussion
+-> Structure Outline
+-> Plan
+-> Worktree / Vertical Slices
+-> Implement
+-> Validate / Review / PR / Handoff
+```
+
+Nem az acronym a lenyeg. A lenyeg az, hogy a rejtett prompt-control-flow
+review-olhato valodi lepesekre bomlik:
+
+- Kerdes kutatas elott.
+- Tenyek kutatasa a jelenlegi rendszerrol megoldasjavaslat elott.
+- Design review taktikai plan elott.
+- Vertikalis slice structure implementacio elott.
+- Evidence definialasa az output elhivese elott.
+- Fresh context vagy durable handoff, amikor a session tulzsufoltta valik.
+
+Ebben a repoban a `docs/demo-task.md`, a `solution/cobold-briefing/`, a
+`contracts/`, valamint a smoke/testautomation savok ennek a konnyu Cobold
+valtozatai.
+
+## Context, harness, loop
+
+A workshop rovid formulaja:
+
+```text
+prompt -> context -> harness -> loop
+```
+
+Prompt a keres. Context az, amit az agentnek tudnia kell. Harness az agent
+koruli guide-ok es sensorok rendszere. Loop az ismelt act, check, learn,
+improve ciklus.
+
+Egy gyakorlati harness ket fele:
+
+- Guide-ok az agent cselekvese elott: task scope, architecture rules, peldak,
+  `README` fajlok, HLD/LLD, contractok, coding standards es run parancsok.
+- Sensorok az agent cselekvese utan: tesztek, type checkek, lint, smoke
+  checkek, browser evidence, logok, review findings es manual QA.
+
+Korai korben determinisztikus sensorokat hasznalj. Szemantikus vagy AI review
+kesobb jo, amikor judgment kell. Egy masodik AI reviewer segithet, de nem
+helyettesiti a futtathato evidence-et.
+
+A behavior a legnehezebb harness. Zold, generalt tesztek is tesztelhetik a
+rossz dolgot, ezert product judgment, acceptance criteria es browser/user
+evidence tovabbra is a loop resze.
+
+## Fajlok mint workflow architecture
+
+Szekvencialis, ember altal review-zott AI workflowknal gyakran a fajlok a
+legtisztabb orchestration layer:
+
+- Stabil referenciak: conventionok, policyk, peldak, context packek,
+  standardok es ujrahasznalhato jegyzetek.
+- Run-specifikus artifactok: kerdesek, research, design note, plan, evidence,
+  validation report es handoff.
+
+Ne hagyatkozz hosszu chat transcriptre mint a munka egyetlen memoriajara. A
+fontos donteseket durable fajlokba kell menteni, hogy a kovetkezo agent vagy
+csapattag inspectalni tudja oket.
+
+Ez a `llms-full.hu.txt` context pack, nem transcript. Azt mondja meg az
+agentnek, mi eleg fontos a jo indulashoz; a pontos implementacios reszletekhez
+tovabbra is a live repot kell inspectalni.
+
+## Cost, routing es Legroom
+
+A hasznos gazdasagi egyseg nem a "token", hanem:
+
+```text
+cost per accepted, verified engineering outcome
+```
+
+Jo routing a legolcsobb olyan setuppal indul, amely valoszinuleg elfogadhato
+rework mellett meg tudja oldani a feladatot. Eskalalj, ha konkret evidence van:
+
+- failed test vagy type check egy egyszeru retry utan
+- ellentmondo architectural assumption
+- hallucinated fajl, API vagy business rule
+- ismetlodo low-signal tool use
+- security, data, payment, auth vagy production risk
+- planning vagy review omission, ami ujabb teljes passt igenyel
+
+Rossz routing, ha mindenre premium modellt hasznalunk, ugyanazt a sikertelen
+promptot probaljuk ujra context valtoztatas nelkul, vagy benchmark rankot
+hasznalunk task-specifikus verification helyett.
+
+A Legroom az a lokalis projekt, ami ezt kezzelfoghatova teszi. Jelenlegi
+formajaban local-first Rust control plane AI coding harness-ekhez, Claude Code
+proxyval indulva. Product loopja:
+
+```text
+enable useful models
+-> observe real model traffic
+-> identify waste or friction
+-> test one optimization
+-> settle better local defaults
+-> make the result portable
+```
+
+Workshop resztvevoknek a Legroom tanulsaga nem az, hogy "ezt az egy proxyt kell
+hasznalni". A tanulsag az, hogy model choice, context pressure, cache behavior,
+cost, route metadata es verification evidence legyen lathato engineering
+signal. A routing legyen magyarazhato, mielott automatikussa valik.
+
+## Compound engineering
+
+Az AI-asszisztalt munka ne csak a mostani feladatot gyorsitsa, hanem tegye
+konnyebbe a kovetkezot.
+
+Hasznos loop:
+
+```text
+decide what matters
+-> make a plan
+-> let agents do bounded work
+-> review and verify
+-> extract reusable knowledge
+-> make the next run cheaper or better
+```
+
+Ebben a repoban a compounding azt jelenti:
+
+- solution es contract artifactok maradjanak osszhangban a koddal
+- ismetlodo review feedbackbol legyen tisztabb instrukcio vagy teszt
+- parancsok, smoke checkek, browser checkek es review evidence-e maradjon meg
+- context packek legyenek megtalalhatoak
+- merheto legyen, hogy egy kesobbi run ujrahasznalt-e korabbi artifactot, vagy
+  ujra felfedezte ugyanazokat a tenyeket
+
+Ha a jovobeli munka nem lesz tisztabb, olcsobb, biztonsagosabb vagy konnyebben
+review-olhato, akkor a folyamat ceremonialis, nem compounding value.
+
+## Background agent tanulsagok
+
+A background agent akkor mukodik jol, ha az environment eleg jo ahhoz, hogy
+zarni tudja a loopot:
+
+- dependencies telepitve vannak
+- service-ek megbizhatoan indulnak
+- tesztek es smoke checkek ismertek
+- UI munkahoz van browser vagy visual verification
+- relevans log, telemetry, feature flag es doksi elerheto
+- repo setup reprodukalhato
+
+Az agent minoseget korlatozza az environment minosege. Hianyos setup miatt a
+modell rosszabbnak tunik es tobb retry kell.
+
+Ez a repo szandekosan eleg kicsi ahhoz, hogy a workshop alatt megertheto es
+ellenorizheto legyen az environment, mikozben ugyanazokat a hatarokat mutatja,
+amelyek egy nagyobb enterprise setuphoz is kellenek.
+
+
+Setup
+=====
+
+A repo rootbol:
+
+```bash
+brew install mise
+mise install
+mise run fe:install
+mise run bff:install
+```
+
+A stack inditasa harom terminalban:
+
+```bash
+mise run be:start
+mise run bff:start
+mise run fe:start
+```
+
+Nyisd meg:
+
+```text
+http://localhost:4200
+```
+
+
+Ellenorzesi lepcso
+==================
+
+Mindig a legkisebb hasznos ellenorzest valaszd.
+
+Offline checkek:
+
+```bash
+mise run contracts:check
+mise run be:test
+mise run bff:build
+mise run fe:build
+mise run verify
+```
+
+Smoke checkek, ha fut az app stack:
+
+```bash
+mise run api:smoke
+mise run ui:smoke:install
+mise run ui:smoke
+```
+
+Melyebb testautomation, ha fut az app stack:
+
+```bash
+mise run api:testautomation
+mise run ui:install-browsers
+mise run ui:testautomation
+```
+
+CI-szeru check:
+
+```bash
+mise run ci
+```
+
+Elvart evidence egy nem trivialis valtozashoz:
+
+- Futott parancs.
+- Cel URL vagy service.
+- Lathato signal vagy assertalt API mezo.
+- Hianyzo bizonyitek, ha van.
+- Screenshot vagy browser jegyzet UI viselkedeshez.
+- Megmaradt gap vagy human-review pont.
+
+
+Valtoztatasi workflow
+=====================
+
+1. Olvasd el a `docs/demo-task.hu.md` fajlt es az erintett komponens README-jet.
+2. Nezd meg a `solution/cobold-briefing/` es `contracts/` artifactokat
+   viselkedesvaltoztatas elott.
+3. Ha viselkedes valtozik, frissitsd a solution vagy contract artifactokat
+   implementacio elott vagy azzal egyutt.
+4. A readiness logika maradjon a `backend/` alatt.
+5. A BFF mapping maradjon vekony.
+6. A UI a renderelesre es interakciora fokuszaljon.
+7. Futtasd a legkisebb hasznos verification gate-et.
+8. Service-hatart atlepo valtozasnal adj smoke vagy testautomation checket.
+9. Csatolj evidence-et.
+10. Review-zd a driftet solution, contract, code, tests es docs kozott.
+
+
+Non-goals
+=========
+
+Ezeket ne add hozza, hacsak a workshop task explicit nem keri:
+
+- Persistence.
+- Authentication.
+- User management.
+- Valodi risk scoring engine.
+- Historical reporting.
+- Enterprise workflow integration.
+- Nagy UI redesign.
+
+Ne duplikald a readiness szabalyokat a BFF-ben vagy frontendben.
+
+Ne kezeld source-kent a generated build mappakat vagy `node_modules` tartalmat.
+
+Ne commitolj secrettet, lokalis IP-t, Cloudflare tokent, Datadog API key-t,
+kubeconfig valtozast vagy lokalis Terraform ertekeket.
+
+
+Deployment forma
+================
+
+A deployolt app a `pai` K3s hoston fut.
+
+Production host:
+
+```text
+https://cobold.pragmatic-ai.engineer
+```
+
+Preview host minta:
+
+```text
+https://pr-<number>.cobold.pragmatic-ai.engineer
+```
+
+Runtime es deployment feluletek:
+
+- Image-ek: `ghcr.io/greg0x`.
+- GitHub Actions buildel es deployol.
+- Self-hosted runner deployol lokalis K3s-re Helmmel.
+- App Helm chart: `deploy/helm/cobold-vs-hero/`.
+- K3s bootstrap: `infra/ansible/`.
+- Cloudflare DNS: `infra/terraform/cloudflare/`.
+- Datadog setup opcionalis: `docs/observability-datadog.md`.
+
+Deployment valtozas elott mindig nezd meg a valodi fajlokat. Deployment state,
+DNS, TLS, runner state es credentials driftelhet.
+
+
+Facilitator jegyzetek
+=====================
+
+Hasznos kerdesek resztvevoknek:
+
+- Mi a legkisebb hasznos szelet?
+- Melyik feluleteket erinti?
+- Milyen bizonyitek gyozne meg egy reviewert?
+- Melyik bizonyitek ellenorizheto olcson?
+- Mely risk flag allitsa meg az implementaciot mar elotte?
+- A contract egyezik a koddal es smoke checkkel?
+- A BFF mapping vekony, vagy domain logika szivargott bele?
+- A UI eleg evidence-et mutat egy reviewernek?
+- Melyik parancs bizonyitja az allitast?
+- Milyen gap marad a sikeres parancs utan?
+
+Hasznos agent promptok:
+
+```text
+Olvasd el a llms-full.hu.txt es docs/demo-task.hu.md fajlokat. Magyarazd el az
+app flow-t egy uj resztvevonek 10 pontban.
+```
+
+```text
+Olvasd el a llms-full.hu.txt fajlt es inspectald a backend controllert. Keress
+driftet a dokumentalt evidence szabalyok es az implementacio kozott.
+```
+
+```text
+Olvasd el a llms-full.hu.txt fajlt es javasold a legolcsobb verification pathot
+egy backend, BFF, frontend es contract feluletet erinto valtozashoz.
+```
+
+```text
+Olvasd el a llms-full.hu.txt fajlt. Cobold reviewerkent ertekeld ezt a
+tervezett valtoztatast: <change>. Add vissza a required evidence-et, likely
+missing evidence-et, stop conditiont es az elso futtatando parancsot.
+```
+
+
+Hogyan dolgozzon agent ebben a repoban
+======================================
+
+Jo agent viselkedes:
+
+- Valtoztatas elott inspectalja a valodi fajlt.
+- A kert retegre szukiti a diffet.
+- Repo-owned `mise` parancsokat hasznal egyedi shell receptek helyett.
+- Frissiti a contractokat es solution jegyzeteket, ha a viselkedes valtozik.
+- Celozott tesztekkel kezd, csak utana futtat nagyobb gate-et.
+- Jelenti a parancsot, eredmenyt es megmaradt gapet.
+- Review kozben fajl- es sorszamra hivatkozik.
+- A sikeres tesztet evidence-kent kezeli, nem scope-bizonyitekkent.
+
+Rossz agent viselkedes:
+
+- Rejtett business requirement kitalalasa.
+- Regi Omni workshop anyag masolasa ebbe a repoba.
+- Persistence, auth vagy risk engine hozzaadasa keres nelkul.
+- Readiness szabalyok atvitele BFF-be vagy frontendbe.
+- "Kesz" allitas evidence nelkul.
+- Nem kapcsolodo doksik vagy infrastruktura atirasa.
+- Lokalis secret vagy gep-specifikus ertek commitolasa.
+
+
+Szotar
+======
+
+`Cobold reviewer`
+: Kockazaterzekeny review persona. Azt kerdezi, mi romolhat el es milyen
+bizonyitek hianyzik.
+
+`Hero proposer`
+: Delivery persona, aki hasznos valtoztatast javasol.
+
+`Review Readiness Matrix`
+: Feluletenkenti nezet expected evidence, provided evidence, gap es next action
+mezokkel.
+
+`truce`
+: Kis, review-ready szelet signala.
+
+`sparring`
+: Hasznos szelet signala, ahol hianyzo vagy high-risk evidence miatt meg
+pontosabb bizonyitek kell.
+
+`shield-wall`
+: Szeles vagy kockazatos valtozas signala, amit implementacio elott szet kell
+bontani.
+
+`HLD`
+: High-level design. Szandek, hatarok, szereplok, flow, risk es non-goals.
+
+`LLD`
+: Low-level design. Endpoint viselkedes, mapping, validacio, edge case-ek es
+implementacios reszletek.
+
+`Bruno smoke`
+: Gyors, resztvevobarat API smoke collection: `smoke/api`.
+
+`DPS-like testautomation`
+: Melyebb Python API automatizacios sav: `testautomation/api`.
+
+`OneCare-like testautomation`
+: Melyebb Python browser automatizacios sav: `testautomation/ui`.
+
+`mise`
+: Kozos task runner es tool-version felulet embereknek, agenteknek es CI-nak.
