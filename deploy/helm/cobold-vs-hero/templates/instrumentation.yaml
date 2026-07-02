@@ -3,6 +3,10 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: Instrumentation
 metadata:
   name: {{ .Values.observability.opentelemetry.instrumentation.name }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
   labels:
     {{- include "cobold-vs-hero.labels" . | nindent 4 }}
 spec:
@@ -12,6 +16,9 @@ spec:
     {{- range splitList "," .Values.observability.opentelemetry.propagators }}
     - {{ . | trim | quote }}
     {{- end }}
+  sampler:
+    type: {{ .Values.observability.opentelemetry.sampler.type | quote }}
+    argument: {{ .Values.observability.opentelemetry.sampler.argument | quote }}
   env:
     - name: OTEL_EXPORTER_OTLP_PROTOCOL
       value: {{ .Values.observability.opentelemetry.exporter.protocol | quote }}

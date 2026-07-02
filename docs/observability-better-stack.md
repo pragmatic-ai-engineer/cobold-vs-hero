@@ -15,8 +15,27 @@ until the collector and OpenTelemetry Operator exist in the cluster.
 
 ## Better Stack collector
 
-Create a Better Stack Telemetry collector and copy its collector secret. Then
-install the collector with OTLP ports enabled:
+The preferred local path uses the Better Stack Telemetry API token stored in
+1Password item `better_stack-pragmatic-ai.engineer`, field `credential`. It
+creates or reuses a Kubernetes collector named `pai-cobold-vs-hero`, reads the
+generated collector secret, stores that secret in Kubernetes, and installs the
+collector Helm chart with OTLP ports enabled:
+
+```bash
+export KUBECONFIG=infra/ansible/.generated/kubeconfig-pai
+mise run obs:betterstack:collector:install:op
+```
+
+Override defaults only if needed:
+
+```bash
+export OP_BETTERSTACK_TOKEN_ITEM=better_stack-pragmatic-ai.engineer
+export OP_BETTERSTACK_TOKEN_FIELD=credential
+export BETTERSTACK_COLLECTOR_NAME=pai-cobold-vs-hero
+export BETTERSTACK_TEAM_NAME="<team name, only needed for global API tokens>"
+```
+
+If you already have a collector secret, you can install directly:
 
 ```bash
 export KUBECONFIG=infra/ansible/.generated/kubeconfig-pai
@@ -89,6 +108,9 @@ observability:
   serviceNamespace: cobold-vs-hero
   opentelemetry:
     propagators: tracecontext,baggage
+    sampler:
+      type: parentbased_traceidratio
+      argument: "1"
     instrumentation:
       enabled: true
       name: better-stack

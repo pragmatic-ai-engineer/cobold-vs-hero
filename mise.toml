@@ -157,6 +157,10 @@ helm upgrade --install better-stack-collector better-stack/collector \
   --set collectOtel.httpPort=4318
 """
 
+[tasks."obs:betterstack:collector:install:op"]
+description = "Create or reuse the Better Stack collector using the API token from 1Password, then install it"
+run = "./scripts/betterstack/install-collector-with-op-token.sh"
+
 [tasks."obs:otel:operator:install"]
 description = "Install the OpenTelemetry Operator used for Java and Node.js auto-instrumentation"
 run = "kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml"
