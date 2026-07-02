@@ -28,14 +28,23 @@ mise run obs:betterstack:collector:install
 The task runs the same shape Better Stack documents:
 
 ```bash
+kubectl create namespace observability --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n observability create secret generic better-stack-collector-secret \
+  --from-literal=COLLECTOR_SECRET="$COLLECTOR_SECRET" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
 helm repo add better-stack https://betterstackhq.github.io/collector-helm-chart
 helm upgrade --install better-stack-collector better-stack/collector \
   --namespace observability \
-  --create-namespace \
-  --set collector.env.COLLECTOR_SECRET="$COLLECTOR_SECRET" \
+  --set collector.env.COLLECTOR_SECRET="" \
+  --set 'collector.envFrom[0].secretRef.name=better-stack-collector-secret' \
   --set collectOtel.grpcPort=4317 \
   --set collectOtel.httpPort=4318
 ```
+
+After installing the collector, open Better Stack and navigate to
+`Sources -> your collector -> Configure -> Ingesting`, then enable
+OpenTelemetry SDK traces.
 
 Better Stack's eBPF auto-instrumentation expects a Linux kernel with the needed
 eBPF features. If traces do not appear, run their check from the docs:
@@ -145,6 +154,13 @@ Then verify in Better Stack:
 - Tracing shows Java backend and NestJS BFF spans.
 - The frontend application shows browser events after opening the deployed app.
 - Uptime has a monitor for `https://cobold.pragmatic-ai.engineer`.
+
+If traces are missing after the collector is healthy, restart the app workloads
+so the collector and OpenTelemetry instrumentation attach to fresh processes:
+
+```bash
+kubectl -n cobold rollout restart deploy/cobold-vs-hero-backend deploy/cobold-vs-hero-bff deploy/cobold-vs-hero-frontend
+```
 
 ## AI tooling
 

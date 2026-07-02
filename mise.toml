@@ -143,12 +143,16 @@ run = "./infra/terraform/cloudflare/scripts/terraform-with-op-token.sh apply"
 description = "Install or upgrade the Better Stack collector with OTLP ports enabled"
 run = """
 test -n "${COLLECTOR_SECRET:-}" || { echo "Set COLLECTOR_SECRET from Better Stack before installing the collector."; exit 1; }
+kubectl create namespace observability --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n observability create secret generic better-stack-collector-secret \
+  --from-literal=COLLECTOR_SECRET="$COLLECTOR_SECRET" \
+  --dry-run=client -o yaml | kubectl apply -f -
 helm repo add better-stack https://betterstackhq.github.io/collector-helm-chart
 helm repo update
 helm upgrade --install better-stack-collector better-stack/collector \
   --namespace observability \
-  --create-namespace \
-  --set collector.env.COLLECTOR_SECRET="$COLLECTOR_SECRET" \
+  --set collector.env.COLLECTOR_SECRET="" \
+  --set 'collector.envFrom[0].secretRef.name=better-stack-collector-secret' \
   --set collectOtel.grpcPort=4317 \
   --set collectOtel.httpPort=4318
 """
