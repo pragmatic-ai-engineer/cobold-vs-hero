@@ -4,8 +4,6 @@ import os
 
 import pytest
 
-pytest.importorskip("playwright.sync_api", reason="UI automation needs the playwright package")
-
 from playwright.sync_api import Error as PlaywrightError, sync_playwright  # noqa: E402
 
 from page_objects import CoboldBriefingPOM  # noqa: E402
@@ -27,7 +25,7 @@ def test_sparring_readiness_matrix_is_visible_in_browser() -> None:
         try:
             browser = playwright.chromium.launch(headless=headless)
         except PlaywrightError as error:
-            pytest.skip(f"Chromium is not installed for Playwright. Run: mise run ui:install-browsers. {error}")
+            pytest.fail(f"Chromium failed to launch for Playwright. Run: mise run ui:install-browsers. {error}")
 
         try:
             page = browser.new_page()

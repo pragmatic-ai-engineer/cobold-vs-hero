@@ -71,7 +71,7 @@ run = "npm install --registry=https://registry.npmjs.org && npm run install:brow
 [tasks."ui:smoke:ci-install"]
 description = "Install Playwright UI smoke dependencies for CI"
 dir = "smoke/ui"
-run = "npm ci --registry=https://registry.npmjs.org && npm run install:ci-browsers"
+run = "npm ci --registry=https://registry.npmjs.org && npm run install:browsers"
 
 [tasks."ui:smoke"]
 description = "Run quick Playwright UI smoke checks against the running frontend, BFF, and backend"
@@ -93,7 +93,7 @@ run = "PYTHONPATH=testautomation/api uv run --with pytest pytest testautomation/
 
 [tasks."ui:install-browsers"]
 description = "Install the Chromium browser used by Playwright UI testautomation"
-run = "uv run --with playwright python -m playwright install --with-deps chromium"
+run = "uv run --with playwright python -m playwright install chromium"
 
 [tasks."ui:testautomation"]
 description = "Run OneCare-like browser UI testautomation against the running frontend, BFF, and backend"

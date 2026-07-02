@@ -98,7 +98,8 @@ Then apply only the runner-related tasks:
 
 After a runner instance is registered once, the token is not needed for normal
 playbook runs. The runners run as the `github-runner` user, have Docker access
-for image builds, and have a local K3s kubeconfig for Helm deploys.
+for image builds, have a local K3s kubeconfig for Helm deploys, and have the
+Ubuntu libraries needed by Playwright Chromium smoke tests.
 
 ## What It Installs
 
@@ -112,6 +113,8 @@ for image builds, and have a local K3s kubeconfig for Helm deploys.
 - Namespaces for `cobold`, `centaur`, `data`, and `ci`.
 - Optional repo-level GitHub Actions runners for building images and deploying
   locally on `pai`.
+- Playwright Chromium host libraries for deployed UI smoke tests on the
+  self-hosted runners.
 
 The playbook fetches a local kubeconfig to:
 
