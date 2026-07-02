@@ -27,28 +27,28 @@ Idea -> solution -> contracts -> implementation -> verification -> package -> de
 
 ## Lifecycle Map
 
-| Lifecycle step | Workshop artifact | Best-practice signal |
-| --- | --- | --- |
-| Product/task framing | `docs/demo-task.md` | Work starts as a thin, reviewable slice with explicit non-goals. |
-| AI blueprint and team prompts | `ai-runbook/` | AI support is made explicit instead of hidden in ad hoc chat history. |
-| High-level design | `solution/cobold-briefing/hld.md` | Architecture boundaries, participants, risks, and non-goals are visible before code. |
-| Low-level design | `solution/cobold-briefing/lld.md` | Endpoint behavior, mapping, validation, and edge cases are concrete enough to implement. |
-| Decisions | `solution/cobold-briefing/decisions.md` | Tradeoffs are recorded so reviewers can judge intent, not only syntax. |
-| Acceptance and test plan | `solution/cobold-briefing/acceptance-and-test-plan.md` | Test evidence is designed before the implementation is called done. |
-| API contract | `contracts/openapi/cobold-briefing-api.yaml` | Backend, BFF, UI, smoke tests, and automation share one executable agreement. |
-| Flow/state diagrams | `contracts/plantuml/` | Complex behavior is visualized before it becomes scattered through code. |
-| Backend implementation | `backend/` | Java service owns domain behavior and unit-level confidence. |
-| BFF implementation | `bff/` | NestJS owns UI-facing mapping and isolates frontend shape from backend internals. |
-| Frontend implementation | `frontend/` | Angular owns the user workflow and screen-shareable evidence. |
-| Developer/manual tester smoke | `smoke/api`, `smoke/ui` | Fast checks prove the deployed shape without requiring the full automation stack. |
-| Heavier automation | `testautomation/api`, `testautomation/ui` | Robust API and browser suites protect repeatable regression paths. |
-| Local task runner | `mise.toml` | Tool versions and commands are shared by humans, agents, and CI. |
-| CI | `.github/workflows/ci.yaml` | Pull requests and pushes run the same verification entrypoint. |
-| Container packaging | `backend/Dockerfile`, `bff/Dockerfile`, `frontend/Dockerfile` | Services become immutable deployment artifacts. |
-| Kubernetes deployment | `deploy/helm/cobold-vs-hero/` | Runtime configuration is versioned and reviewable. |
-| Server bootstrap | `infra/ansible/` | Cluster and runner setup are reproducible instead of tribal knowledge. |
-| Edge/DNS infrastructure | `infra/terraform/cloudflare/` | External routing is managed as reviewed infrastructure code. |
-| Auto deploy | `.github/workflows/deploy.yaml` | The pipeline builds images, pushes them to GHCR, and deploys with Helm. |
+| Lifecycle step                | Workshop artifact                                             | Best-practice signal                                                                     |
+| ----------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Product/task framing          | `docs/demo-task.md`                                           | Work starts as a thin, reviewable slice with explicit non-goals.                         |
+| AI blueprint and team prompts | `ai-runbook/`                                                 | AI support is made explicit instead of hidden in ad hoc chat history.                    |
+| High-level design             | `solution/cobold-briefing/hld.md`                             | Architecture boundaries, participants, risks, and non-goals are visible before code.     |
+| Low-level design              | `solution/cobold-briefing/lld.md`                             | Endpoint behavior, mapping, validation, and edge cases are concrete enough to implement. |
+| Decisions                     | `solution/cobold-briefing/decisions.md`                       | Tradeoffs are recorded so reviewers can judge intent, not only syntax.                   |
+| Acceptance and test plan      | `solution/cobold-briefing/acceptance-and-test-plan.md`        | Test evidence is designed before the implementation is called done.                      |
+| API contract                  | `contracts/openapi/cobold-briefing-api.yaml`                  | Backend, BFF, UI, smoke tests, and automation share one executable agreement.            |
+| Flow/state diagrams           | `contracts/plantuml/`                                         | Complex behavior is visualized before it becomes scattered through code.                 |
+| Backend implementation        | `backend/`                                                    | Java service owns domain behavior and unit-level confidence.                             |
+| BFF implementation            | `bff/`                                                        | NestJS owns UI-facing mapping and isolates frontend shape from backend internals.        |
+| Frontend implementation       | `frontend/`                                                   | Angular owns the user workflow and screen-shareable evidence.                            |
+| Developer/manual tester smoke | `smoke/api`, `smoke/ui`                                       | Fast checks prove the deployed shape without requiring the full automation stack.        |
+| Heavier automation            | `testautomation/api`, `testautomation/ui`                     | Robust API and browser suites protect repeatable regression paths.                       |
+| Local task runner             | `mise.toml`                                                   | Tool versions and commands are shared by humans, agents, and CI.                         |
+| CI                            | `.github/workflows/ci.yaml`                                   | Pull requests and pushes run the same verification entrypoint.                           |
+| Container packaging           | `backend/Dockerfile`, `bff/Dockerfile`, `frontend/Dockerfile` | Services become immutable deployment artifacts.                                          |
+| Kubernetes deployment         | `deploy/helm/cobold-vs-hero/`                                 | Runtime configuration is versioned and reviewable.                                       |
+| Server bootstrap              | `infra/ansible/`                                              | Cluster and runner setup are reproducible instead of tribal knowledge.                   |
+| Edge/DNS infrastructure       | `infra/terraform/cloudflare/`                                 | External routing is managed as reviewed infrastructure code.                             |
+| Auto deploy                   | `.github/workflows/deploy.yaml`                               | The pipeline builds images, pushes them to GHCR, and deploys with Helm.                  |
 
 ## Practices This Demonstrates
 
@@ -97,16 +97,16 @@ Idea -> solution -> contracts -> implementation -> verification -> package -> de
 
 Use AI where it strengthens the delivery system:
 
-| Delivery moment | AI can help by | Guardrail |
-| --- | --- | --- |
-| Task shaping | Turning vague asks into scope, non-goals, risks, and questions. | Keep the human product owner responsible for value and priority. |
-| HLD/LLD drafting | Producing first-pass design options and edge cases from the task. | Require source files, constraints, and explicit assumptions. |
-| Contract work | Detecting OpenAPI/sample/implementation drift. | Treat the checked-in contract as the reviewable source, not chat text. |
-| Implementation | Generating small diffs across Java, BFF, and Angular. | Ask for the smallest vertical slice and inspect every diff. |
-| Test design | Proposing unit, smoke, API automation, and browser paths. | Avoid duplicate tests; push checks to the cheapest useful layer. |
-| Verification | Running repo-owned commands and summarizing evidence. | Evidence must include commands, targets, and remaining gaps. |
-| Review | Checking scope, risk, missing tests, and docs drift. | Review findings must cite files and lines, not vibes. |
-| Release handoff | Drafting release notes, tester notes, and rollback notes. | Keep release authority with the human owner. |
+| Delivery moment  | AI can help by                                                    | Guardrail                                                              |
+| ---------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Task shaping     | Turning vague asks into scope, non-goals, risks, and questions.   | Keep the human product owner responsible for value and priority.       |
+| HLD/LLD drafting | Producing first-pass design options and edge cases from the task. | Require source files, constraints, and explicit assumptions.           |
+| Contract work    | Detecting OpenAPI/sample/implementation drift.                    | Treat the checked-in contract as the reviewable source, not chat text. |
+| Implementation   | Generating small diffs across Java, BFF, and Angular.             | Ask for the smallest vertical slice and inspect every diff.            |
+| Test design      | Proposing unit, smoke, API automation, and browser paths.         | Avoid duplicate tests; push checks to the cheapest useful layer.       |
+| Verification     | Running repo-owned commands and summarizing evidence.             | Evidence must include commands, targets, and remaining gaps.           |
+| Review           | Checking scope, risk, missing tests, and docs drift.              | Review findings must cite files and lines, not vibes.                  |
+| Release handoff  | Drafting release notes, tester notes, and rollback notes.         | Keep release authority with the human owner.                           |
 
 ## Workshop Storyline
 
@@ -145,11 +145,9 @@ slice:
 This repo is already a strong Continuous Delivery teaching baseline. The next
 high-value additions would be:
 
-- Add post-deploy smoke checks to the deploy workflow.
 - Add release notes and rollback notes generated from the merged diff.
 - Add basic observability: health checks, structured logs, and one dashboard.
 - Add dependency/security scanning and SBOM generation.
-- Add preview environments for pull requests if the workshop needs review apps.
 - Add feature-flag or branch-by-abstraction examples for risky changes.
 - Add a small DORA/evidence dashboard that reads from GitHub Actions and deploy
   history.

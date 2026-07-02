@@ -28,28 +28,28 @@ A workshop rövid definíciója:
 
 ## Életciklus térkép
 
-| Életciklus lépés | Workshop artifact | Best-practice jel |
-| --- | --- | --- |
-| Product/task framing | `docs/demo-task.md` | A munka vékony, review-zható slice-ként indul, explicit non-goalokkal. |
-| AI blueprint és team promptok | `ai-runbook/` | Az AI használat explicit, nem rejtett ad hoc chat history. |
-| High-level design | `solution/cobold-briefing/hld.md` | Az architektúra határai, szereplői, kockázatai és non-goaljai kód előtt látszanak. |
-| Low-level design | `solution/cobold-briefing/lld.md` | Az endpoint viselkedése, mapping, validáció és edge case-ek implementálhatóan konkrétak. |
-| Döntések | `solution/cobold-briefing/decisions.md` | A tradeoffok rögzítve vannak, így a reviewer szándékot is tud vizsgálni, nem csak szintaxist. |
-| Acceptance és test plan | `solution/cobold-briefing/acceptance-and-test-plan.md` | A szükséges evidence meg van tervezve, mielőtt a slice done lenne. |
-| API contract | `contracts/openapi/cobold-briefing-api.yaml` | Backend, BFF, UI, smoke tesztek és automation ugyanarra a futtatható megállapodásra épülnek. |
-| Flow/state diagramok | `contracts/plantuml/` | A komplexebb viselkedés látható, mielőtt szétszóródna a kódban. |
-| Backend implementáció | `backend/` | A Java service birtokolja a domain viselkedést és a unit-level confidence-et. |
-| BFF implementáció | `bff/` | A NestJS BFF birtokolja a UI-facing mappinget, és elválasztja a frontendet a backend internals-től. |
-| Frontend implementáció | `frontend/` | Az Angular UI birtokolja a user workflow-t és a screen-shareable evidence-et. |
-| Developer/manuális tester smoke | `smoke/api`, `smoke/ui` | Gyors checkek bizonyítják a deployed shape-et full automation stack nélkül. |
-| Mélyebb automation | `testautomation/api`, `testautomation/ui` | Robusztus API és böngészős suite-ok védik az ismételhető regressziós útvonalakat. |
-| Lokális task runner | `mise.toml` | Tool verziók és parancsok közösek embereknek, agenteknek és CI-nak. |
-| CI | `.github/workflows/ci.yaml` | Pull requestek és pushok ugyanazt a verification entrypointot futtatják. |
-| Container csomagolás | `backend/Dockerfile`, `bff/Dockerfile`, `frontend/Dockerfile` | A service-ek immutable deployment artifactokká válnak. |
-| Kubernetes deployment | `deploy/helm/cobold-vs-hero/` | A runtime konfiguráció verziózott és review-zható. |
-| Szerver bootstrap | `infra/ansible/` | A cluster és runner setup reprodukálható, nem tribal knowledge. |
-| Edge/DNS infrastruktúra | `infra/terraform/cloudflare/` | A külső routing reviewed infrastructure code-ként kezelt. |
-| Auto deploy | `.github/workflows/deploy.yaml` | A pipeline image-eket buildel, GHCR-be pushol, majd Helm-mel deployol. |
+| Életciklus lépés                | Workshop artifact                                             | Best-practice jel                                                                                   |
+| ------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Product/task framing            | `docs/demo-task.md`                                           | A munka vékony, review-zható slice-ként indul, explicit non-goalokkal.                              |
+| AI blueprint és team promptok   | `ai-runbook/`                                                 | Az AI használat explicit, nem rejtett ad hoc chat history.                                          |
+| High-level design               | `solution/cobold-briefing/hld.md`                             | Az architektúra határai, szereplői, kockázatai és non-goaljai kód előtt látszanak.                  |
+| Low-level design                | `solution/cobold-briefing/lld.md`                             | Az endpoint viselkedése, mapping, validáció és edge case-ek implementálhatóan konkrétak.            |
+| Döntések                        | `solution/cobold-briefing/decisions.md`                       | A tradeoffok rögzítve vannak, így a reviewer szándékot is tud vizsgálni, nem csak szintaxist.       |
+| Acceptance és test plan         | `solution/cobold-briefing/acceptance-and-test-plan.md`        | A szükséges evidence meg van tervezve, mielőtt a slice done lenne.                                  |
+| API contract                    | `contracts/openapi/cobold-briefing-api.yaml`                  | Backend, BFF, UI, smoke tesztek és automation ugyanarra a futtatható megállapodásra épülnek.        |
+| Flow/state diagramok            | `contracts/plantuml/`                                         | A komplexebb viselkedés látható, mielőtt szétszóródna a kódban.                                     |
+| Backend implementáció           | `backend/`                                                    | A Java service birtokolja a domain viselkedést és a unit-level confidence-et.                       |
+| BFF implementáció               | `bff/`                                                        | A NestJS BFF birtokolja a UI-facing mappinget, és elválasztja a frontendet a backend internals-től. |
+| Frontend implementáció          | `frontend/`                                                   | Az Angular UI birtokolja a user workflow-t és a screen-shareable evidence-et.                       |
+| Developer/manuális tester smoke | `smoke/api`, `smoke/ui`                                       | Gyors checkek bizonyítják a deployed shape-et full automation stack nélkül.                         |
+| Mélyebb automation              | `testautomation/api`, `testautomation/ui`                     | Robusztus API és böngészős suite-ok védik az ismételhető regressziós útvonalakat.                   |
+| Lokális task runner             | `mise.toml`                                                   | Tool verziók és parancsok közösek embereknek, agenteknek és CI-nak.                                 |
+| CI                              | `.github/workflows/ci.yaml`                                   | Pull requestek és pushok ugyanazt a verification entrypointot futtatják.                            |
+| Container csomagolás            | `backend/Dockerfile`, `bff/Dockerfile`, `frontend/Dockerfile` | A service-ek immutable deployment artifactokká válnak.                                              |
+| Kubernetes deployment           | `deploy/helm/cobold-vs-hero/`                                 | A runtime konfiguráció verziózott és review-zható.                                                  |
+| Szerver bootstrap               | `infra/ansible/`                                              | A cluster és runner setup reprodukálható, nem tribal knowledge.                                     |
+| Edge/DNS infrastruktúra         | `infra/terraform/cloudflare/`                                 | A külső routing reviewed infrastructure code-ként kezelt.                                           |
+| Auto deploy                     | `.github/workflows/deploy.yaml`                               | A pipeline image-eket buildel, GHCR-be pushol, majd Helm-mel deployol.                              |
 
 ## Mit demonstrál ez?
 
@@ -100,16 +100,16 @@ A workshop rövid definíciója:
 
 Ott használjuk az AI-t, ahol erősíti a delivery rendszert:
 
-| Delivery pillanat | AI miben segít | Guardrail |
-| --- | --- | --- |
-| Task shaping | Homályos kérésből scope, non-goal, risk és kérdéslista. | Az értékért és prioritásért a human product owner felel. |
-| HLD/LLD drafting | Első design opciók és edge case-ek a task alapján. | Kell source file, constraint és explicit assumption. |
-| Contract munka | OpenAPI/sample/implementation drift keresése. | A checked-in contract a review-zható source, nem a chat szöveg. |
-| Implementáció | Kis diffek Java, BFF és Angular felületeken. | A legkisebb vertical slice kell, és minden diffet át kell nézni. |
-| Test design | Unit, smoke, API automation és browser path javaslatok. | Ne duplikáljuk a teszteket; toljuk őket a legolcsóbb hasznos rétegbe. |
-| Verifikáció | Repo-owned parancsok futtatása és evidence összefoglalása. | Evidence-ben legyen parancs, target és maradék gap. |
-| Review | Scope, risk, missing test és docs drift ellenőrzése. | Finding file/line hivatkozással jöjjön, ne érzésből. |
-| Release handoff | Release note, tester note és rollback note draftolása. | A release authority maradjon embernél. |
+| Delivery pillanat | AI miben segít                                             | Guardrail                                                             |
+| ----------------- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| Task shaping      | Homályos kérésből scope, non-goal, risk és kérdéslista.    | Az értékért és prioritásért a human product owner felel.              |
+| HLD/LLD drafting  | Első design opciók és edge case-ek a task alapján.         | Kell source file, constraint és explicit assumption.                  |
+| Contract munka    | OpenAPI/sample/implementation drift keresése.              | A checked-in contract a review-zható source, nem a chat szöveg.       |
+| Implementáció     | Kis diffek Java, BFF és Angular felületeken.               | A legkisebb vertical slice kell, és minden diffet át kell nézni.      |
+| Test design       | Unit, smoke, API automation és browser path javaslatok.    | Ne duplikáljuk a teszteket; toljuk őket a legolcsóbb hasznos rétegbe. |
+| Verifikáció       | Repo-owned parancsok futtatása és evidence összefoglalása. | Evidence-ben legyen parancs, target és maradék gap.                   |
+| Review            | Scope, risk, missing test és docs drift ellenőrzése.       | Finding file/line hivatkozással jöjjön, ne érzésből.                  |
+| Release handoff   | Release note, tester note és rollback note draftolása.     | A release authority maradjon embernél.                                |
 
 ## Workshop storyline
 
@@ -149,11 +149,9 @@ Enterprise slice-okhoz használható rövid Continuous Delivery checklist:
 Ez a repo már erős Continuous Delivery teaching baseline. A következő
 legértékesebb lépések:
 
-- Post-deploy smoke check hozzáadása a deploy workflow-hoz.
 - Release note és rollback note generálása a merged diffből.
 - Alap observability: health checkek, structured logok és egy dashboard.
 - Dependency/security scanning és SBOM generálás.
-- Preview environment pull requestekhez, ha a workshopnak kell review app.
 - Feature flag vagy branch-by-abstraction példa kockázatos változtatásokhoz.
 - Kis DORA/evidence dashboard GitHub Actions és deploy history alapján.
 
