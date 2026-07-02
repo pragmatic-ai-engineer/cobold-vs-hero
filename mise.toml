@@ -138,3 +138,39 @@ run = "./infra/terraform/cloudflare/scripts/terraform-with-op-token.sh plan"
 [tasks."cf:tf:apply:op"]
 description = "Apply reviewed Cloudflare Terraform changes with the API token loaded from 1Password"
 run = "./infra/terraform/cloudflare/scripts/terraform-with-op-token.sh apply"
+
+[tasks."obs:datadog:agent:install"]
+description = "Install or upgrade the Datadog Agent with logs, APM, and cluster visibility enabled"
+run = """
+test -n "${DATADOG_API_KEY:-}" || { echo "Set DATADOG_API_KEY before installing the Datadog Agent."; exit 1; }
+datadog_site="${DATADOG_SITE:-datadoghq.com}"
+datadog_cluster_name="${DATADOG_CLUSTER_NAME:-pai-cobold-vs-hero}"
+
+kubectl create namespace datadog --dry-run=client -o yaml | kubectl apply -f -
+kubectl -n datadog create secret generic datadog-secret \
+  --from-literal=api-key="$DATADOG_API_KEY" \
+  --dry-run=client -o yaml | kubectl apply -f -
+helm repo add datadog https://helm.datadoghq.com
+helm repo update datadog
+helm upgrade --install datadog-agent datadog/datadog \
+  --namespace datadog \
+  --values deploy/datadog/values-agent.yaml \
+  --set-string datadog.site="$datadog_site" \
+  --set-string datadog.clusterName="$datadog_cluster_name"
+"""
+
+[tasks."obs:datadog:agent:install:op"]
+description = "Install or upgrade the Datadog Agent with credentials loaded from 1Password"
+run = "./deploy/datadog/scripts/datadog-with-op.sh agent"
+
+[tasks."obs:datadog:github:configure:op"]
+description = "Set Datadog GitHub vars/secrets with values loaded from 1Password"
+run = "./deploy/datadog/scripts/datadog-with-op.sh github"
+
+[tasks."obs:datadog:setup:op"]
+description = "Install the Datadog Agent and configure GitHub vars/secrets from 1Password"
+run = "./deploy/datadog/scripts/datadog-with-op.sh all"
+
+[tasks."obs:datadog:helm:template"]
+description = "Render the app Helm chart with Datadog observability enabled"
+run = "helm template cobold-vs-hero deploy/helm/cobold-vs-hero --namespace cobold --set observability.enabled=true --set observability.datadog.enabled=true --set observability.datadog.browser.enabled=true --set-string observability.datadog.browser.clientToken=example-client-token --set-string observability.datadog.browser.rumApplicationId=example-application-id"

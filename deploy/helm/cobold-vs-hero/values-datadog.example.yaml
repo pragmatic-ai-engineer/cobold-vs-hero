@@ -1,0 +1,11 @@
+observability:
+  enabled: true
+  datadog:
+    enabled: true
+    site: datadoghq.com
+    env: demo
+    version: ""
+    browser:
+      enabled: true
+      clientToken: ""
+      rumApplicationId: ""
