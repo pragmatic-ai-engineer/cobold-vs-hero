@@ -35,12 +35,12 @@ You need these values from Datadog:
 For the fastest local setup, create a 1Password item named
 `datadog-pragmatic-ai.engineer` with these fields:
 
-| Field | Value |
-| --- | --- |
-| `site` | Datadog site, for example `datadoghq.eu` or `datadoghq.com` |
-| `api_key` | Datadog API key for the Kubernetes Agent |
-| `rum_application_id` | Browser RUM application ID |
-| `rum_client_token` | Browser RUM client token |
+| Field                | Value                                                       |
+| -------------------- | ----------------------------------------------------------- |
+| `site`               | Datadog site, for example `datadoghq.eu` or `datadoghq.com` |
+| `api_key`            | Datadog API key for the Kubernetes Agent                    |
+| `rum_application_id` | Browser RUM application ID                                  |
+| `rum_client_token`   | Browser RUM client token                                    |
 
 The API key field may also be named `credential`, matching the existing
 1Password helper pattern in this repo. The RUM client token field may also be
@@ -124,9 +124,12 @@ The intended demo trace is:
 Angular RUM resource -> frontend nginx /api proxy -> NestJS BFF -> Java backend
 ```
 
-Angular initializes `@datadog/browser-rum` and `@datadog/browser-logs` from
+Angular initializes `@datadog/browser-rum`,
+`@datadog/browser-rum-angular`, and `@datadog/browser-logs` from
 `/datadog-config.js`. The default runtime config is disabled in Git; Helm mounts
-a ConfigMap over that file when browser observability is enabled.
+a ConfigMap over that file when browser observability is enabled. The Angular
+plugin enables router-based view tracking, and Angular's error handler is wired
+to report uncaught framework errors into Datadog RUM.
 
 The RUM SDK adds Datadog and W3C trace-context headers to same-origin `/api/*`
 requests. The frontend nginx proxy forwards those headers to the BFF. The BFF

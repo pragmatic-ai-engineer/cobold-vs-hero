@@ -1,6 +1,7 @@
 import { datadogLogs } from '@datadog/browser-logs';
 import { datadogRum, type RumInitConfiguration } from '@datadog/browser-rum';
 import type { PropagatorType } from '@datadog/browser-rum';
+import { angularPlugin } from '@datadog/browser-rum-angular';
 
 type DatadogSite = NonNullable<RumInitConfiguration['site']>;
 type DefaultPrivacyLevel = NonNullable<RumInitConfiguration['defaultPrivacyLevel']>;
@@ -72,6 +73,7 @@ if (config?.enabled && config.clientToken && config.site) {
       ],
       applicationId: config.rum.applicationId,
       defaultPrivacyLevel: config.rum.defaultPrivacyLevel ?? 'mask-user-input',
+      plugins: [angularPlugin({ router: true })],
       sessionReplaySampleRate: config.rum.sessionReplaySampleRate ?? 20,
       sessionSampleRate: config.rum.sessionSampleRate ?? 100,
       traceContextInjection: config.rum.traceContextInjection ?? 'all',
