@@ -10,7 +10,7 @@ until the collector and OpenTelemetry Operator exist in the cluster.
 - Java backend and NestJS BFF traces through OpenTelemetry Operator
   auto-instrumentation.
 - Angular/browser errors, web vitals, console logs, web events, and session
-  replay through the Better Stack JavaScript tag.
+  replay through the native Better Stack JavaScript tag.
 - AI access later through the Better Stack MCP server.
 
 ## Better Stack collector
@@ -92,7 +92,7 @@ webhook does not start, check cert-manager first.
 
 ## App deployment
 
-Create a local values file for the browser token:
+Create a local values file for the browser tag token:
 
 ```bash
 cp deploy/helm/cobold-vs-hero/values-observability.example.yaml \
@@ -119,7 +119,7 @@ observability:
       protocol: http/protobuf
   frontend:
     enabled: true
-    token: "<Frontend token from Better Stack Error Tracking>"
+    token: "<the t= value from the copied Better Stack JavaScript tag>"
     release: ""
     debug: false
 ```
@@ -142,11 +142,13 @@ helm upgrade --install cobold-vs-hero deploy/helm/cobold-vs-hero \
 For GitHub Actions deploys, set these repository-level values:
 
 - Variable: `BETTERSTACK_OBSERVABILITY_ENABLED=true`
-- Secret: `BETTERSTACK_FRONTEND_TOKEN=<Frontend token from Better Stack Error Tracking>`
+- Secret: `BETTERSTACK_FRONTEND_TOKEN=<the t= value from the copied Better Stack JavaScript tag>`
 
-The frontend token is only required for browser telemetry. Backend and BFF
-OpenTelemetry injection can run with only `BETTERSTACK_OBSERVABILITY_ENABLED`,
-as long as the cluster collector is already installed.
+The frontend token is the token passed to `https://betterstack.net/b.js?t=...`.
+It is separate from the collector secret and from Better Stack API tokens.
+Backend and BFF OpenTelemetry injection can run with only
+`BETTERSTACK_OBSERVABILITY_ENABLED`, as long as the cluster collector is
+already installed.
 
 For a one-off render without a real token:
 
@@ -208,5 +210,6 @@ in the client environment, not in this repo.
 
 - Better Stack collector: https://betterstack.com/docs/logs/collector/
 - Better Stack JavaScript tag: https://betterstack.com/docs/errors/js-tag/start/
+- Better Stack Sentry SDK compatibility: https://betterstack.com/docs/errors/collecting-errors/sentry-sdk/
 - Better Stack MCP server: https://betterstack.com/docs/getting-started/integrations/mcp/
 - OpenTelemetry Operator auto-instrumentation: https://opentelemetry.io/docs/platforms/kubernetes/operator/automatic/
