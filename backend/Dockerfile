@@ -3,7 +3,7 @@
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /workspace
 
-COPY gradlew build.gradle settings.gradle ./
+COPY gradlew build.gradle settings.gradle gradle.properties ./
 COPY gradle ./gradle
 RUN chmod +x gradlew
 RUN ./gradlew dependencies --no-daemon
