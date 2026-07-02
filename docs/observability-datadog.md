@@ -16,6 +16,8 @@ runtime tags, trace intake, and log collection.
   `tags.datadoghq.com/*` Kubernetes labels.
 - Language-specific log autodiscovery for nginx, Node.js, and Java containers,
   plus trace-aware application logs in the BFF and backend request path.
+- Explicit `DD_TRACE_SAMPLING_RULES='[{"sample_rate":1.0}]'` for the workshop
+  environment so demo requests are retained as traces, not only as APM stats.
 
 ## Credentials
 
@@ -41,8 +43,9 @@ For the fastest local setup, create a 1Password item named
 | `rum_client_token` | Browser RUM client token |
 
 The API key field may also be named `credential`, matching the existing
-1Password helper pattern in this repo. To use a different item name, set
-`OP_DATADOG_ITEM`.
+1Password helper pattern in this repo. The RUM client token field may also be
+named `rum_client_tokentext` if it came from a 1Password text-field label. To
+use a different item name, set `OP_DATADOG_ITEM`.
 
 ## Install the Datadog Agent
 

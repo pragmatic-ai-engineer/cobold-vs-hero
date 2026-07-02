@@ -72,7 +72,7 @@ load_agent_env() {
 
 load_rum_env() {
   DATADOG_RUM_APPLICATION_ID="$(read_required_field DATADOG_RUM_APPLICATION_ID rum_application_id application_id)"
-  DATADOG_RUM_CLIENT_TOKEN="$(read_required_field DATADOG_RUM_CLIENT_TOKEN rum_client_token client_token)"
+  DATADOG_RUM_CLIENT_TOKEN="$(read_required_field DATADOG_RUM_CLIENT_TOKEN rum_client_token rum_client_tokentext client_token)"
   export DATADOG_RUM_APPLICATION_ID DATADOG_RUM_CLIENT_TOKEN
 }
 

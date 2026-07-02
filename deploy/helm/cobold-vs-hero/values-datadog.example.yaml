@@ -9,3 +9,5 @@ observability:
       enabled: true
       clientToken: ""
       rumApplicationId: ""
+    apm:
+      traceSamplingRules: '[{"sample_rate":1.0}]'

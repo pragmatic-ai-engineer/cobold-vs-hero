@@ -77,6 +77,8 @@ observability:
       propagationStyle: datadog,tracecontext
       runtimeMetrics: true
       traceSampleRate: "1.0"
+      traceSamplingRules: '[{"sample_rate":1.0}]'
+      traceRateLimit: "100"
     browser:
       enabled: false
       clientToken: ""

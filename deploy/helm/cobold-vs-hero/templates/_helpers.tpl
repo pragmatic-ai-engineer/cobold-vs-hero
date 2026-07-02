@@ -73,6 +73,10 @@ tags.datadoghq.com/version: {{ include "cobold-vs-hero.datadogVersion" .root | q
       fieldPath: status.hostIP
 - name: DD_TRACE_SAMPLE_RATE
   value: {{ .root.Values.observability.datadog.apm.traceSampleRate | quote }}
+- name: DD_TRACE_SAMPLING_RULES
+  value: {{ .root.Values.observability.datadog.apm.traceSamplingRules | quote }}
+- name: DD_TRACE_RATE_LIMIT
+  value: {{ .root.Values.observability.datadog.apm.traceRateLimit | quote }}
 - name: DD_TRACE_PROPAGATION_STYLE
   value: {{ .root.Values.observability.datadog.apm.propagationStyle | quote }}
 - name: DD_LOGS_INJECTION
