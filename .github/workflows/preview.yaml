@@ -130,6 +130,7 @@ jobs:
             --namespace "$RELEASE_NAMESPACE" \
             --reset-values \
             --set global.imageTag="$IMAGE_TAG" \
+            --set global.terminationGracePeriodSeconds=1 \
             --set backend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-backend" \
             --set bff.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-bff" \
             --set frontend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-frontend" \
