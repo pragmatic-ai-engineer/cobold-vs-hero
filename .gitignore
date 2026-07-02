@@ -18,3 +18,4 @@ infra/terraform/**/*.tfstate.*
 infra/terraform/**/.terraform.tfstate.lock.info
 infra/terraform/**/terraform.tfvars
 infra/terraform/**/*.tfplan
+deploy/helm/**/values*.local.yaml

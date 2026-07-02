@@ -58,3 +58,21 @@ resources:
     limits:
       cpu: 250m
       memory: 128Mi
+
+observability:
+  enabled: false
+  environment: demo
+  serviceNamespace: cobold-vs-hero
+  opentelemetry:
+    propagators: tracecontext,baggage
+    instrumentation:
+      enabled: true
+      name: better-stack
+    exporter:
+      endpoint: http://better-stack-collector-otlp.observability.svc:4318
+      protocol: http/protobuf
+  frontend:
+    enabled: false
+    token: ""
+    release: ""
+    debug: false

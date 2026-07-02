@@ -1,0 +1,23 @@
+{{- if and .Values.observability.enabled .Values.observability.frontend.enabled .Values.observability.frontend.token }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cobold-vs-hero.fullname" . }}-betterstack-browser
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+data:
+  betterstack-browser.js: |
+    !function(b,e,t,r){
+      b[t]=b[t]||function(...args){(b[t].q=b[t].q||[]).push(args)};
+      b[t].l=+new Date;
+      var s=e.createElement('script'); s.async=1; s.crossOrigin='anonymous';
+      s.src='https://betterstack.net/b.js?t='+r;
+      (e.head||e.getElementsByTagName('head')[0]).appendChild(s);
+    }(window,document,'betterstack',{{ .Values.observability.frontend.token | toJson }});
+    betterstack('init', {
+      environment: {{ .Values.observability.environment | toJson }},
+      release: {{ include "cobold-vs-hero.frontendObservabilityRelease" . | toJson }},
+      debug: {{ .Values.observability.frontend.debug }}
+    });
+{{- end }}

@@ -16,6 +16,10 @@ spec:
       labels:
         {{- include "cobold-vs-hero.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: backend
+      {{- if and .Values.observability.enabled .Values.observability.opentelemetry.instrumentation.enabled }}
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: {{ .Values.observability.opentelemetry.instrumentation.name | quote }}
+      {{- end }}
     spec:
       {{- with .Values.global.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ . }}
@@ -28,6 +32,12 @@ spec:
         - name: backend
           image: {{ include "cobold-vs-hero.image" (dict "root" . "image" .Values.backend.image) | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            {{- if .Values.observability.enabled }}
+            {{- include "cobold-vs-hero.observabilityEnv" (dict "root" . "component" "backend") | nindent 12 }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 8080

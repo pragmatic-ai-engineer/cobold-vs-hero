@@ -138,3 +138,29 @@ run = "./infra/terraform/cloudflare/scripts/terraform-with-op-token.sh plan"
 [tasks."cf:tf:apply:op"]
 description = "Apply reviewed Cloudflare Terraform changes with the API token loaded from 1Password"
 run = "./infra/terraform/cloudflare/scripts/terraform-with-op-token.sh apply"
+
+[tasks."obs:betterstack:collector:install"]
+description = "Install or upgrade the Better Stack collector with OTLP ports enabled"
+run = """
+test -n "${COLLECTOR_SECRET:-}" || { echo "Set COLLECTOR_SECRET from Better Stack before installing the collector."; exit 1; }
+helm repo add better-stack https://betterstackhq.github.io/collector-helm-chart
+helm repo update
+helm upgrade --install better-stack-collector better-stack/collector \
+  --namespace observability \
+  --create-namespace \
+  --set collector.env.COLLECTOR_SECRET="$COLLECTOR_SECRET" \
+  --set collectOtel.grpcPort=4317 \
+  --set collectOtel.httpPort=4318
+"""
+
+[tasks."obs:otel:operator:install"]
+description = "Install the OpenTelemetry Operator used for Java and Node.js auto-instrumentation"
+run = "kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml"
+
+[tasks."obs:helm:template"]
+description = "Render the Helm chart with Better Stack observability enabled"
+run = "helm template cobold-vs-hero deploy/helm/cobold-vs-hero --namespace cobold --set observability.enabled=true --set observability.frontend.enabled=true --set-string observability.frontend.token=example-token"
+
+[tasks."obs:mcp:claude:add"]
+description = "Add the Better Stack MCP server to Claude Code via OAuth"
+run = "claude mcp add betterstack --transport http https://mcp.betterstack.com"

@@ -1,0 +1,18 @@
+{{- if and .Values.observability.enabled .Values.observability.opentelemetry.instrumentation.enabled }}
+apiVersion: opentelemetry.io/v1alpha1
+kind: Instrumentation
+metadata:
+  name: {{ .Values.observability.opentelemetry.instrumentation.name }}
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+spec:
+  exporter:
+    endpoint: {{ .Values.observability.opentelemetry.exporter.endpoint | quote }}
+  propagators:
+    {{- range splitList "," .Values.observability.opentelemetry.propagators }}
+    - {{ . | trim | quote }}
+    {{- end }}
+  env:
+    - name: OTEL_EXPORTER_OTLP_PROTOCOL
+      value: {{ .Values.observability.opentelemetry.exporter.protocol | quote }}
+{{- end }}

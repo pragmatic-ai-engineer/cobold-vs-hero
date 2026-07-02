@@ -1,0 +1,17 @@
+observability:
+  enabled: true
+  environment: demo
+  serviceNamespace: cobold-vs-hero
+  opentelemetry:
+    propagators: tracecontext,baggage
+    instrumentation:
+      enabled: true
+      name: better-stack
+    exporter:
+      endpoint: http://better-stack-collector-otlp.observability.svc:4318
+      protocol: http/protobuf
+  frontend:
+    enabled: true
+    token: ""
+    release: ""
+    debug: false

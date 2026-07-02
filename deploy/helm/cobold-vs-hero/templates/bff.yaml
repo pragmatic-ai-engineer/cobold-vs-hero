@@ -16,6 +16,10 @@ spec:
       labels:
         {{- include "cobold-vs-hero.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: bff
+      {{- if and .Values.observability.enabled .Values.observability.opentelemetry.instrumentation.enabled }}
+      annotations:
+        instrumentation.opentelemetry.io/inject-nodejs: {{ .Values.observability.opentelemetry.instrumentation.name | quote }}
+      {{- end }}
     spec:
       {{- with .Values.global.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ . }}
@@ -33,6 +37,9 @@ spec:
               value: "3000"
             - name: BACKEND_BASE_URL
               value: http://{{ include "cobold-vs-hero.fullname" . }}-backend:8080
+            {{- if .Values.observability.enabled }}
+            {{- include "cobold-vs-hero.observabilityEnv" (dict "root" . "component" "bff") | nindent 12 }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 3000

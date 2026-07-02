@@ -117,6 +117,12 @@ Render the chart locally:
 helm template cobold-vs-hero deploy/helm/cobold-vs-hero --namespace cobold
 ```
 
+Render the chart with Better Stack observability enabled:
+
+```bash
+mise run obs:helm:template
+```
+
 Deploy to the `pai` K3s cluster after pushing images to a registry:
 
 ```bash
@@ -140,6 +146,16 @@ The default deployed host is:
 ```text
 https://cobold.pragmatic-ai.engineer
 ```
+
+## Observability
+
+The Helm chart has an optional Better Stack/OpenTelemetry path for collecting
+Kubernetes logs, metrics, backend traces, BFF traces, and browser telemetry. It
+is disabled by default so local CI and deploys do not require Better Stack
+secrets.
+
+See `docs/observability-better-stack.md` for the collector, OpenTelemetry
+Operator, frontend token, deployment, verification, and MCP setup steps.
 
 Cloudflare DNS is managed through the Terraform stack in
 `infra/terraform/cloudflare`. The intended DNS records are:

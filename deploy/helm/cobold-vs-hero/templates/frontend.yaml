@@ -34,6 +34,13 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          {{- if and .Values.observability.enabled .Values.observability.frontend.enabled .Values.observability.frontend.token }}
+          volumeMounts:
+            - name: betterstack-browser
+              mountPath: /usr/share/nginx/html/betterstack-browser.js
+              subPath: betterstack-browser.js
+              readOnly: true
+          {{- end }}
           readinessProbe:
             httpGet:
               path: /
@@ -43,6 +50,12 @@ spec:
             failureThreshold: 30
           resources:
             {{- toYaml .Values.resources.frontend | nindent 12 }}
+      {{- if and .Values.observability.enabled .Values.observability.frontend.enabled .Values.observability.frontend.token }}
+      volumes:
+        - name: betterstack-browser
+          configMap:
+            name: {{ include "cobold-vs-hero.fullname" . }}-betterstack-browser
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service
