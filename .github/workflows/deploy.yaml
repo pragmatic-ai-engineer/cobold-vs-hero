@@ -79,6 +79,8 @@ jobs:
           push: true
           provenance: false
           sbom: false
+          cache-from: type=registry,ref=${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
           tags: |
             ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
             ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:main
