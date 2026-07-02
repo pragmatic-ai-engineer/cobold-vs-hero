@@ -1,1 +1,0 @@
-A feladat célja három új bemeneti mező hozzáadása a meglévő "Cobold vs Hero" briefing űrlaphoz, hogy bővítsük a keresési/briefing logikát. Ezzel a fejlesztéssel az a cél, hogy részletesebb kontextust biztosítsunk a rendszer számára a kockázatok értékeléséhez.

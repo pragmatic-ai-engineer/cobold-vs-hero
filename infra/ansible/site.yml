@@ -365,6 +365,112 @@
       changed_when: false
       tags: tls
 
+    - name: Require Cloudflare API token for wildcard TLS
+      ansible.builtin.assert:
+        that:
+          - cert_manager_cloudflare_api_token | length > 0
+        fail_msg: Set CLOUDFLARE_API_TOKEN before running TLS bootstrap. The token needs Cloudflare Zone DNS Edit access for pragmatic-ai.engineer.
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure cert-manager Cloudflare API token Secret
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: {{ cert_manager_cloudflare_api_token_secret }}
+            namespace: {{ cert_manager_namespace }}
+          type: Opaque
+          stringData:
+            {{ cert_manager_cloudflare_api_token_secret_key }}: {{ cert_manager_cloudflare_api_token | quote }}
+      register: cert_manager_cloudflare_secret_apply
+      changed_when: "'created' in cert_manager_cloudflare_secret_apply.stdout or 'configured' in cert_manager_cloudflare_secret_apply.stdout"
+      no_log: true
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure Let's Encrypt DNS-01 ClusterIssuer
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: cert-manager.io/v1
+          kind: ClusterIssuer
+          metadata:
+            name: {{ cert_manager_dns01_cluster_issuer }}
+          spec:
+            acme:
+              email: {{ cert_manager_acme_email }}
+              server: {{ cert_manager_acme_server }}
+              privateKeySecretRef:
+                name: {{ cert_manager_dns01_cluster_issuer }}-account-key
+              solvers:
+                - selector:
+                    dnsZones:
+                      - {{ cert_manager_wildcard_tls_dns_zone | quote }}
+                  dns01:
+                    cloudflare:
+                      apiTokenSecretRef:
+                        name: {{ cert_manager_cloudflare_api_token_secret }}
+                        key: {{ cert_manager_cloudflare_api_token_secret_key }}
+      register: cert_manager_dns01_issuer_apply
+      changed_when: "'created' in cert_manager_dns01_issuer_apply.stdout or 'configured' in cert_manager_dns01_issuer_apply.stdout"
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Wait for Let's Encrypt DNS-01 ClusterIssuer
+      ansible.builtin.command: kubectl wait --for=condition=Ready clusterissuer/{{ cert_manager_dns01_cluster_issuer }} --timeout=120s
+      changed_when: false
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure pragmatic-ai.engineer wildcard Certificate
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: cert-manager.io/v1
+          kind: Certificate
+          metadata:
+            name: {{ cert_manager_wildcard_tls_certificate }}
+            namespace: {{ cert_manager_wildcard_tls_namespace }}
+          spec:
+            secretName: {{ cert_manager_wildcard_tls_secret }}
+            issuerRef:
+              name: {{ cert_manager_dns01_cluster_issuer }}
+              kind: ClusterIssuer
+            dnsNames:
+          {% for dns_name in cert_manager_wildcard_tls_dns_names %}
+              - {{ dns_name | quote }}
+          {% endfor %}
+      register: cert_manager_wildcard_certificate_apply
+      changed_when: "'created' in cert_manager_wildcard_certificate_apply.stdout or 'configured' in cert_manager_wildcard_certificate_apply.stdout"
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Configure Traefik default TLSStore
+      ansible.builtin.command: kubectl apply -f -
+      args:
+        stdin: |
+          apiVersion: traefik.io/v1alpha1
+          kind: TLSStore
+          metadata:
+            name: default
+            namespace: {{ cert_manager_wildcard_tls_namespace }}
+          spec:
+            defaultCertificate:
+              secretName: {{ cert_manager_wildcard_tls_secret }}
+      register: traefik_tlsstore_apply
+      changed_when: "'created' in traefik_tlsstore_apply.stdout or 'configured' in traefik_tlsstore_apply.stdout"
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
+    - name: Wait for pragmatic-ai.engineer wildcard Certificate
+      ansible.builtin.command: kubectl -n {{ cert_manager_wildcard_tls_namespace }} wait --for=condition=Ready certificate/{{ cert_manager_wildcard_tls_certificate }} --timeout=300s
+      changed_when: false
+      when: cert_manager_wildcard_tls_enabled
+      tags: tls
+
     - name: Install Docker for GitHub Actions image builds
       ansible.builtin.apt:
         name:
@@ -392,15 +498,6 @@
         create_home: true
       tags: github_runner
 
-    - name: Ensure GitHub runner directory exists
-      ansible.builtin.file:
-        path: "{{ github_runner_dir }}"
-        state: directory
-        owner: "{{ github_runner_user }}"
-        group: "{{ github_runner_user }}"
-        mode: "0750"
-      tags: github_runner
-
     - name: Download GitHub Actions runner
       ansible.builtin.get_url:
         url: "https://github.com/actions/runner/releases/download/v{{ github_runner_version }}/actions-runner-linux-{{ github_runner_arch }}-{{ github_runner_version }}.tar.gz"
@@ -409,80 +506,19 @@
         mode: "0644"
       tags: github_runner
 
-    - name: Extract GitHub Actions runner
-      ansible.builtin.unarchive:
-        src: "/tmp/actions-runner-linux-{{ github_runner_arch }}-{{ github_runner_version }}.tar.gz"
-        dest: "{{ github_runner_dir }}"
-        remote_src: true
-        owner: "{{ github_runner_user }}"
-        group: "{{ github_runner_user }}"
-        creates: "{{ github_runner_dir }}/config.sh"
-      tags: github_runner
-
-    - name: Install GitHub Actions runner package dependencies
-      ansible.builtin.command: ./bin/installdependencies.sh
-      args:
-        chdir: "{{ github_runner_dir }}"
-      changed_when: false
-      tags: github_runner
-
-    - name: Check whether GitHub Actions runner is configured
-      ansible.builtin.stat:
-        path: "{{ github_runner_dir }}/.runner"
-      register: github_runner_config
-      tags: github_runner
-
-    - name: Require GitHub runner registration token for first install
-      ansible.builtin.assert:
-        that:
-          - github_runner_registration_token is defined
-          - github_runner_registration_token | length > 0
-        fail_msg: Export GITHUB_RUNNER_REGISTRATION_TOKEN before first runner registration.
-      when: not github_runner_config.stat.exists
-      no_log: true
-      tags: github_runner
-
-    - name: Register GitHub Actions runner
-      ansible.builtin.command: >
-        ./config.sh
-        --url {{ github_runner_repo_url }}
-        --token {{ github_runner_registration_token }}
-        --name {{ github_runner_name }}
-        --labels {{ github_runner_labels | join(',') }}
-        --work _work
-        --unattended
-        --replace
-      args:
-        chdir: "{{ github_runner_dir }}"
-      become_user: "{{ github_runner_user }}"
-      when: not github_runner_config.stat.exists
-      no_log: true
-      tags: github_runner
-
-    - name: Check whether GitHub Actions runner service is installed
-      ansible.builtin.stat:
-        path: "{{ github_runner_dir }}/.service"
-      register: github_runner_service_marker
-      tags: github_runner
-
-    - name: Install GitHub Actions runner systemd service
-      ansible.builtin.command: "./svc.sh install {{ github_runner_user }}"
-      args:
-        chdir: "{{ github_runner_dir }}"
-      when: not github_runner_service_marker.stat.exists
-      tags: github_runner
-
-    - name: Read GitHub Actions runner service name
-      ansible.builtin.slurp:
-        path: "{{ github_runner_dir }}/.service"
-      register: github_runner_service_name_file
-      tags: github_runner
-
-    - name: Ensure GitHub Actions runner service is enabled and running
-      ansible.builtin.systemd:
-        name: "{{ github_runner_service_name_file.content | b64decode | trim }}"
-        enabled: true
-        state: started
+    - name: Configure GitHub Actions runner instances
+      ansible.builtin.include_tasks:
+        file: tasks/github-runner-instance.yml
+        apply:
+          tags: github_runner
+      loop: "{{ range(1, github_runner_count + 1) | list }}"
+      loop_control:
+        loop_var: github_runner_instance_index
+      vars:
+        github_runner_instance_name: >-
+          {{ github_runner_name if github_runner_instance_index == 1 else github_runner_name ~ '-' ~ (github_runner_instance_index | string) }}
+        github_runner_instance_dir: >-
+          {{ github_runner_dir if github_runner_instance_index == 1 else github_runner_dir ~ '-' ~ (github_runner_instance_index | string) }}
       tags: github_runner
 
     - name: Ensure needrestart does not restart runner during jobs

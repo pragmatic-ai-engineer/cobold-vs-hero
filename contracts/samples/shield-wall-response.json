@@ -1,0 +1,45 @@
+{
+  "signal": "shield-wall",
+  "headline": "Split before review.",
+  "requiredEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "dps-testautomation", "hld", "lld"],
+  "missingEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "dps-testautomation", "lld"],
+  "stopCondition": "Split the work before implementation; required evidence is missing for a high-risk or broad change.",
+  "heroNextStep": "Split the task and add automation, browser, and design evidence before implementation.",
+  "reviewMatrix": [
+    {
+      "surface": "backend",
+      "expectedEvidence": ["backend-test"],
+      "providedEvidence": [],
+      "gap": "missing backend-test",
+      "nextAction": "Add focused backend test evidence."
+    },
+    {
+      "surface": "bff",
+      "expectedEvidence": ["bruno-smoke"],
+      "providedEvidence": [],
+      "gap": "missing bruno-smoke",
+      "nextAction": "Add Bruno smoke coverage for the BFF mapping."
+    },
+    {
+      "surface": "frontend",
+      "expectedEvidence": ["browser-screenshot"],
+      "providedEvidence": [],
+      "gap": "missing browser-screenshot",
+      "nextAction": "Capture browser evidence for the rendered matrix."
+    },
+    {
+      "surface": "contract",
+      "expectedEvidence": ["bruno-smoke"],
+      "providedEvidence": [],
+      "gap": "missing bruno-smoke",
+      "nextAction": "Prove the contract through a smoke request."
+    },
+    {
+      "surface": "testing",
+      "expectedEvidence": ["dps-testautomation"],
+      "providedEvidence": [],
+      "gap": "missing dps-testautomation",
+      "nextAction": "Add DPS-like automation before implementation review."
+    }
+  ]
+}

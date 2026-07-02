@@ -1,0 +1,172 @@
+name: Preview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+
+permissions:
+  contents: read
+  deployments: write
+  packages: write
+
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: ghcr.io/greg0x
+  RELEASE_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}
+  RELEASE_NAMESPACE: cobold-pr-${{ github.event.pull_request.number }}
+  APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.pragmatic-ai.engineer
+  WILDCARD_TLS_NAMESPACE: kube-system
+  WILDCARD_TLS_CERTIFICATE: pragmatic-ai-engineer-wildcard
+  WILDCARD_TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
+  TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
+  IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
+  KUBECONFIG: /home/github-runner/.kube/config
+
+jobs:
+  build:
+    name: Build preview ${{ matrix.service }}
+    runs-on: [self-hosted, pai]
+    timeout-minutes: 30
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: backend
+            context: backend
+            image: cobold-vs-hero-backend
+          - service: bff
+            context: bff
+            image: cobold-vs-hero-bff
+          - service: frontend
+            context: frontend
+            image: cobold-vs-hero-frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Docker config
+        run: |
+          echo "DOCKER_CONFIG=$RUNNER_TEMP/docker-config" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/docker-config"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          name: pai-builder-${{ runner.name }}
+          keep-state: true
+          cleanup: false
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          builder: pai-builder-${{ runner.name }}
+          context: ${{ matrix.context }}
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          sbom: false
+          cache-from: type=registry,ref=${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:buildcache,mode=max
+          tags: ${{ env.IMAGE_NAMESPACE }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.ref.name=pr-${{ github.event.pull_request.number }}
+
+  deploy:
+    name: Deploy preview
+    runs-on: [self-hosted, pai]
+    timeout-minutes: 20
+    needs: build
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+      url: https://${{ env.APP_HOST }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy wildcard TLS secret
+        run: |
+          kubectl create namespace "$RELEASE_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n "$WILDCARD_TLS_NAMESPACE" wait --for=condition=Ready certificate/"$WILDCARD_TLS_CERTIFICATE" --timeout=300s
+
+          TLS_CERT="$(kubectl -n "$WILDCARD_TLS_NAMESPACE" get secret "$WILDCARD_TLS_SECRET_NAME" -o jsonpath='{.data.tls\.crt}')"
+          TLS_KEY="$(kubectl -n "$WILDCARD_TLS_NAMESPACE" get secret "$WILDCARD_TLS_SECRET_NAME" -o jsonpath='{.data.tls\.key}')"
+
+          kubectl -n "$RELEASE_NAMESPACE" apply -f - <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: $TLS_SECRET_NAME
+          type: kubernetes.io/tls
+          data:
+            tls.crt: $TLS_CERT
+            tls.key: $TLS_KEY
+          EOF
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install "$RELEASE_NAME" deploy/helm/cobold-vs-hero \
+            --namespace "$RELEASE_NAMESPACE" \
+            --reset-values \
+            --set global.imageTag="$IMAGE_TAG" \
+            --set global.terminationGracePeriodSeconds=1 \
+            --set backend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-backend" \
+            --set bff.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-bff" \
+            --set frontend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-frontend" \
+            --set-string ingress.hosts[0].host="$APP_HOST" \
+            --set ingress.certManager.enabled=false \
+            --set-string 'ingress.tls[0].secretName'="$TLS_SECRET_NAME" \
+            --set-string 'ingress.tls[0].hosts[0]'="$APP_HOST"
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
+
+      - name: Set up mise
+        uses: jdx/mise-action@v3
+        with:
+          install: true
+          cache: false
+
+      - name: Install Playwright browser
+        run: mise run ui:install-browsers
+
+      - name: Run preview testautomation
+        env:
+          COBOLD_API_BASE_URL: https://${{ env.APP_HOST }}
+          COBOLD_UI_BASE_URL: https://${{ env.APP_HOST }}
+        run: mise run testautomation:all
+
+  cleanup:
+    name: Cleanup preview
+    runs-on: [self-hosted, pai]
+    timeout-minutes: 10
+    if: github.event.action == 'closed'
+
+    steps:
+      - name: Remove preview release
+        run: |
+          helm uninstall "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --ignore-not-found
+          kubectl delete namespace "$RELEASE_NAMESPACE" --ignore-not-found

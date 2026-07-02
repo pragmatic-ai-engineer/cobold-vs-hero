@@ -45,6 +45,7 @@ base_packages:
 github_runner_user: github-runner
 github_runner_name: pai
 github_runner_dir: /opt/github-actions-runner/cobold-vs-hero
+github_runner_count: 6
 github_runner_repo_url: https://github.com/greg0x/cobold-vs-hero
 github_runner_version: 2.335.1
 github_runner_arch: x64
@@ -61,6 +62,18 @@ cert_manager_cluster_issuer: letsencrypt-prod
 cert_manager_acme_email: admin@pragmatic-ai.engineer
 cert_manager_acme_server: https://acme-v02.api.letsencrypt.org/directory
 cert_manager_http01_ingress_class: traefik
+cert_manager_dns01_cluster_issuer: letsencrypt-prod-dns01
+cert_manager_cloudflare_api_token: "{{ lookup('env', 'CLOUDFLARE_API_TOKEN') }}"
+cert_manager_cloudflare_api_token_secret: cloudflare-api-token
+cert_manager_cloudflare_api_token_secret_key: api-token
+cert_manager_wildcard_tls_enabled: true
+cert_manager_wildcard_tls_namespace: kube-system
+cert_manager_wildcard_tls_certificate: pragmatic-ai-engineer-wildcard
+cert_manager_wildcard_tls_secret: pragmatic-ai-engineer-wildcard-tls
+cert_manager_wildcard_tls_dns_zone: pragmatic-ai.engineer
+cert_manager_wildcard_tls_dns_names:
+  - "*.pragmatic-ai.engineer"
+  - "*.cobold.pragmatic-ai.engineer"
 
 helm_apt_key_id: DDF78C3E6EBB2D2CC223C95C62BA89D07698DBC6
 helm_apt_key_url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey

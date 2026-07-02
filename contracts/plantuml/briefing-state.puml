@@ -1,29 +1,30 @@
 @startuml
-title Review signal states
+title Review readiness signal states
 
 state "Unclassified request" as unclassified
 state "Truce" as truce
 state "Sparring" as sparring
 state "Shield wall" as shield_wall
 
-truce : safe starter slice
-truce : attach verification evidence
+truce : all required evidence present
+truce : no high-risk missing proof
 
-sparring : useful idea
-sparring : sharpen acceptance criteria
+sparring : useful slice
+sparring : one or two evidence gaps
 
 shield_wall : too risky
+shield_wall : high-risk proof missing
 shield_wall : split before implementation
 
 [*] --> unclassified
-unclassified --> truce : low risk + clear proof
-unclassified --> sparring : useful but vague
-unclassified --> shield_wall : high coupling / production risk
+unclassified --> truce : evidence complete
+unclassified --> sparring : small evidence gap
+unclassified --> shield_wall : high-risk gap / many gaps
 
-truce --> sparring : evidence missing
-sparring --> shield_wall : scope grows
-shield_wall --> sparring : slice split
-sparring --> truce : checks and criteria are clear
-truce --> [*] : evidence attached
+truce --> sparring : evidence removed
+sparring --> shield_wall : high-risk flag added
+shield_wall --> sparring : task split + evidence planned
+sparring --> truce : missing evidence attached
+truce --> [*] : implementation review ready
 
 @enduml

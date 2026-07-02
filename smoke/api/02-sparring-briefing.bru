@@ -1,0 +1,32 @@
+meta {
+  name: 02 Sparring readiness
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/cobold-vs-hero/briefing
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+}
+
+body:json {
+  {
+    "changeTitle": "Status panel mapping",
+    "changeDescription": "Add one backend field, one BFF mapper, and one Angular status panel.",
+    "affectedSurfaces": ["backend", "bff", "frontend"],
+    "providedEvidence": ["backend-test", "hld", "lld"],
+    "riskFlags": []
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.signal: eq sparring
+  res.body.missingEvidence: isNotEmpty
+  res.body.reviewMatrix: isNotEmpty
+}

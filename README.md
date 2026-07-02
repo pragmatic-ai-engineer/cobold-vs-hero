@@ -8,8 +8,8 @@ The theme is intentionally light:
 
 - **Cobold reviewer**: a risk-aware adversary that asks what could go wrong.
 - **Hero proposer**: the delivery role proposing a useful change.
-- **Goal**: turn a vague or risky request into a small, reviewable slice with
-  context, verification, and reviewer notes.
+- **Goal**: turn a proposed delivery move into a review readiness matrix with
+  required evidence, missing evidence, stop conditions, and next actions.
 
 ## Structure
 
@@ -18,15 +18,37 @@ demo/
   backend/             # Spring Boot API, Java 17, Gradle
   bff/                 # NestJS BFF, TypeScript
   frontend/            # Angular app
+  solution/            # HLD, LLD, decisions, acceptance plan
   contracts/           # OpenAPI, PlantUML, sample payloads
-  manual-api/          # Bruno collection for local/manual API smoke checks
-  testautomation/      # DPS-lite API + OneCare-lite UI testautomation
+  smoke/
+    api/               # Bruno API smoke checks for devs/manual testers
+    ui/                # Playwright browser smoke checks
+  testautomation/
+    api/               # DPS-like robust Python API automation
+    ui/                # OneCare-like robust Python UI automation
   deploy/              # Helm chart for the K3s deployment
   infra/               # Ansible bootstrap and Cloudflare Terraform
   docs/                # workshop task notes
-  shared-ai-runbook/   # prompts, agent instructions, loop contract, review checklist
+  ai-runbook/          # prompts, agent instructions, loop contract, review checklist
   mise.toml            # shared tool versions and commands
 ```
+
+## Solution Flow
+
+The pre-implementation solution package lives in:
+
+```text
+solution/cobold-briefing/
+```
+
+Use it before implementation:
+
+```text
+HLD -> LLD -> contracts -> smoke checks -> code -> evidence
+```
+
+`contracts/` stays the swagger-style package: OpenAPI, PlantUML, and sample
+payloads that implementation and tests execute against.
 
 ## Setup
 
@@ -120,14 +142,30 @@ https://cobold.pragmatic-ai.engineer
 ```
 
 Cloudflare DNS is managed through the Terraform stack in
-`infra/terraform/cloudflare`. The intended DNS record is:
+`infra/terraform/cloudflare`. The intended DNS records are:
 
 ```text
 Type: A
 Name: cobold
 Content: <pai public IPv4>
+
+Type: A
+Name: *.cobold
+Content: <pai public IPv4>
+
+Type: A
+Name: *
+Content: <pai public IPv4>
+
 Proxy status: DNS only for direct origin testing, or proxied if Cloudflare TLS is configured
 ```
+
+Preview environments use hosts like
+`pr-42.cobold.pragmatic-ai.engineer`. TLS is provided by a DNS-01 wildcard
+certificate created during the Ansible TLS bootstrap. The certificate covers
+both `*.pragmatic-ai.engineer` and `*.cobold.pragmatic-ai.engineer`; the preview
+workflow copies that wildcard TLS secret into each PR namespace before Helm
+deploys the ingress.
 
 Prepare local Cloudflare values and preview the change:
 
@@ -153,20 +191,28 @@ mise run fe:build
 After frontend and BFF dependencies are installed, `mise run verify` runs the
 offline verification gates.
 
-With the backend and BFF running, Bruno CLI gives a quick developer/manual
-tester smoke check:
+With the backend and BFF running, the Bruno API smoke collection gives a quick
+developer/manual tester check:
 
 ```bash
 mise run api:smoke
 ```
 
-For the heavier DPS-lite Python automation gate:
+With the backend, BFF, and frontend running, the Playwright UI smoke suite gives
+a quick browser-visible check:
+
+```bash
+mise run ui:smoke:install
+mise run ui:smoke
+```
+
+For the heavier DPS-like Python API automation gate:
 
 ```bash
 mise run api:testautomation
 ```
 
-For the toy OneCare-style browser UI automation gate, install the Playwright
+For the heavier OneCare-like browser UI automation gate, install the Playwright
 browser once, then run the UI testautomation while the backend, BFF, and
 frontend are running:
 

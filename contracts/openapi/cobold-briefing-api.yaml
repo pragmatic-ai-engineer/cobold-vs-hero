@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Cobold vs Hero Briefing API
-  version: 0.1.0
+  version: 0.2.0
 paths:
   /api/cobold-vs-hero/status:
     get:
@@ -16,7 +16,7 @@ paths:
                 $ref: '#/components/schemas/SystemStatusResponse'
   /api/cobold-vs-hero/briefing:
     post:
-      summary: Create a review briefing for a proposed delivery move
+      summary: Create a review readiness matrix for a proposed delivery move
       operationId: createBriefing
       requestBody:
         required: true
@@ -27,12 +27,14 @@ paths:
             examples:
               shieldWall:
                 value:
-                  coboldConcern: production payment integration refactor goes to release
-                  heroMove: rewrite the flow quickly
-                  systemMood: panic
+                  changeTitle: Payment retry refactor
+                  changeDescription: Refactor production payment retry flow and auth callback in one release.
+                  affectedSurfaces: [backend, bff, frontend, contract, testing]
+                  providedEvidence: [hld]
+                  riskFlags: [production, payment, auth, unclear-scope]
       responses:
         '200':
-          description: Briefing generated
+          description: Readiness briefing generated
           content:
             application/json:
               schema:
@@ -85,55 +87,85 @@ components:
     BriefingRequest:
       type: object
       required:
-        - coboldConcern
-        - heroMove
-        - systemMood
-        - targetEnvironment
-        - implementationComplexity
-        - teamExperience
+        - changeTitle
+        - changeDescription
+        - affectedSurfaces
+        - providedEvidence
+        - riskFlags
       properties:
-        coboldConcern:
+        changeTitle:
           type: string
-        heroMove:
+        changeDescription:
           type: string
-        systemMood:
+        affectedSurfaces:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            enum: [backend, bff, frontend, contract, testing]
+        providedEvidence:
+          type: array
+          items:
+            type: string
+            enum: [backend-test, bruno-smoke, dps-testautomation, browser-screenshot, hld, lld]
+        riskFlags:
+          type: array
+          items:
+            type: string
+            enum: [production, customer-data, auth, payment, unclear-scope]
+    ReviewMatrixRow:
+      type: object
+      required:
+        - surface
+        - expectedEvidence
+        - providedEvidence
+        - gap
+        - nextAction
+      properties:
+        surface:
           type: string
-        targetEnvironment:
+          enum: [backend, bff, frontend, contract, testing]
+        expectedEvidence:
+          type: array
+          items:
+            type: string
+        providedEvidence:
+          type: array
+          items:
+            type: string
+        gap:
           type: string
-          enum: [dev, staging, production]
-        implementationComplexity:
+        nextAction:
           type: string
-          enum: [low, medium, high]
-        teamExperience:
-          type: string
-          enum: [junior, senior, expert]
     BriefingResponse:
       type: object
       required:
         - signal
         - headline
-        - reason
-        - coboldWisdom
+        - requiredEvidence
+        - missingEvidence
+        - stopCondition
         - heroNextStep
-        - evidencePrompts
-        - checklist
+        - reviewMatrix
       properties:
         signal:
           type: string
           enum: [truce, sparring, shield-wall]
         headline:
           type: string
-        reason:
-          type: string
-        coboldWisdom:
+        requiredEvidence:
+          type: array
+          items:
+            type: string
+        missingEvidence:
+          type: array
+          items:
+            type: string
+        stopCondition:
           type: string
         heroNextStep:
           type: string
-        evidencePrompts:
+        reviewMatrix:
           type: array
           items:
-            type: string
-        checklist:
-          type: array
-          items:
-            type: string
+            $ref: '#/components/schemas/ReviewMatrixRow'

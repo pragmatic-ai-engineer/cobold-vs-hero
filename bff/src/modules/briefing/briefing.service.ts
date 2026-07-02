@@ -27,13 +27,13 @@ export class BriefingService {
     const backendResponse = (await response.json()) as BackendBriefingResponseDto;
 
     return {
-      checklist: backendResponse.checklist,
-      evidencePrompts: backendResponse.evidencePrompts,
       headline: backendResponse.headline,
+      missingEvidence: backendResponse.missingEvidence,
       nextAction: backendResponse.heroNextStep,
-      reason: backendResponse.reason,
-      reviewerNote: backendResponse.coboldWisdom,
+      requiredEvidence: backendResponse.requiredEvidence,
+      reviewMatrix: backendResponse.reviewMatrix,
       signal: backendResponse.signal,
+      stopCondition: backendResponse.stopCondition,
     };
   }
 
@@ -53,6 +53,14 @@ export class BriefingService {
       services: [bffStatus, backendStatus],
       status: backendStatus.status === 'UP' ? 'UP' : 'DEGRADED',
     };
+  }
+
+  async checkReadiness(): Promise<void> {
+    const backendStatus = await this.getBackendStatus();
+
+    if (backendStatus.status !== 'UP') {
+      throw new ServiceUnavailableException(backendStatus.detail ?? 'Backend is not ready');
+    }
   }
 
   private async getBackendStatus(): Promise<ServiceStatusDto> {

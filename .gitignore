@@ -4,7 +4,10 @@ bff/dist/
 bff/node_modules/
 frontend/dist/
 frontend/node_modules/
-testautomation/.pytest_cache/
+smoke/ui/node_modules/
+smoke/ui/playwright-report/
+smoke/ui/test-results/
+testautomation/**/.pytest_cache/
 testautomation/**/__pycache__/
 screenshots/
 infra/ansible/.generated/

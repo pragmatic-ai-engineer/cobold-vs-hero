@@ -1,13 +1,22 @@
 # Cloudflare Terraform
 
-This stack manages the Cloudflare DNS record for the deployed workshop app:
+This stack manages the Cloudflare DNS records for the deployed workshop app and
+current PR preview host shape:
 
 ```text
 cobold.pragmatic-ai.engineer -> pai public IPv4
+*.cobold.pragmatic-ai.engineer -> pai public IPv4
+*.pragmatic-ai.engineer -> pai public IPv4
 ```
 
 It intentionally starts with DNS only. Add WAF, cache, TLS, or redirect rules as
 separate reviewed changes after the DNS record is under Terraform state.
+
+TLS wildcard issuance is handled by the Ansible cert-manager bootstrap, not by
+Terraform. That certificate covers both `*.pragmatic-ai.engineer` and
+`*.cobold.pragmatic-ai.engineer`. This DNS stack routes both wildcard levels so
+flat hosts like `demo.pragmatic-ai.engineer` and nested preview hosts like
+`pr-42.cobold.pragmatic-ai.engineer` can reach Traefik.
 
 ## Credentials
 
@@ -62,6 +71,18 @@ $EDITOR infra/terraform/cloudflare/terraform.tfvars
 
 `terraform.tfvars` is ignored by Git. The server IP should stay local, matching
 the existing Ansible pattern in `infra/ansible/host_vars/pai/local.yml`.
+
+The nested wildcard record supports PR preview hosts such as:
+
+```text
+pr-42.cobold.pragmatic-ai.engineer
+```
+
+The root wildcard record supports flat app hostnames such as:
+
+```text
+demo.pragmatic-ai.engineer
+```
 
 ## Review Loop
 

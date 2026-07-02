@@ -50,7 +50,7 @@ describe('App', () => {
     fixture.detectChanges();
     flushStatus();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('risky idea');
+    expect(compiled.querySelector('h1')?.textContent).toContain('review readiness matrix');
   });
 
   it('should render both service statuses', () => {

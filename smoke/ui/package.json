@@ -1,0 +1,17 @@
+{
+  "name": "cobold-vs-hero-ui-smoke",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quick Playwright UI smoke checks for the Cobold vs Hero workshop app",
+  "type": "module",
+  "scripts": {
+    "install:browsers": "playwright install chromium",
+    "codegen": "playwright codegen",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

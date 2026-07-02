@@ -46,11 +46,38 @@ ansible-playbook -i inventory.yml site.yml
 The runner uses `ansible-playbook` when available and falls back to
 `uvx --from ansible-core ansible-playbook`.
 
+## TLS
+
+The TLS bootstrap installs cert-manager, keeps the HTTP-01
+`letsencrypt-prod` issuer for normal host-specific ingress certificates, and
+also creates a Cloudflare DNS-01 issuer for wildcard certificates.
+
+Wildcard TLS needs a scoped Cloudflare token with `Zone / Zone / Read` and
+`Zone / DNS / Edit` on `pragmatic-ai.engineer`:
+
+```bash
+export CLOUDFLARE_API_TOKEN="..."
+./scripts/run.sh -i inventory.yml site.yml --tags tls
+```
+
+The DNS-01 certificate is stored in `kube-system` as:
+
+```text
+Certificate: pragmatic-ai-engineer-wildcard
+Secret:      pragmatic-ai-engineer-wildcard-tls
+SANs:        *.pragmatic-ai.engineer, *.cobold.pragmatic-ai.engineer
+```
+
+Traefik's default `TLSStore` uses that secret. Preview deploys also copy the
+same wildcard TLS data into each PR namespace because Kubernetes ingress TLS
+secrets are namespace-scoped.
+
 ## GitHub Actions Runner
 
-The playbook can install a repo-level self-hosted GitHub Actions runner on
-`pai`. The runner is registered as `pai` and has the labels `self-hosted`,
-`pai`, `k3s`, and `docker`.
+The playbook can install repo-level self-hosted GitHub Actions runners on
+`pai`. By default it registers six runner services: `pai`, then `pai-2` through
+`pai-6`. They share the labels `self-hosted`, `pai`, `k3s`, and `docker`, which
+allows two preview PR builds to run their three image-build jobs in parallel.
 
 For the first registration, create a one-hour registration token:
 
@@ -69,9 +96,9 @@ Then apply only the runner-related tasks:
 ./scripts/run.sh -i inventory.yml site.yml --tags github_runner
 ```
 
-After the runner is registered once, the token is not needed for normal
-playbook runs. The runner runs as the `github-runner` user, has Docker access
-for image builds, and has a local K3s kubeconfig for Helm deploys.
+After a runner instance is registered once, the token is not needed for normal
+playbook runs. The runners run as the `github-runner` user, have Docker access
+for image builds, and have a local K3s kubeconfig for Helm deploys.
 
 ## What It Installs
 
@@ -81,8 +108,9 @@ for image builds, and has a local K3s kubeconfig for Helm deploys.
 - Helm from the official Debian/Ubuntu apt repository.
 - `mise`, so repo-local `mise.toml` files can install Java, Node, and `uv`.
 - K3s single-node Kubernetes with bundled Traefik and local-path storage.
+- cert-manager with HTTP-01 and Cloudflare DNS-01 Let's Encrypt issuers.
 - Namespaces for `cobold`, `centaur`, `data`, and `ci`.
-- Optional repo-level GitHub Actions runner for building images and deploying
+- Optional repo-level GitHub Actions runners for building images and deploying
   locally on `pai`.
 
 The playbook fetches a local kubeconfig to:
