@@ -117,6 +117,15 @@ helm upgrade --install cobold-vs-hero deploy/helm/cobold-vs-hero \
   --set frontend.image.repository=ghcr.io/greg0x/cobold-vs-hero-frontend
 ```
 
+For GitHub Actions deploys, set these repository-level values:
+
+- Variable: `BETTERSTACK_OBSERVABILITY_ENABLED=true`
+- Secret: `BETTERSTACK_FRONTEND_TOKEN=<Frontend token from Better Stack Error Tracking>`
+
+The frontend token is only required for browser telemetry. Backend and BFF
+OpenTelemetry injection can run with only `BETTERSTACK_OBSERVABILITY_ENABLED`,
+as long as the cluster collector is already installed.
+
 For a one-off render without a real token:
 
 ```bash

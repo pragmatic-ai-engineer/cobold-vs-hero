@@ -29,6 +29,8 @@ env:
   TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
   IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/config
+  BETTERSTACK_OBSERVABILITY_ENABLED: ${{ vars.BETTERSTACK_OBSERVABILITY_ENABLED }}
+  BETTERSTACK_FRONTEND_TOKEN: ${{ secrets.BETTERSTACK_FRONTEND_TOKEN }}
 
 jobs:
   build:
@@ -128,6 +130,21 @@ jobs:
 
       - name: Deploy with Helm
         run: |
+          OBSERVABILITY_ARGS=()
+          if [ "$BETTERSTACK_OBSERVABILITY_ENABLED" = "true" ] || [ -n "$BETTERSTACK_FRONTEND_TOKEN" ]; then
+            OBSERVABILITY_ARGS+=(
+              --set observability.enabled=true
+              --set-string observability.environment=preview
+              --set-string observability.frontend.release="$IMAGE_TAG"
+            )
+          fi
+          if [ -n "$BETTERSTACK_FRONTEND_TOKEN" ]; then
+            OBSERVABILITY_ARGS+=(
+              --set observability.frontend.enabled=true
+              --set-string observability.frontend.token="$BETTERSTACK_FRONTEND_TOKEN"
+            )
+          fi
+
           helm upgrade --install "$RELEASE_NAME" deploy/helm/cobold-vs-hero \
             --namespace "$RELEASE_NAMESPACE" \
             --reset-values \
@@ -139,7 +156,8 @@ jobs:
             --set-string ingress.hosts[0].host="$APP_HOST" \
             --set ingress.certManager.enabled=false \
             --set-string 'ingress.tls[0].secretName'="$TLS_SECRET_NAME" \
-            --set-string 'ingress.tls[0].hosts[0]'="$APP_HOST"
+            --set-string 'ingress.tls[0].hosts[0]'="$APP_HOST" \
+            "${OBSERVABILITY_ARGS[@]}"
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
