@@ -5,6 +5,9 @@ metadata:
   labels:
     {{- include "cobold-vs-hero.labels" . | nindent 4 }}
     app.kubernetes.io/component: backend
+    {{- if include "cobold-vs-hero.datadogEnabled" . }}
+    {{- include "cobold-vs-hero.datadogTags" (dict "root" . "component" "backend") | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.backend.replicaCount }}
   selector:
@@ -13,9 +16,17 @@ spec:
       app.kubernetes.io/component: backend
   template:
     metadata:
+      {{- if include "cobold-vs-hero.datadogEnabled" . }}
+      annotations:
+        ad.datadoghq.com/backend.logs: {{ include "cobold-vs-hero.datadogLogConfig" (dict "root" . "component" "backend" "source" "java") }}
+      {{- end }}
       labels:
         {{- include "cobold-vs-hero.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: backend
+        {{- if include "cobold-vs-hero.datadogEnabled" . }}
+        admission.datadoghq.com/enabled: "true"
+        {{- include "cobold-vs-hero.datadogTags" (dict "root" . "component" "backend") | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.global.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ . }}
@@ -28,6 +39,10 @@ spec:
         - name: backend
           image: {{ include "cobold-vs-hero.image" (dict "root" . "image" .Values.backend.image) | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          {{- if include "cobold-vs-hero.datadogEnabled" . }}
+          env:
+            {{- include "cobold-vs-hero.datadogEnv" (dict "root" . "component" "backend") | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 8080

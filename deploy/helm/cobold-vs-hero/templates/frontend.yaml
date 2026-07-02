@@ -5,6 +5,9 @@ metadata:
   labels:
     {{- include "cobold-vs-hero.labels" . | nindent 4 }}
     app.kubernetes.io/component: frontend
+    {{- if include "cobold-vs-hero.datadogEnabled" . }}
+    {{- include "cobold-vs-hero.datadogTags" (dict "root" . "component" "frontend") | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.frontend.replicaCount }}
   selector:
@@ -13,9 +16,16 @@ spec:
       app.kubernetes.io/component: frontend
   template:
     metadata:
+      {{- if include "cobold-vs-hero.datadogEnabled" . }}
+      annotations:
+        ad.datadoghq.com/frontend.logs: {{ include "cobold-vs-hero.datadogLogConfig" (dict "root" . "component" "frontend" "source" "nginx") }}
+      {{- end }}
       labels:
         {{- include "cobold-vs-hero.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: frontend
+        {{- if include "cobold-vs-hero.datadogEnabled" . }}
+        {{- include "cobold-vs-hero.datadogTags" (dict "root" . "component" "frontend") | nindent 8 }}
+        {{- end }}
     spec:
       {{- with .Values.global.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ . }}
@@ -34,6 +44,13 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          {{- if include "cobold-vs-hero.datadogBrowserEnabled" . }}
+          volumeMounts:
+            - name: datadog-browser-config
+              mountPath: /usr/share/nginx/html/datadog-config.js
+              subPath: datadog-config.js
+              readOnly: true
+          {{- end }}
           readinessProbe:
             httpGet:
               path: /
@@ -43,6 +60,12 @@ spec:
             failureThreshold: 30
           resources:
             {{- toYaml .Values.resources.frontend | nindent 12 }}
+      {{- if include "cobold-vs-hero.datadogBrowserEnabled" . }}
+      volumes:
+        - name: datadog-browser-config
+          configMap:
+            name: {{ include "cobold-vs-hero.fullname" . }}-datadog-browser
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service

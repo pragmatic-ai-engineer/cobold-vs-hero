@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/cobold-vs-hero")
 @CrossOrigin(origins = "http://localhost:4200")
 class CoboldVsHeroController {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(CoboldVsHeroController.class);
 
 	private static final Map<String, List<String>> EVIDENCE_BY_SURFACE = Map.of(
 			"backend", List.of("backend-test"),
@@ -48,6 +52,7 @@ class CoboldVsHeroController {
 
 	@GetMapping("/status")
 	StatusResponse status() {
+		LOGGER.info("backend.status checked port={}", serverPort);
 		return new StatusResponse("be-java", "spring-boot", "UP", Instant.now().toString(), serverPort);
 	}
 
@@ -56,6 +61,13 @@ class CoboldVsHeroController {
 		List<String> requiredEvidence = requiredEvidenceFor(request);
 		List<String> missingEvidence = missingEvidenceFor(requiredEvidence, request.providedEvidence());
 		String signal = signalFor(missingEvidence, request.riskFlags());
+		LOGGER.info(
+				"backend.briefing evaluated signal={} affectedSurfaceCount={} providedEvidenceCount={} riskFlagCount={} missingEvidenceCount={}",
+				signal,
+				request.affectedSurfaces().size(),
+				request.providedEvidence().size(),
+				request.riskFlags().size(),
+				missingEvidence.size());
 
 		return new BriefingResponse(
 				signal,

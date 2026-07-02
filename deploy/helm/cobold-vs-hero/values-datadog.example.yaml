@@ -1,0 +1,13 @@
+observability:
+  enabled: true
+  datadog:
+    enabled: true
+    site: datadoghq.com
+    env: demo
+    version: ""
+    browser:
+      enabled: true
+      clientToken: ""
+      rumApplicationId: ""
+    apm:
+      traceSamplingRules: '[{"sample_rate":1.0}]'

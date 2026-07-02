@@ -58,3 +58,41 @@ resources:
     limits:
       cpu: 250m
       memory: 128Mi
+
+observability:
+  enabled: false
+  datadog:
+    enabled: false
+    site: datadoghq.com
+    env: demo
+    version: ""
+    serviceNamespace: cobold-vs-hero
+    services:
+      frontend: cobold-vs-hero-angular
+      bff: cobold-vs-hero-bff
+      backend: cobold-vs-hero-java
+    apm:
+      logsInjection: true
+      profiling: false
+      propagationStyle: datadog,tracecontext
+      runtimeMetrics: true
+      traceSampleRate: "1.0"
+      traceSamplingRules: '[{"sample_rate":1.0}]'
+      traceRateLimit: "100"
+    browser:
+      enabled: false
+      clientToken: ""
+      rumApplicationId: ""
+      allowedTracingUrls: []
+      defaultPrivacyLevel: mask-user-input
+      sessionReplaySampleRate: 20
+      sessionSampleRate: 100
+      traceContextInjection: all
+      traceSampleRate: 100
+      logs:
+        enabled: true
+        forwardConsoleLogs:
+          - warn
+          - error
+        forwardErrorsToLogs: true
+        sessionSampleRate: 100

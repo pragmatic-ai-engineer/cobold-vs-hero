@@ -141,6 +141,15 @@ The default deployed host is:
 https://cobold.pragmatic-ai.engineer
 ```
 
+## Observability
+
+The Datadog wiring is optional by default. The app chart can add Datadog
+service tags and browser runtime config, while the cluster-level Datadog Agent
+collects Kubernetes logs, metrics, and traces.
+
+See `docs/observability-datadog.md` for the Agent install, GitHub
+variables/secrets, and end-to-end trace verification path.
+
 Cloudflare DNS is managed through the Terraform stack in
 `infra/terraform/cloudflare`. The intended DNS records are:
 

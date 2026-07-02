@@ -1,0 +1,35 @@
+{{- if include "cobold-vs-hero.datadogBrowserEnabled" . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cobold-vs-hero.fullname" . }}-datadog-browser
+  labels:
+    {{- include "cobold-vs-hero.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+data:
+  datadog-config.js: |
+    window.__COBOLD_DATADOG__ = {
+      enabled: true,
+      clientToken: {{ .Values.observability.datadog.browser.clientToken | toJson }},
+      site: {{ .Values.observability.datadog.site | toJson }},
+      service: {{ include "cobold-vs-hero.datadogServiceName" (dict "root" . "component" "frontend") | toJson }},
+      env: {{ .Values.observability.datadog.env | toJson }},
+      version: {{ include "cobold-vs-hero.datadogVersion" . | toJson }},
+      allowedTracingUrls: {{ .Values.observability.datadog.browser.allowedTracingUrls | toJson }},
+      rum: {
+        enabled: true,
+        applicationId: {{ .Values.observability.datadog.browser.rumApplicationId | toJson }},
+        defaultPrivacyLevel: {{ .Values.observability.datadog.browser.defaultPrivacyLevel | toJson }},
+        sessionReplaySampleRate: {{ .Values.observability.datadog.browser.sessionReplaySampleRate }},
+        sessionSampleRate: {{ .Values.observability.datadog.browser.sessionSampleRate }},
+        traceContextInjection: {{ .Values.observability.datadog.browser.traceContextInjection | toJson }},
+        traceSampleRate: {{ .Values.observability.datadog.browser.traceSampleRate }}
+      },
+      logs: {
+        enabled: {{ .Values.observability.datadog.browser.logs.enabled }},
+        forwardConsoleLogs: {{ .Values.observability.datadog.browser.logs.forwardConsoleLogs | toJson }},
+        forwardErrorsToLogs: {{ .Values.observability.datadog.browser.logs.forwardErrorsToLogs }},
+        sessionSampleRate: {{ .Values.observability.datadog.browser.logs.sessionSampleRate }}
+      }
+    };
+{{- end }}

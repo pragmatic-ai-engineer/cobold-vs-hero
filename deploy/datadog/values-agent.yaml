@@ -1,0 +1,32 @@
+datadog:
+  apiKeyExistingSecret: datadog-secret
+  site: datadoghq.com
+  clusterName: pai-cobold-vs-hero
+  tags:
+    - project:cobold-vs-hero
+    - managed-by:helm
+  kubelet:
+    tlsVerify: false
+  logs:
+    enabled: true
+    containerCollectAll: true
+  apm:
+    socketEnabled: true
+    portEnabled: true
+    port: 8126
+    instrumentation:
+      enabled: false
+  processAgent:
+    processCollection: true
+    containerCollection: true
+  collectEvents: true
+  kubeStateMetricsCore:
+    enabled: true
+  orchestratorExplorer:
+    enabled: true
+
+clusterAgent:
+  enabled: true
+  admissionController:
+    enabled: true
+    mutateUnlabelled: false

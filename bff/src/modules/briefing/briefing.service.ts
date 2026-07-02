@@ -7,6 +7,7 @@ import {
   ServiceStatusDto,
   SystemStatusResponseDto,
 } from './briefing.dto';
+import { logInfo, logWarn } from '../../observability/logger';
 
 @Injectable()
 export class BriefingService {
@@ -14,6 +15,12 @@ export class BriefingService {
   private readonly bffPort = Number(process.env.PORT ?? 3000);
 
   async createBriefing(request: BriefingRequestDto): Promise<BriefingResponseDto> {
+    logInfo('bff.briefing.requested', {
+      affectedSurfaceCount: request.affectedSurfaces.length,
+      providedEvidenceCount: request.providedEvidence.length,
+      riskFlagCount: request.riskFlags.length,
+    });
+
     const response = await fetch(`${this.backendBaseUrl}/api/cobold-vs-hero/briefing`, {
       body: JSON.stringify(request),
       headers: { 'content-type': 'application/json' },
@@ -21,10 +28,16 @@ export class BriefingService {
     });
 
     if (!response.ok) {
+      logWarn('bff.backend.briefing.failed', { statusCode: response.status });
       throw new ServiceUnavailableException(`Backend returned ${response.status}`);
     }
 
     const backendResponse = (await response.json()) as BackendBriefingResponseDto;
+    logInfo('bff.briefing.completed', {
+      missingEvidenceCount: backendResponse.missingEvidence.length,
+      reviewMatrixRows: backendResponse.reviewMatrix.length,
+      signal: backendResponse.signal,
+    });
 
     return {
       headline: backendResponse.headline,
@@ -47,6 +60,7 @@ export class BriefingService {
       status: 'UP',
     };
     const backendStatus = await this.getBackendStatus();
+    logInfo('bff.status.checked', { backendStatus: backendStatus.status });
 
     return {
       checkedAt,
@@ -59,6 +73,7 @@ export class BriefingService {
     const backendStatus = await this.getBackendStatus();
 
     if (backendStatus.status !== 'UP') {
+      logWarn('bff.readiness.failed', { detail: backendStatus.detail });
       throw new ServiceUnavailableException(backendStatus.detail ?? 'Backend is not ready');
     }
   }
@@ -70,6 +85,7 @@ export class BriefingService {
       const response = await fetch(endpoint, { signal: AbortSignal.timeout(1500) });
 
       if (!response.ok) {
+        logWarn('bff.backend.status.failed', { statusCode: response.status });
         return this.backendDownStatus(endpoint, `Backend returned ${response.status}`);
       }
 
@@ -83,6 +99,9 @@ export class BriefingService {
         status: backend.status === 'UP' ? 'UP' : 'DOWN',
       };
     } catch (error) {
+      logWarn('bff.backend.status.error', {
+        errorMessage: error instanceof Error ? error.message : 'Status check failed',
+      });
       return this.backendDownStatus(endpoint, error instanceof Error ? error.message : 'Status check failed');
     }
   }

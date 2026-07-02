@@ -29,6 +29,10 @@ env:
   TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
   IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/config
+  DATADOG_OBSERVABILITY_ENABLED: ${{ vars.DATADOG_OBSERVABILITY_ENABLED }}
+  DATADOG_SITE: ${{ vars.DATADOG_SITE }}
+  DATADOG_RUM_APPLICATION_ID: ${{ vars.DATADOG_RUM_APPLICATION_ID }}
+  DATADOG_RUM_CLIENT_TOKEN: ${{ secrets.DATADOG_RUM_CLIENT_TOKEN }}
 
 jobs:
   build:
@@ -128,6 +132,24 @@ jobs:
 
       - name: Deploy with Helm
         run: |
+          OBSERVABILITY_ARGS=()
+          if [ "$DATADOG_OBSERVABILITY_ENABLED" = "true" ] || [ -n "$DATADOG_RUM_CLIENT_TOKEN" ]; then
+            OBSERVABILITY_ARGS+=(
+              --set observability.enabled=true
+              --set observability.datadog.enabled=true
+              --set-string observability.datadog.env=preview
+              --set-string observability.datadog.version="$IMAGE_TAG"
+              --set-string observability.datadog.site="${DATADOG_SITE:-datadoghq.com}"
+            )
+          fi
+          if [ -n "$DATADOG_RUM_CLIENT_TOKEN" ] && [ -n "$DATADOG_RUM_APPLICATION_ID" ]; then
+            OBSERVABILITY_ARGS+=(
+              --set observability.datadog.browser.enabled=true
+              --set-string observability.datadog.browser.clientToken="$DATADOG_RUM_CLIENT_TOKEN"
+              --set-string observability.datadog.browser.rumApplicationId="$DATADOG_RUM_APPLICATION_ID"
+            )
+          fi
+
           helm upgrade --install "$RELEASE_NAME" deploy/helm/cobold-vs-hero \
             --namespace "$RELEASE_NAMESPACE" \
             --reset-values \
@@ -139,7 +161,8 @@ jobs:
             --set-string ingress.hosts[0].host="$APP_HOST" \
             --set ingress.certManager.enabled=false \
             --set-string 'ingress.tls[0].secretName'="$TLS_SECRET_NAME" \
-            --set-string 'ingress.tls[0].hosts[0]'="$APP_HOST"
+            --set-string 'ingress.tls[0].hosts[0]'="$APP_HOST" \
+            "${OBSERVABILITY_ARGS[@]}"
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
