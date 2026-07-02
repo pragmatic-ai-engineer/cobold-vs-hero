@@ -69,6 +69,9 @@ jobs:
 
       - name: Build and push image
         uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
         with:
           builder: pai-builder-${{ runner.name }}
           context: ${{ matrix.context }}
@@ -118,7 +121,7 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           install: true
-          cache: true
+          cache: false
 
       - name: Install smoke UI dependencies
         run: mise run ui:smoke:ci-install
