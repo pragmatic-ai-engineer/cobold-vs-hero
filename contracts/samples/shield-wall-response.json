@@ -18,7 +18,7 @@
       "expectedEvidence": ["bruno-smoke"],
       "providedEvidence": ["bruno-smoke"],
       "gap": "covered",
-      "nextAction": "Keep Bruno smoke coverage attached to the PR."
+      "nextAction": "Keep Bruno smoke evidence attached to the PR."
     },
     {
       "surface": "frontend",
@@ -32,14 +32,14 @@
       "expectedEvidence": ["bruno-smoke"],
       "providedEvidence": ["bruno-smoke"],
       "gap": "covered",
-      "nextAction": "Keep the contract smoke request attached to the PR."
+      "nextAction": "Keep contract smoke evidence attached to the PR."
     },
     {
       "surface": "testing",
       "expectedEvidence": ["dps-testautomation"],
       "providedEvidence": ["dps-testautomation"],
       "gap": "covered",
-      "nextAction": "Keep DPS-like automation attached to the PR."
+      "nextAction": "Keep DPS-like evidence attached to the PR."
     }
   ]
 }

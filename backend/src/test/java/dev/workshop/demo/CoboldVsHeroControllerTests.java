@@ -56,6 +56,33 @@ class CoboldVsHeroControllerTests {
 	}
 
 	@Test
+	void returnsShieldWallWhenProductionRollbackEvidenceIsMissing() {
+		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
+				new CoboldVsHeroController.BriefingRequest(
+						"Production release without rollback",
+						"Deploy a production payment retry fix with test and browser evidence but no rollback path.",
+						List.of("backend", "bff", "frontend", "contract", "testing"),
+						List.of("backend-test", "bruno-smoke", "dps-testautomation", "browser-screenshot", "hld", "lld"),
+						List.of("production")));
+
+		assertThat(response.signal()).isEqualTo("shield-wall");
+		assertThat(response.requiredEvidence()).containsExactly(
+				"backend-test",
+				"bruno-smoke",
+				"browser-screenshot",
+				"dps-testautomation",
+				"hld",
+				"lld",
+				"rollback");
+		assertThat(response.missingEvidence()).containsExactly("rollback");
+		assertThat(response.stopCondition()).contains("production", "rollback");
+		assertThat(response.heroNextStep()).contains("rollback");
+		assertThat(response.reviewMatrix()).hasSize(5);
+		assertThat(response.reviewMatrix())
+				.allSatisfy(row -> assertThat(row.gap()).isEqualTo("covered"));
+	}
+
+	@Test
 	void returnsShieldWallWhenHighRiskWorkMissesRequiredProof() {
 		CoboldVsHeroController.BriefingResponse response = controller.createBriefing(
 				new CoboldVsHeroController.BriefingRequest(
@@ -71,7 +98,8 @@ class CoboldVsHeroControllerTests {
 				"bruno-smoke",
 				"browser-screenshot",
 				"dps-testautomation",
-				"lld");
+				"lld",
+				"rollback");
 		assertThat(response.stopCondition()).contains("Split the work");
 		assertThat(response.reviewMatrix()).hasSize(5);
 	}

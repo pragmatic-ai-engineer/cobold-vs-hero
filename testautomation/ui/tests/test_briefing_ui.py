@@ -8,15 +8,17 @@ from playwright.sync_api import Error as PlaywrightError, sync_playwright  # noq
 
 from page_objects import CoboldBriefingPOM  # noqa: E402
 from steps import (  # noqa: E402
-    missing_evidence_is_visible,
     navigate_to_cobold_briefing,
-    request_sparring_readiness_matrix,
+    normal_release_matrix_rows_are_covered,
+    production_rollback_stop_condition_is_visible,
+    request_production_release_readiness_without_rollback,
+    rollback_missing_evidence_is_visible,
     runtime_status_is_visible,
-    sparring_signal_is_visible,
+    shield_wall_signal_is_visible,
 )
 
 
-def test_sparring_readiness_matrix_is_visible_in_browser() -> None:
+def test_production_without_rollback_is_visible_in_browser() -> None:
     ui_base_url = os.getenv("COBOLD_UI_BASE_URL", "http://localhost:4200")
     bff_base_url = os.getenv("COBOLD_API_BASE_URL")
     headless = os.getenv("COBOLD_UI_HEADLESS", "true").lower() != "false"
@@ -33,8 +35,10 @@ def test_sparring_readiness_matrix_is_visible_in_browser() -> None:
 
             navigate_to_cobold_briefing(pom)
             runtime_status_is_visible(pom)
-            request_sparring_readiness_matrix(pom)
-            sparring_signal_is_visible(pom)
-            missing_evidence_is_visible(pom)
+            request_production_release_readiness_without_rollback(pom)
+            shield_wall_signal_is_visible(pom)
+            rollback_missing_evidence_is_visible(pom)
+            production_rollback_stop_condition_is_visible(pom)
+            normal_release_matrix_rows_are_covered(pom)
         finally:
             browser.close()
