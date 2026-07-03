@@ -150,7 +150,25 @@ jobs:
         run: mise run ui:smoke:ci-install
 
       - name: Run deployed smoke
+        id: deployed-smoke
+        continue-on-error: true
         env:
           COBOLD_API_BASE_URL: https://${{ env.APP_HOST }}
           COBOLD_UI_BASE_URL: https://${{ env.APP_HOST }}
         run: mise run smoke:all
+
+      - name: Roll back Helm release after smoke failure
+        if: steps.deployed-smoke.outcome == 'failure'
+        run: |
+          echo "::warning::Deployed smoke checks failed; rolling back $RELEASE_NAME in namespace $RELEASE_NAMESPACE."
+          helm history "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --max 5 || true
+          helm rollback "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --wait --timeout=5m
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
+
+      - name: Fail deploy after smoke rollback
+        if: steps.deployed-smoke.outcome == 'failure'
+        run: |
+          echo "::error::Deployed smoke checks failed. Helm rollback was attempted; keeping this deployment run failed."
+          exit 1
