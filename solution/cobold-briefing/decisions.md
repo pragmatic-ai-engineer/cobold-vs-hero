@@ -74,3 +74,25 @@ contract.
 - The final repo demonstrates target, error, correction, evidence, and human
   review as one loop.
 
+## D04 - Production Needs Rollback Evidence
+
+Status: Accepted
+
+### Context
+
+Production review needs one release-specific question that normal test evidence
+does not answer: how the team restores service if the release fails.
+
+### Decision
+
+Treat `rollback` as risk-driven evidence. When `production` is selected in the
+readiness request, the backend must require `rollback` evidence. Missing
+`rollback` is an immediate `shield-wall` release blocker even when surface,
+design, smoke, browser, and automation evidence is otherwise present.
+
+### Consequences
+
+- Production readiness is not reduced to test pass/fail status.
+- Reviewers can see the release safety gap before implementation or release.
+- The OpenAPI enum, samples, smoke checks, automation, UI options, and backend
+  rules must stay aligned around the `rollback` evidence value.

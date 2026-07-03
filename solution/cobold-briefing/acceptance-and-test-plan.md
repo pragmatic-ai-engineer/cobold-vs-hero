@@ -16,6 +16,7 @@ API/UI testautomation visible in one place.
 | AC6 | Representative `truce`, `sparring`, and `shield-wall` cases are covered. | Bruno smoke and DPS-like API testautomation. |
 | AC7 | HLD/LLD explain behavior before implementation. | Solution review against `solution/cobold-briefing/`. |
 | AC8 | Scope stays inside readiness behavior and verification surfaces. | Diff boundary review. |
+| AC9 | Production release readiness requires `rollback` evidence and returns `shield-wall` when it is missing. | Backend unit test, Bruno smoke, DPS-like API testautomation, browser result panel. |
 
 ## Verification Layers
 
@@ -49,7 +50,7 @@ Expected:
 - `02-sparring-readiness` returns `200`, `signal=sparring`, and missing
   evidence.
 - `03-shield-wall-readiness` returns `200`, `signal=shield-wall`, missing
-  evidence, and a split stop condition.
+  `rollback`, and a release-blocking stop condition.
 
 ## Heavy API Testautomation
 
@@ -64,7 +65,8 @@ Expected:
 - Status check passes.
 - Truce readiness has no missing evidence.
 - Sparring readiness reports missing BFF/browser evidence.
-- Shield-wall readiness requires a split for high-risk missing proof.
+- Shield-wall readiness blocks production release when rollback evidence is
+  missing.
 
 ## Browser Checks
 
@@ -78,8 +80,8 @@ Expected:
 4. Submit a shield-wall readiness input.
 5. Verify the page shows:
    - `shield-wall`
-   - split stop condition
-   - missing automation/browser evidence
+   - release-blocking stop condition
+   - missing `rollback`
    - matrix rows for backend, BFF, frontend, contract, and testing
 6. Capture one screenshot of the result panel.
 
@@ -97,6 +99,6 @@ Record:
 - Playwright smoke result
 - DPS-like API testautomation result
 - OneCare-like UI testautomation result
+- rollback path or explicit missing-rollback blocker for production
 - diff boundary summary
 - gaps that still need human verification
-
