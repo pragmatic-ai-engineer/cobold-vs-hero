@@ -27,7 +27,7 @@ Representative examples:
 | `changeTitle` | string | yes | Short name for the proposed delivery move. |
 | `changeDescription` | string | yes | Summary of the delivery intent. |
 | `affectedSurfaces` | string[] | yes | Any of `backend`, `bff`, `frontend`, `contract`, `testing`. |
-| `providedEvidence` | string[] | yes | Evidence already available for review. |
+| `providedEvidence` | string[] | yes | Evidence already available for review, including `rollback` when production release recovery is already known. |
 | `riskFlags` | string[] | yes | Any of `production`, `customer-data`, `auth`, `payment`, `unclear-scope`. |
 
 ## Backend Response
@@ -69,6 +69,18 @@ own readiness rules.
 
 ## Evidence Rules
 
+Evidence vocabulary:
+
+| Evidence | Meaning |
+| --- | --- |
+| `backend-test` | Focused backend assertion for the changed behavior. |
+| `bruno-smoke` | API smoke request proving the BFF/API contract path. |
+| `dps-testautomation` | Heavier API automation from outside the code under test. |
+| `browser-screenshot` | Browser-visible proof of the rendered matrix or changed UI. |
+| `hld` | Reviewed high-level solution intent. |
+| `lld` | Reviewed low-level behavior and mapping rules. |
+| `rollback` | Production rollback path explaining how to restore service if the release fails. |
+
 Base evidence by surface:
 
 | Surface | Required evidence |
@@ -88,18 +100,28 @@ Risk evidence:
 
 | Risk flag | Additional evidence |
 | --- | --- |
-| `production` | `dps-testautomation`, `browser-screenshot` |
+| `production` | `dps-testautomation`, `browser-screenshot`, `rollback` |
 | `customer-data` | `dps-testautomation` |
 | `auth` | `dps-testautomation` |
 | `payment` | `dps-testautomation`, `browser-screenshot` |
 | `unclear-scope` | `hld`, `lld` |
+
+Release gate:
+
+- If `production` is present in `riskFlags`, `rollback` is required.
+- Missing `rollback` with `production` returns `shield-wall` even if all
+  surface, design, smoke, browser, and automation evidence is present.
+- `rollback` is risk-driven evidence. It appears in `requiredEvidence` and
+  `missingEvidence`; review matrix rows stay surface-focused.
 
 ## Signal Rules
 
 | Condition | Signal |
 | --- | --- |
 | no missing evidence and no high-risk flags | `truce` |
+| no missing evidence with a high-risk flag | `sparring` |
 | one or two missing evidence items and no high-risk flags | `sparring` |
+| `production` selected without `rollback` evidence | `shield-wall` |
 | more than two missing evidence items, or any `production`, `payment`, or `auth` flag with missing evidence | `shield-wall` |
 
 ## Status Response
@@ -128,6 +150,7 @@ then probes the backend status endpoint and returns both service entries.
 | --- | --- | --- |
 | Small backend change with backend test | `truce` | Backend unit test, Bruno smoke, DPS-like testautomation. |
 | Multi-surface UI/API change missing browser and smoke evidence | `sparring` | Bruno smoke and DPS-like testautomation assert missing evidence. |
+| Production release with all normal proof but missing rollback evidence | `shield-wall` | Backend unit test, Bruno smoke, DPS-like testautomation, browser result panel. |
 | Production payment or auth change missing automation/browser proof | `shield-wall` | Backend unit test, Bruno smoke, DPS-like testautomation, browser result panel. |
 | BFF and backend runtime status | `UP` | Backend unit test, Bruno smoke, DPS-like testautomation, browser status panel. |
 
@@ -139,4 +162,3 @@ then probes the backend status endpoint and returns both service entries.
   OneCare-like UI automation cover representative behavior.
 - Validation behavior and known gaps are explicit.
 - Browser evidence shows the matrix fields that API smoke checks assert.
-

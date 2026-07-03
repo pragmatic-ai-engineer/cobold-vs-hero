@@ -1,45 +1,45 @@
 {
   "signal": "shield-wall",
   "headline": "Split before review.",
-  "requiredEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "dps-testautomation", "hld", "lld"],
-  "missingEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "dps-testautomation", "lld"],
-  "stopCondition": "Split the work before implementation; required evidence is missing for a high-risk or broad change.",
-  "heroNextStep": "Split the task and add automation, browser, and design evidence before implementation.",
+  "requiredEvidence": ["backend-test", "bruno-smoke", "browser-screenshot", "dps-testautomation", "hld", "lld", "rollback"],
+  "missingEvidence": ["rollback"],
+  "stopCondition": "Do not release to production until rollback evidence is attached.",
+  "heroNextStep": "Add a rollback note that explains how production can be restored, then rerun the release readiness check.",
   "reviewMatrix": [
     {
       "surface": "backend",
       "expectedEvidence": ["backend-test"],
-      "providedEvidence": [],
-      "gap": "missing backend-test",
-      "nextAction": "Add focused backend test evidence."
+      "providedEvidence": ["backend-test"],
+      "gap": "covered",
+      "nextAction": "Keep backend assertion attached to the PR."
     },
     {
       "surface": "bff",
       "expectedEvidence": ["bruno-smoke"],
-      "providedEvidence": [],
-      "gap": "missing bruno-smoke",
-      "nextAction": "Add Bruno smoke coverage for the BFF mapping."
+      "providedEvidence": ["bruno-smoke"],
+      "gap": "covered",
+      "nextAction": "Keep Bruno smoke coverage attached to the PR."
     },
     {
       "surface": "frontend",
       "expectedEvidence": ["browser-screenshot"],
-      "providedEvidence": [],
-      "gap": "missing browser-screenshot",
-      "nextAction": "Capture browser evidence for the rendered matrix."
+      "providedEvidence": ["browser-screenshot"],
+      "gap": "covered",
+      "nextAction": "Keep browser evidence attached to the PR."
     },
     {
       "surface": "contract",
       "expectedEvidence": ["bruno-smoke"],
-      "providedEvidence": [],
-      "gap": "missing bruno-smoke",
-      "nextAction": "Prove the contract through a smoke request."
+      "providedEvidence": ["bruno-smoke"],
+      "gap": "covered",
+      "nextAction": "Keep the contract smoke request attached to the PR."
     },
     {
       "surface": "testing",
       "expectedEvidence": ["dps-testautomation"],
-      "providedEvidence": [],
-      "gap": "missing dps-testautomation",
-      "nextAction": "Add DPS-like automation before implementation review."
+      "providedEvidence": ["dps-testautomation"],
+      "gap": "covered",
+      "nextAction": "Keep DPS-like automation attached to the PR."
     }
   ]
 }

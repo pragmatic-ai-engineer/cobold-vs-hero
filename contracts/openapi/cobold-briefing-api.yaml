@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Cobold vs Hero Briefing API
-  version: 0.2.0
+  version: 0.3.0
 paths:
   /api/cobold-vs-hero/status:
     get:
@@ -27,11 +27,11 @@ paths:
             examples:
               shieldWall:
                 value:
-                  changeTitle: Payment retry refactor
-                  changeDescription: Refactor production payment retry flow and auth callback in one release.
+                  changeTitle: Production release without rollback
+                  changeDescription: Deploy a production payment retry fix with test and browser evidence but no rollback path.
                   affectedSurfaces: [backend, bff, frontend, contract, testing]
-                  providedEvidence: [hld]
-                  riskFlags: [production, payment, auth, unclear-scope]
+                  providedEvidence: [backend-test, bruno-smoke, dps-testautomation, browser-screenshot, hld, lld]
+                  riskFlags: [production]
       responses:
         '200':
           description: Readiness briefing generated
@@ -107,7 +107,7 @@ components:
           type: array
           items:
             type: string
-            enum: [backend-test, bruno-smoke, dps-testautomation, browser-screenshot, hld, lld]
+            enum: [backend-test, bruno-smoke, dps-testautomation, browser-screenshot, hld, lld, rollback]
         riskFlags:
           type: array
           items:

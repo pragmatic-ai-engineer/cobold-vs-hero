@@ -16,6 +16,7 @@ In scope:
 - Structured review readiness request.
 - Required evidence derived from affected surfaces and risk flags.
 - Missing evidence calculation.
+- Production release rollback evidence.
 - Review matrix rows for affected surfaces.
 - Backend, BFF, frontend, contract, smoke, and automation boundary updates.
 - Runtime status flow for the NestJS BFF and Spring Boot backend.
@@ -57,7 +58,7 @@ Canonical contract diagrams:
 | --- | --- |
 | Angular UI | Collect change title, description, affected surfaces, provided evidence, and risk flags. Render signal, stop condition, next action, evidence summary, matrix rows, and runtime status. |
 | NestJS BFF | Keep the UI contract stable, map backend field names to UI-facing names, and aggregate BFF/backend runtime status. |
-| Spring Boot API | Derive required evidence, missing evidence, signal, stop condition, next action, and review matrix rows. |
+| Spring Boot API | Derive required evidence, missing evidence, release-blocking rollback checks, signal, stop condition, next action, and review matrix rows. |
 | Contracts | Keep OpenAPI, PlantUML, and sample payloads aligned with behavior. |
 | Bruno | Provide participant-friendly API smoke checks during development. |
 | Playwright smoke | Provide quick browser-visible evidence for the rendered matrix. |
@@ -70,18 +71,23 @@ Canonical contract diagrams:
 3. The BFF forwards the structured request to the backend without owning
    readiness rules.
 4. The backend derives required evidence from surfaces and risk flags.
-5. The backend compares required evidence with provided evidence.
-6. The backend derives `truce`, `sparring`, or `shield-wall`.
-7. The backend returns required evidence, missing evidence, stop condition,
+5. If `production` is selected, the backend requires `rollback` evidence that
+   explains how production can be restored if the release fails.
+6. The backend compares required evidence with provided evidence.
+7. The backend derives `truce`, `sparring`, or `shield-wall`.
+8. Missing `rollback` evidence for `production` is an immediate `shield-wall`
+   release blocker.
+9. The backend returns required evidence, missing evidence, stop condition,
    next action, and one matrix row per affected surface.
-8. The BFF maps `heroNextStep` to `nextAction` for the UI.
-9. The UI renders the matrix and status panel for review.
-10. The team uses contract samples, smoke checks, automation, and browser
+10. The BFF maps `heroNextStep` to `nextAction` for the UI.
+11. The UI renders the matrix and status panel for review.
+12. The team uses contract samples, smoke checks, automation, and browser
     evidence to decide whether the slice is review-ready.
 
 ## Key Decisions
 
 - The backend owns readiness rules and evidence derivation.
+- Production readiness always requires rollback evidence before release review.
 - The BFF owns field-name translation and aggregate status only.
 - The frontend owns input ergonomics and matrix readability.
 - The contract package is the executable agreement between solution, code, and
@@ -115,4 +121,3 @@ Canonical contract diagrams:
 - Risks and non-goals are visible before implementation.
 - The matrix has a clear verification path through backend tests, Bruno,
   Playwright smoke, API automation, and UI automation.
-
