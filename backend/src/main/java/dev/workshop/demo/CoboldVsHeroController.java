@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 class CoboldVsHeroController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CoboldVsHeroController.class);
+	private static final String PRODUCTION_RISK = "production";
+	private static final String ROLLBACK_EVIDENCE = "rollback";
 
 	private static final Map<String, List<String>> EVIDENCE_BY_SURFACE = Map.of(
 			"backend", List.of("backend-test"),
@@ -36,7 +38,7 @@ class CoboldVsHeroController {
 			"testing", List.of("dps-testautomation"));
 
 	private static final Map<String, List<String>> EVIDENCE_BY_RISK = Map.of(
-			"production", List.of("dps-testautomation", "browser-screenshot"),
+			PRODUCTION_RISK, List.of("dps-testautomation", "browser-screenshot", ROLLBACK_EVIDENCE),
 			"customer-data", List.of("dps-testautomation"),
 			"auth", List.of("dps-testautomation"),
 			"payment", List.of("dps-testautomation", "browser-screenshot"),
@@ -74,8 +76,8 @@ class CoboldVsHeroController {
 				headlineFor(signal),
 				requiredEvidence,
 				missingEvidence,
-				stopConditionFor(signal),
-				heroNextStepFor(signal),
+				stopConditionFor(signal, missingEvidence, request.riskFlags()),
+				heroNextStepFor(signal, missingEvidence, request.riskFlags()),
 				reviewMatrixFor(request));
 	}
 
@@ -105,6 +107,10 @@ class CoboldVsHeroController {
 	}
 
 	private String signalFor(List<String> missingEvidence, List<String> riskFlags) {
+		if (productionRollbackMissing(missingEvidence, riskFlags)) {
+			return "shield-wall";
+		}
+
 		boolean highRiskMissingProof = !missingEvidence.isEmpty() && riskFlags.stream().anyMatch(HIGH_RISK_FLAGS::contains);
 
 		if (missingEvidence.size() > 2 || highRiskMissingProof) {
@@ -114,6 +120,14 @@ class CoboldVsHeroController {
 			return "sparring";
 		}
 		return "truce";
+	}
+
+	private boolean productionRollbackMissing(List<String> missingEvidence, List<String> riskFlags) {
+		return riskFlags.contains(PRODUCTION_RISK) && missingEvidence.contains(ROLLBACK_EVIDENCE);
+	}
+
+	private boolean isolatedProductionRollbackGap(List<String> missingEvidence, List<String> riskFlags) {
+		return productionRollbackMissing(missingEvidence, riskFlags) && missingEvidence.size() == 1;
 	}
 
 	private List<ReviewMatrixRow> reviewMatrixFor(BriefingRequest request) {
@@ -145,7 +159,11 @@ class CoboldVsHeroController {
 		};
 	}
 
-	private String stopConditionFor(String signal) {
+	private String stopConditionFor(String signal, List<String> missingEvidence, List<String> riskFlags) {
+		if ("shield-wall".equals(signal) && isolatedProductionRollbackGap(missingEvidence, riskFlags)) {
+			return "Do not release to production until rollback evidence is attached.";
+		}
+
 		return switch (signal) {
 			case "shield-wall" -> "Split the work before implementation; required evidence is missing for a high-risk or broad change.";
 			case "sparring" -> "Do not request implementation review until API smoke and browser evidence are planned.";
@@ -153,7 +171,11 @@ class CoboldVsHeroController {
 		};
 	}
 
-	private String heroNextStepFor(String signal) {
+	private String heroNextStepFor(String signal, List<String> missingEvidence, List<String> riskFlags) {
+		if ("shield-wall".equals(signal) && isolatedProductionRollbackGap(missingEvidence, riskFlags)) {
+			return "Add a rollback note that explains how production can be restored, then rerun the release readiness check.";
+		}
+
 		return switch (signal) {
 			case "shield-wall" -> "Split the task and add automation, browser, and design evidence before implementation.";
 			case "sparring" -> "Add Bruno smoke and browser evidence before implementation review.";

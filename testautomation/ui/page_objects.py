@@ -10,9 +10,16 @@ from playwright.sync_api import Locator, Page, expect
 class BriefingFormData:
     change_title: str
     change_description: str
+    affected_surfaces: tuple[str, ...] | None = None
+    provided_evidence: tuple[str, ...] | None = None
+    risk_flags: tuple[str, ...] | None = None
 
 
 class CoboldBriefingPOM:
+    SURFACE_OPTIONS = ("backend", "bff", "frontend", "contract", "testing")
+    EVIDENCE_OPTIONS = ("backend-test", "bruno-smoke", "dps-testautomation", "browser-screenshot", "hld", "lld", "rollback")
+    RISK_OPTIONS = ("production", "customer-data", "auth", "payment", "unclear-scope")
+
     def __init__(self, page: Page, ui_base_url: str, bff_base_url: str | None = None) -> None:
         self.page = page
         self.ui_base_url = ui_base_url.rstrip("/")
@@ -31,6 +38,12 @@ class CoboldBriefingPOM:
     def fill_briefing_form(self, data: BriefingFormData) -> None:
         self.by_data_test("change-title-input").fill(data.change_title)
         self.by_data_test("change-description-input").fill(data.change_description)
+        if data.affected_surfaces is not None:
+            self._set_option_group("surface", self.SURFACE_OPTIONS, data.affected_surfaces)
+        if data.provided_evidence is not None:
+            self._set_option_group("evidence", self.EVIDENCE_OPTIONS, data.provided_evidence)
+        if data.risk_flags is not None:
+            self._set_option_group("risk", self.RISK_OPTIONS, data.risk_flags)
 
     def request_briefing(self) -> None:
         self.by_data_test("request-briefing-button").click()
@@ -42,11 +55,23 @@ class CoboldBriefingPOM:
     def assert_missing_evidence_mentions(self, expected_text: str) -> None:
         expect(self.by_data_test("missing-evidence")).to_contain_text(expected_text)
 
+    def assert_stop_condition_mentions(self, expected_text: str) -> None:
+        expect(self.by_data_test("briefing-stop-condition")).to_contain_text(expected_text)
+
     def assert_matrix_mentions(self, expected_text: str) -> None:
         expect(self.by_data_test("review-matrix")).to_contain_text(expected_text)
 
+    def assert_matrix_rows_covered(self, surfaces: tuple[str, ...]) -> None:
+        for surface in surfaces:
+            expect(self.by_data_test(f"matrix-row-{surface}")).to_contain_text("covered")
+
     def by_data_test(self, value: str) -> Locator:
         return self.page.locator(f'[data-test="{value}"]')
+
+    def _set_option_group(self, group: str, options: tuple[str, ...], selected_values: tuple[str, ...]) -> None:
+        selected = set(selected_values)
+        for option in options:
+            self.by_data_test(f"{group}-{option}").set_checked(option in selected)
 
     def _app_url(self) -> str:
         if not self.bff_base_url:
