@@ -1,5 +1,7 @@
 # Cobold vs Hero Demo
 
+preview demo
+
 Small umbrella-style demo repo for the Pragmatic AI Engineer workshop. It keeps
 the same delivery shape as the participant environment without copying
 enterprise code or legacy complexity.
