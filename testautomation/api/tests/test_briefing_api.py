@@ -44,24 +44,37 @@ def test_sparring_readiness_reports_missing_ui_and_bff_evidence() -> None:
     assert "browser evidence" in response["nextAction"].lower()
 
 
-def test_shield_wall_readiness_requires_split_for_high_risk_missing_proof() -> None:
+def test_shield_wall_readiness_blocks_production_without_rollback() -> None:
     response = CoboldBriefingClient().create_briefing(
         BriefingRequest(
-            change_title="Payment retry refactor",
-            change_description="Refactor production payment retry flow and auth callback in one release.",
+            change_title="Production release without rollback",
+            change_description="Deploy a production payment retry fix with test and browser evidence but no rollback path.",
             affected_surfaces=["backend", "bff", "frontend", "contract", "testing"],
-            provided_evidence=["hld"],
-            risk_flags=["production", "payment", "auth", "unclear-scope"],
+            provided_evidence=[
+                "backend-test",
+                "bruno-smoke",
+                "dps-testautomation",
+                "browser-screenshot",
+                "hld",
+                "lld",
+            ],
+            risk_flags=["production"],
         )
     )
 
     assert response["signal"] == "shield-wall"
-    assert response["missingEvidence"] == [
+    assert response["requiredEvidence"] == [
         "backend-test",
         "bruno-smoke",
         "browser-screenshot",
         "dps-testautomation",
+        "hld",
         "lld",
+        "rollback",
     ]
-    assert "Split the work" in response["stopCondition"]
+    assert response["missingEvidence"] == ["rollback"]
+    assert "production" in response["stopCondition"].lower()
+    assert "rollback" in response["stopCondition"].lower()
+    assert "rollback" in response["nextAction"].lower()
     assert len(response["reviewMatrix"]) == 5
+    assert all(row["gap"] == "covered" for row in response["reviewMatrix"])

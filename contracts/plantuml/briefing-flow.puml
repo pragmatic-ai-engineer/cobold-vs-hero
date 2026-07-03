@@ -10,11 +10,11 @@ participant "Spring Boot API" as api
 hero -> ui: Enter change details\nselect surfaces, evidence, risks
 ui -> bff: POST /api/cobold-vs-hero/briefing
 bff -> api: POST /api/cobold-vs-hero/briefing
-api -> api: derive required evidence\ncompare provided evidence\nbuild matrix
+api -> api: derive surface + release evidence\nrequire rollback for production\nbuild matrix
 api --> bff: signal, required/missing evidence,\nstop condition, next action, matrix
 bff -> bff: map backend contract to UI DTO
 bff --> ui: UI readiness response
 ui -> cobold: review matrix + evidence gaps
-cobold --> hero: start, sharpen, or split the slice
+cobold --> hero: start, sharpen, split, or block release
 
 @enduml

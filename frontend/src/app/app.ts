@@ -65,6 +65,7 @@ export class App implements OnInit {
     { value: 'browser-screenshot', label: 'Browser screenshot' },
     { value: 'hld', label: 'HLD' },
     { value: 'lld', label: 'LLD' },
+    { value: 'rollback', label: 'Rollback plan' },
   ];
   readonly riskOptions = [
     { value: 'production', label: 'Production' },
