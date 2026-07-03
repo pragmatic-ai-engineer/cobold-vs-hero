@@ -1,3 +1,25 @@
+<div class="nyan-layer" aria-hidden="true">
+  @for (pixel of trailPixels(); track pixel.id) {
+    <span
+      class="rainbow-pixel"
+      [style.left.px]="pixel.x"
+      [style.top.px]="pixel.y"
+      [style.background]="pixel.color"
+      [style.animation-delay.ms]="pixel.delay"
+    ></span>
+  }
+
+  @if (catPosition(); as cat) {
+    <div
+      class="pixel-cat"
+      data-test="nyan-cat-cursor"
+      [style.transform]="'translate3d(' + cat.x + 'px, ' + cat.y + 'px, 0)'"
+    >
+      <span></span>
+    </div>
+  }
+</div>
+
 <main class="page-shell">
   <section class="intro">
     <p class="eyebrow">Cobold vs Hero</p>

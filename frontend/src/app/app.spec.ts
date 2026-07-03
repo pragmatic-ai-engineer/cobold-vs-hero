@@ -66,4 +66,17 @@ describe('App', () => {
     expect(compiled.textContent).toContain('BE Java');
     expect(compiled.textContent).toContain('spring-boot');
   });
+
+  it('should render the nyan cat cursor after pointer movement', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    flushStatus();
+
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 160, clientY: 120 }));
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('[data-test="nyan-cat-cursor"]')).toBeTruthy();
+    expect(compiled.querySelectorAll('.rainbow-pixel').length).toBe(6);
+  });
 });

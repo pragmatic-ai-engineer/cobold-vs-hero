@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 interface BriefingResponse {
@@ -35,6 +35,19 @@ interface SystemStatusResponse {
   services: ServiceStatus[];
 }
 
+interface RainbowTrailPixel {
+  id: number;
+  x: number;
+  y: number;
+  color: string;
+  delay: number;
+}
+
+interface PointerPosition {
+  x: number;
+  y: number;
+}
+
 @Component({
   selector: 'app-root',
   imports: [FormsModule],
@@ -44,6 +57,9 @@ interface SystemStatusResponse {
 export class App implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly bffBaseUrl = new URLSearchParams(window.location.search).get('bffBaseUrl') ?? '';
+  private readonly rainbowColors = ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#00c7ff', '#5856d6'];
+  private lastTrailAt = 0;
+  private nextTrailId = 0;
 
   changeTitle = 'Status panel mapping';
   changeDescription = 'Add one backend field, one BFF mapper, and one Angular status panel.';
@@ -81,6 +97,8 @@ export class App implements OnInit {
   readonly systemStatus = signal<SystemStatusResponse | null>(null);
   readonly statusLoading = signal(false);
   readonly statusError = signal('');
+  readonly catPosition = signal<PointerPosition | null>(null);
+  readonly trailPixels = signal<RainbowTrailPixel[]>([]);
 
   isFormValid(): boolean {
     return !!this.changeTitle && !!this.changeDescription && this.affectedSurfaces.length > 0;
@@ -88,6 +106,32 @@ export class App implements OnInit {
 
   ngOnInit(): void {
     this.refreshStatus();
+  }
+
+  @HostListener('document:pointermove', ['$event'])
+  onPointerMove(event: PointerEvent): void {
+    this.catPosition.set({ x: event.clientX, y: event.clientY });
+
+    const now = performance.now();
+    if (now - this.lastTrailAt < 28) {
+      return;
+    }
+
+    this.lastTrailAt = now;
+    const pixels = this.rainbowColors.map((color, index) => ({
+      id: this.nextTrailId++,
+      x: event.clientX - 22 - index * 10,
+      y: event.clientY + index * 5 - 15,
+      color,
+      delay: index * 18,
+    }));
+
+    this.trailPixels.update((current) => [...current, ...pixels].slice(-96));
+
+    window.setTimeout(() => {
+      const expired = new Set(pixels.map((pixel) => pixel.id));
+      this.trailPixels.update((current) => current.filter((pixel) => !expired.has(pixel.id)));
+    }, 900);
   }
 
   refreshStatus(): void {
