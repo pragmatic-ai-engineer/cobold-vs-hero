@@ -19,7 +19,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ghcr.io/greg0x
+  IMAGE_NAMESPACE: ghcr.io/pragmatic-ai-engineer
   RELEASE_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}
   RELEASE_NAMESPACE: cobold-pr-${{ github.event.pull_request.number }}
   APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.pragmatic-ai.engineer

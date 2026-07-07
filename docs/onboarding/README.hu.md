@@ -124,7 +124,7 @@ A deployolt app a `pai` K3s hoston fut:
 
 - production host: `https://cobold.pragmatic-ai.engineer`
 - preview host minta: `https://pr-<number>.cobold.pragmatic-ai.engineer`
-- image-ek: GHCR, `ghcr.io/greg0x`
+- image-ek: GHCR, `ghcr.io/pragmatic-ai-engineer`
 - deploy: GitHub Actions self-hosted runner + Helm
 - DNS: Cloudflare Terraform, `infra/terraform/cloudflare`
 - TLS: cert-manager wildcard bootstrap, `infra/ansible`

@@ -85,7 +85,7 @@ For the first registration, create a one-hour registration token:
 export GITHUB_RUNNER_REGISTRATION_TOKEN="$(
   gh api \
     --method POST \
-    repos/greg0x/cobold-vs-hero/actions/runners/registration-token \
+    repos/pragmatic-ai-engineer/cobold-vs-hero/actions/runners/registration-token \
     --jq .token
 )"
 ```

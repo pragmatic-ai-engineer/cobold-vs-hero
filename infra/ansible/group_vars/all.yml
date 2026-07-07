@@ -46,7 +46,7 @@ github_runner_user: github-runner
 github_runner_name: pai
 github_runner_dir: /opt/github-actions-runner/cobold-vs-hero
 github_runner_count: 6
-github_runner_repo_url: https://github.com/greg0x/cobold-vs-hero
+github_runner_repo_url: https://github.com/pragmatic-ai-engineer/cobold-vs-hero
 github_runner_version: 2.335.1
 github_runner_arch: x64
 github_runner_checksum: sha256:4ef2f25285f0ae4477f1fe1e346db76d2f3ebf03824e2ddd1973a2819bf6c8cf

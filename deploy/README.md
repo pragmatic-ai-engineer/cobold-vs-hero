@@ -34,9 +34,9 @@ The default public host is `cobold.pragmatic-ai.engineer`. Preview deploys use
 
 The chart expects three images:
 
-- `ghcr.io/greg0x/cobold-vs-hero-backend`
-- `ghcr.io/greg0x/cobold-vs-hero-bff`
-- `ghcr.io/greg0x/cobold-vs-hero-frontend`
+- `ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-backend`
+- `ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-bff`
+- `ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-frontend`
 
 GitHub Actions builds and pushes these images, then deploys the same commit SHA
 as `global.imageTag`.

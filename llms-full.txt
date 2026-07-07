@@ -756,7 +756,7 @@ https://pr-<number>.cobold.pragmatic-ai.engineer
 
 Runtime and deployment surfaces:
 
-- Images are published under `ghcr.io/greg0x`.
+- Images are published under `ghcr.io/pragmatic-ai-engineer`.
 - GitHub Actions builds and deploys.
 - The self-hosted runner deploys to local K3s with Helm.
 - App Helm chart lives in `deploy/helm/cobold-vs-hero/`.

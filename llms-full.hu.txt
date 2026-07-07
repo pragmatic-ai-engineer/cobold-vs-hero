@@ -761,7 +761,7 @@ https://pr-<number>.cobold.pragmatic-ai.engineer
 
 Runtime es deployment feluletek:
 
-- Image-ek: `ghcr.io/greg0x`.
+- Image-ek: `ghcr.io/pragmatic-ai-engineer`.
 - GitHub Actions buildel es deployol.
 - Self-hosted runner deployol lokalis K3s-re Helmmel.
 - App Helm chart: `deploy/helm/cobold-vs-hero/`.

@@ -148,9 +148,9 @@ export KUBECONFIG=infra/ansible/.generated/kubeconfig-pai
 helm upgrade --install cobold-vs-hero deploy/helm/cobold-vs-hero \
   --namespace cobold \
   --set global.imageTag=<tag> \
-  --set backend.image.repository=ghcr.io/greg0x/cobold-vs-hero-backend \
-  --set bff.image.repository=ghcr.io/greg0x/cobold-vs-hero-bff \
-  --set frontend.image.repository=ghcr.io/greg0x/cobold-vs-hero-frontend
+  --set backend.image.repository=ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-backend \
+  --set bff.image.repository=ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-bff \
+  --set frontend.image.repository=ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-frontend
 ```
 
 The `Deploy` GitHub Actions workflow runs on the `pai` self-hosted runner,
