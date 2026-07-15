@@ -1,10 +1,5 @@
 name: Deploy
 
-# GitOps deploy: CI builds and pushes images, then bumps the image tag in
-# pragmatic-ai-engineer/grove (apps/cobold/image-tag.yaml) and Flux rolls
-# the release. The runner holds a read-only kubeconfig for watching the
-# rollout — deploy authority lives in the grove repo, not on the runner.
-
 on:
   workflow_dispatch:
   push:
@@ -21,19 +16,23 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ghcr.io/pragmatic-ai-engineer
+  IMAGE_NAMESPACE: ghcr.io/mimukodik
   RELEASE_NAME: cobold-vs-hero
   RELEASE_NAMESPACE: cobold
-  APP_HOST: cobold.pragmatic-ai.engineer
-  IMAGE_TAG: ${{ github.sha }}
+  APP_HOST: cobold.mimukodik.hu
+  # main-<run>-<sha>: the run number gives Flux's ImagePolicy a total order;
+  # pushing this tag IS the deploy. The platform (berek repo) pulls it in via
+  # image automation — no cluster or platform-repo credentials live here.
+  IMAGE_TAG: main-${{ github.run_number }}-${{ github.sha }}
+  # Read-only view of the cobold namespace, minted by ansible from the
+  # Flux-managed cobold-deploy-watch ServiceAccount; used only to watch the
+  # rollout that image automation triggers.
   KUBECONFIG: /home/github-runner/.kube/cobold-deploy-watch.config
-  GITOPS_REPO: pragmatic-ai-engineer/grove
-  GITOPS_FILE: apps/cobold/image-tag.yaml
 
 jobs:
   build:
     name: Build and push ${{ matrix.service }}
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -61,7 +60,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          name: pai-builder-${{ runner.name }}
+          name: berek-builder-${{ runner.name }}
           keep-state: true
           cleanup: false
 
@@ -78,7 +77,7 @@ jobs:
           DOCKER_BUILD_RECORD_UPLOAD: false
           DOCKER_BUILD_SUMMARY: false
         with:
-          builder: pai-builder-${{ runner.name }}
+          builder: berek-builder-${{ runner.name }}
           context: ${{ matrix.context }}
           platforms: linux/amd64
           push: true
@@ -94,8 +93,8 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
 
   deploy:
-    name: Deploy to pai
-    runs-on: [self-hosted, pai]
+    name: Deploy via GitOps
+    runs-on: [self-hosted, berek]
     timeout-minutes: 30
     needs: build
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
@@ -104,45 +103,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Bump image tag in grove
-        id: bump
-        env:
-          GROVE_GITOPS_TOKEN: ${{ secrets.GROVE_GITOPS_TOKEN }}
+      - name: Wait for Flux to roll the release
         run: |
-          rm -rf "$RUNNER_TEMP/gitops"
-          git clone --depth 10 \
-            "https://x-access-token:${GROVE_GITOPS_TOKEN}@github.com/${GITOPS_REPO}" \
-            "$RUNNER_TEMP/gitops"
-          cd "$RUNNER_TEMP/gitops"
-
-          previous="$(grep -oE -m1 '[0-9a-f]{40}' "$GITOPS_FILE")"
-          echo "previous=$previous" >> "$GITHUB_OUTPUT"
-          if [ "$previous" = "$IMAGE_TAG" ]; then
-            echo "Image tag already at $IMAGE_TAG; nothing to bump."
-            exit 0
-          fi
-
-          sed -E -i "s/[0-9a-f]{40}/${IMAGE_TAG}/g" "$GITOPS_FILE"
-          git -c user.name="cobold-deploy" -c user.email="deploy@pragmatic-ai.engineer" \
-            commit -am "Deploy cobold-vs-hero ${IMAGE_TAG}"
-          git push origin HEAD:main
-
-      - name: Wait for Flux rollout
-        run: |
-          deadline=$((SECONDS + 720))
-          for service in backend bff frontend; do
-            deploy="$RELEASE_NAME-$service"
-            until [ "$(kubectl -n "$RELEASE_NAMESPACE" get deploy "$deploy" \
-              -o jsonpath='{.spec.template.spec.containers[0].image}')" = \
-              "$IMAGE_NAMESPACE/cobold-vs-hero-$service:$IMAGE_TAG" ]; do
-              if [ "$SECONDS" -ge "$deadline" ]; then
-                echo "::error::Flux did not roll $deploy to $IMAGE_TAG in time."
-                exit 1
-              fi
-              sleep 10
-            done
-            kubectl -n "$RELEASE_NAMESPACE" rollout status "deploy/$deploy" --timeout=300s
+          # Image automation: reflector scans GHCR, the policy picks this
+          # run's tag, the automation commits the bump, Flux applies it.
+          # Poll until the backend runs the new tag (scan+automation+sync
+          # is a few minutes), then confirm every deployment rolled out.
+          deadline=$((SECONDS + 900))
+          while [ $SECONDS -lt $deadline ]; do
+            img="$(kubectl -n "$RELEASE_NAMESPACE" get deploy "$RELEASE_NAME"-backend \
+              -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true)"
+            if [ "${img##*:}" = "$IMAGE_TAG" ]; then
+              break
+            fi
+            sleep 10
           done
+          if [ "${img##*:}" != "$IMAGE_TAG" ]; then
+            echo "::error::Flux did not apply image tag $IMAGE_TAG within 15 minutes (last seen: ${img:-none})."
+            exit 1
+          fi
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
 
       - name: Set up mise
         uses: jdx/mise-action@v3
@@ -161,26 +143,8 @@ jobs:
           COBOLD_UI_BASE_URL: https://${{ env.APP_HOST }}
         run: mise run smoke:all
 
-      - name: Revert image tag after smoke failure
-        if: steps.deployed-smoke.outcome == 'failure'
-        env:
-          GROVE_GITOPS_TOKEN: ${{ secrets.GROVE_GITOPS_TOKEN }}
-          PREVIOUS_TAG: ${{ steps.bump.outputs.previous }}
-        run: |
-          echo "::warning::Deployed smoke checks failed; reverting to $PREVIOUS_TAG."
-          cd "$RUNNER_TEMP/gitops"
-          git pull --rebase origin main
-          sed -E -i "s/[0-9a-f]{40}/${PREVIOUS_TAG}/g" "$GITOPS_FILE"
-          git -c user.name="cobold-deploy" -c user.email="deploy@pragmatic-ai.engineer" \
-            commit -am "Revert cobold-vs-hero to ${PREVIOUS_TAG} after smoke failure"
-          git push origin HEAD:main
-          for service in backend bff frontend; do
-            kubectl -n "$RELEASE_NAMESPACE" rollout status \
-              "deploy/$RELEASE_NAME-$service" --timeout=300s || true
-          done
-
-      - name: Fail deploy after smoke revert
+      - name: Fail deploy after smoke failure
         if: steps.deployed-smoke.outcome == 'failure'
         run: |
-          echo "::error::Deployed smoke checks failed. The image tag was reverted in ${GITOPS_REPO}; keeping this deployment run failed."
+          echo "::error::Deployed smoke checks failed against the live release. Roll back by reverting the automation bump commit in mimukodik/berek (or hand-editing the imageTag there) — the platform repo is the deploy interface."
           exit 1

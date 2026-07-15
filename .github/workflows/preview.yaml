@@ -1,11 +1,5 @@
 name: Preview
 
-# Per-PR preview releases in the shared cobold-previews namespace. The
-# runner's kubeconfig is a ServiceAccount that is admin of that namespace
-# and nothing else (grove repo, apps/cobold/ci-rbac.yaml). TLS comes from a
-# Flux-managed wildcard Certificate issued straight into the namespace, so
-# the workflow never touches kube-system.
-
 on:
   pull_request:
     types:
@@ -25,11 +19,14 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ghcr.io/pragmatic-ai-engineer
+  IMAGE_NAMESPACE: ghcr.io/mimukodik
   RELEASE_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}
+  # Previews share the cobold-previews namespace: the CI ServiceAccount is
+  # namespace-admin there and nowhere else, and cert-manager issues the
+  # preview wildcard secret straight into it (no copying, no kube-system).
   RELEASE_NAMESPACE: cobold-previews
-  APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.pragmatic-ai.engineer
-  TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
+  APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.mimukodik.hu
+  TLS_SECRET_NAME: mimukodik-hu-wildcard-tls
   IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/cobold-preview-ci.config
   DATADOG_OBSERVABILITY_ENABLED: ${{ vars.DATADOG_OBSERVABILITY_ENABLED }}
@@ -40,7 +37,7 @@ env:
 jobs:
   build:
     name: Build preview ${{ matrix.service }}
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 30
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     strategy:
@@ -69,7 +66,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          name: pai-builder-${{ runner.name }}
+          name: berek-builder-${{ runner.name }}
           keep-state: true
           cleanup: false
 
@@ -86,7 +83,7 @@ jobs:
           DOCKER_BUILD_RECORD_UPLOAD: false
           DOCKER_BUILD_SUMMARY: false
         with:
-          builder: pai-builder-${{ runner.name }}
+          builder: berek-builder-${{ runner.name }}
           context: ${{ matrix.context }}
           platforms: linux/amd64
           push: true
@@ -102,7 +99,7 @@ jobs:
 
   deploy:
     name: Deploy preview
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 20
     needs: build
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
@@ -114,13 +111,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Wait for preview TLS secret
+      - name: Wait for the preview wildcard secret
         run: |
-          until kubectl -n "$RELEASE_NAMESPACE" get secret "$TLS_SECRET_NAME" >/dev/null 2>&1; do
-            echo "Waiting for $TLS_SECRET_NAME in $RELEASE_NAMESPACE (Flux-managed Certificate)..."
-            sleep 10
+          # Issued into cobold-previews by the Flux-managed Certificate; only
+          # gone right after a cluster rebuild while cert-manager still works.
+          for i in $(seq 1 60); do
+            kubectl -n "$RELEASE_NAMESPACE" get secret "$TLS_SECRET_NAME" >/dev/null 2>&1 && exit 0
+            sleep 5
           done
-        timeout-minutes: 5
+          echo "::error::TLS secret $TLS_SECRET_NAME not found in $RELEASE_NAMESPACE."
+          exit 1
 
       - name: Deploy with Helm
         run: |
@@ -176,10 +176,12 @@ jobs:
 
   cleanup:
     name: Cleanup preview
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 10
     if: github.event.action == 'closed'
 
     steps:
       - name: Remove preview release
-        run: helm uninstall "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --ignore-not-found
+        run: |
+          # Shared namespace — uninstall the release only, never the namespace.
+          helm uninstall "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --ignore-not-found
