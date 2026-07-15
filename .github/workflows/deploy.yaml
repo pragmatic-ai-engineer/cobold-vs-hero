@@ -16,12 +16,12 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ghcr.io/pragmatic-ai-engineer
+  IMAGE_NAMESPACE: ghcr.io/mimukodik
   RELEASE_NAME: cobold-vs-hero
   RELEASE_NAMESPACE: cobold
-  APP_HOST: cobold.pragmatic-ai.engineer
+  APP_HOST: cobold.mimukodik.hu
   CLUSTER_ISSUER: letsencrypt-prod
-  TLS_SECRET_NAME: cobold-pragmatic-ai-engineer-tls
+  TLS_SECRET_NAME: cobold-mimukodik-hu-tls
   IMAGE_TAG: ${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/config
   DATADOG_OBSERVABILITY_ENABLED: ${{ vars.DATADOG_OBSERVABILITY_ENABLED }}

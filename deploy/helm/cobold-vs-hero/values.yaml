@@ -6,19 +6,19 @@ global:
 
 backend:
   image:
-    repository: ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-backend
+    repository: ghcr.io/mimukodik/cobold-vs-hero-backend
     tag: ""
   replicaCount: 1
 
 bff:
   image:
-    repository: ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-bff
+    repository: ghcr.io/mimukodik/cobold-vs-hero-bff
     tag: ""
   replicaCount: 1
 
 frontend:
   image:
-    repository: ghcr.io/pragmatic-ai-engineer/cobold-vs-hero-frontend
+    repository: ghcr.io/mimukodik/cobold-vs-hero-frontend
     tag: ""
   replicaCount: 1
 
@@ -30,11 +30,11 @@ ingress:
     enabled: true
     clusterIssuer: letsencrypt-prod
   hosts:
-    - host: cobold.pragmatic-ai.engineer
+    - host: cobold.mimukodik.hu
   tls:
-    - secretName: cobold-pragmatic-ai-engineer-tls
+    - secretName: cobold-mimukodik-hu-tls
       hosts:
-        - cobold.pragmatic-ai.engineer
+        - cobold.mimukodik.hu
 
 resources:
   backend:

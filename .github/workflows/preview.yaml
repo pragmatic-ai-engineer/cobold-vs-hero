@@ -19,14 +19,14 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAMESPACE: ghcr.io/pragmatic-ai-engineer
+  IMAGE_NAMESPACE: ghcr.io/mimukodik
   RELEASE_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}
   RELEASE_NAMESPACE: cobold-pr-${{ github.event.pull_request.number }}
-  APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.pragmatic-ai.engineer
+  APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.mimukodik.hu
   WILDCARD_TLS_NAMESPACE: kube-system
-  WILDCARD_TLS_CERTIFICATE: pragmatic-ai-engineer-wildcard
-  WILDCARD_TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
-  TLS_SECRET_NAME: pragmatic-ai-engineer-wildcard-tls
+  WILDCARD_TLS_CERTIFICATE: mimukodik-hu-wildcard
+  WILDCARD_TLS_SECRET_NAME: mimukodik-hu-wildcard-tls
+  TLS_SECRET_NAME: mimukodik-hu-wildcard-tls
   IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/config
   DATADOG_OBSERVABILITY_ENABLED: ${{ vars.DATADOG_OBSERVABILITY_ENABLED }}
