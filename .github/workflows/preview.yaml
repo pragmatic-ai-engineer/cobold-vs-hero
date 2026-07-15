@@ -21,14 +21,14 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: ghcr.io/mimukodik
   RELEASE_NAME: cobold-vs-hero-pr-${{ github.event.pull_request.number }}
-  RELEASE_NAMESPACE: cobold-pr-${{ github.event.pull_request.number }}
+  # Previews share the cobold-previews namespace: the CI ServiceAccount is
+  # namespace-admin there and nowhere else, and cert-manager issues the
+  # preview wildcard secret straight into it (no copying, no kube-system).
+  RELEASE_NAMESPACE: cobold-previews
   APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.mimukodik.hu
-  WILDCARD_TLS_NAMESPACE: kube-system
-  WILDCARD_TLS_CERTIFICATE: mimukodik-hu-wildcard
-  WILDCARD_TLS_SECRET_NAME: mimukodik-hu-wildcard-tls
   TLS_SECRET_NAME: mimukodik-hu-wildcard-tls
   IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
-  KUBECONFIG: /home/github-runner/.kube/config
+  KUBECONFIG: /home/github-runner/.kube/cobold-preview-ci.config
   DATADOG_OBSERVABILITY_ENABLED: ${{ vars.DATADOG_OBSERVABILITY_ENABLED }}
   DATADOG_SITE: ${{ vars.DATADOG_SITE }}
   DATADOG_RUM_APPLICATION_ID: ${{ vars.DATADOG_RUM_APPLICATION_ID }}
@@ -37,7 +37,7 @@ env:
 jobs:
   build:
     name: Build preview ${{ matrix.service }}
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 30
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     strategy:
@@ -66,7 +66,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          name: pai-builder-${{ runner.name }}
+          name: berek-builder-${{ runner.name }}
           keep-state: true
           cleanup: false
 
@@ -83,7 +83,7 @@ jobs:
           DOCKER_BUILD_RECORD_UPLOAD: false
           DOCKER_BUILD_SUMMARY: false
         with:
-          builder: pai-builder-${{ runner.name }}
+          builder: berek-builder-${{ runner.name }}
           context: ${{ matrix.context }}
           platforms: linux/amd64
           push: true
@@ -99,7 +99,7 @@ jobs:
 
   deploy:
     name: Deploy preview
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 20
     needs: build
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
@@ -111,24 +111,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Copy wildcard TLS secret
+      - name: Wait for the preview wildcard secret
         run: |
-          kubectl create namespace "$RELEASE_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
-          kubectl -n "$WILDCARD_TLS_NAMESPACE" wait --for=condition=Ready certificate/"$WILDCARD_TLS_CERTIFICATE" --timeout=300s
-
-          TLS_CERT="$(kubectl -n "$WILDCARD_TLS_NAMESPACE" get secret "$WILDCARD_TLS_SECRET_NAME" -o jsonpath='{.data.tls\.crt}')"
-          TLS_KEY="$(kubectl -n "$WILDCARD_TLS_NAMESPACE" get secret "$WILDCARD_TLS_SECRET_NAME" -o jsonpath='{.data.tls\.key}')"
-
-          kubectl -n "$RELEASE_NAMESPACE" apply -f - <<EOF
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: $TLS_SECRET_NAME
-          type: kubernetes.io/tls
-          data:
-            tls.crt: $TLS_CERT
-            tls.key: $TLS_KEY
-          EOF
+          # Issued into cobold-previews by the Flux-managed Certificate; only
+          # gone right after a cluster rebuild while cert-manager still works.
+          for i in $(seq 1 60); do
+            kubectl -n "$RELEASE_NAMESPACE" get secret "$TLS_SECRET_NAME" >/dev/null 2>&1 && exit 0
+            sleep 5
+          done
+          echo "::error::TLS secret $TLS_SECRET_NAME not found in $RELEASE_NAMESPACE."
+          exit 1
 
       - name: Deploy with Helm
         run: |
@@ -184,12 +176,12 @@ jobs:
 
   cleanup:
     name: Cleanup preview
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 10
     if: github.event.action == 'closed'
 
     steps:
       - name: Remove preview release
         run: |
+          # Shared namespace — uninstall the release only, never the namespace.
           helm uninstall "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --ignore-not-found
-          kubectl delete namespace "$RELEASE_NAMESPACE" --ignore-not-found

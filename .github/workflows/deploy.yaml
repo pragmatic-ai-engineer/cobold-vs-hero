@@ -20,19 +20,18 @@ env:
   RELEASE_NAME: cobold-vs-hero
   RELEASE_NAMESPACE: cobold
   APP_HOST: cobold.mimukodik.hu
-  CLUSTER_ISSUER: letsencrypt-prod
-  TLS_SECRET_NAME: cobold-mimukodik-hu-tls
   IMAGE_TAG: ${{ github.sha }}
-  KUBECONFIG: /home/github-runner/.kube/config
-  DATADOG_OBSERVABILITY_ENABLED: ${{ vars.DATADOG_OBSERVABILITY_ENABLED }}
-  DATADOG_SITE: ${{ vars.DATADOG_SITE }}
-  DATADOG_RUM_APPLICATION_ID: ${{ vars.DATADOG_RUM_APPLICATION_ID }}
-  DATADOG_RUM_CLIENT_TOKEN: ${{ secrets.DATADOG_RUM_CLIENT_TOKEN }}
+  GITOPS_REPO: mimukodik/berek
+  GITOPS_FILE: apps/cobold/image-tag.yaml
+  # Read-only view of the cobold namespace, minted by ansible from the
+  # Flux-managed cobold-deploy-watch ServiceAccount. The deploy itself goes
+  # through git (the image-tag bump); the cluster is only watched.
+  KUBECONFIG: /home/github-runner/.kube/cobold-deploy-watch.config
 
 jobs:
   build:
     name: Build and push ${{ matrix.service }}
-    runs-on: [self-hosted, pai]
+    runs-on: [self-hosted, berek]
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -60,7 +59,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
-          name: pai-builder-${{ runner.name }}
+          name: berek-builder-${{ runner.name }}
           keep-state: true
           cleanup: false
 
@@ -77,7 +76,7 @@ jobs:
           DOCKER_BUILD_RECORD_UPLOAD: false
           DOCKER_BUILD_SUMMARY: false
         with:
-          builder: pai-builder-${{ runner.name }}
+          builder: berek-builder-${{ runner.name }}
           context: ${{ matrix.context }}
           platforms: linux/amd64
           push: true
@@ -93,9 +92,9 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
 
   deploy:
-    name: Deploy to pai
-    runs-on: [self-hosted, pai]
-    timeout-minutes: 20
+    name: Deploy via GitOps
+    runs-on: [self-hosted, berek]
+    timeout-minutes: 30
     needs: build
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
 
@@ -103,39 +102,56 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy with Helm
-        run: |
-          OBSERVABILITY_ARGS=()
-          if [ "$DATADOG_OBSERVABILITY_ENABLED" = "true" ] || [ -n "$DATADOG_RUM_CLIENT_TOKEN" ]; then
-            OBSERVABILITY_ARGS+=(
-              --set observability.enabled=true
-              --set observability.datadog.enabled=true
-              --set-string observability.datadog.env=demo
-              --set-string observability.datadog.version="$IMAGE_TAG"
-              --set-string observability.datadog.site="${DATADOG_SITE:-datadoghq.com}"
-            )
-          fi
-          if [ -n "$DATADOG_RUM_CLIENT_TOKEN" ] && [ -n "$DATADOG_RUM_APPLICATION_ID" ]; then
-            OBSERVABILITY_ARGS+=(
-              --set observability.datadog.browser.enabled=true
-              --set-string observability.datadog.browser.clientToken="$DATADOG_RUM_CLIENT_TOKEN"
-              --set-string observability.datadog.browser.rumApplicationId="$DATADOG_RUM_APPLICATION_ID"
-            )
-          fi
+      - name: Checkout gitops repo
+        uses: actions/checkout@v4
+        with:
+          repository: mimukodik/berek
+          token: ${{ secrets.BEREK_GITOPS_TOKEN }}
+          ref: main
+          path: gitops
 
-          helm upgrade --install "$RELEASE_NAME" deploy/helm/cobold-vs-hero \
-            --namespace "$RELEASE_NAMESPACE" \
-            --reset-values \
-            --create-namespace \
-            --set global.imageTag="$IMAGE_TAG" \
-            --set backend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-backend" \
-            --set bff.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-bff" \
-            --set frontend.image.repository="$IMAGE_NAMESPACE/cobold-vs-hero-frontend" \
-            --set-string ingress.hosts[0].host="$APP_HOST" \
-            --set-string ingress.certManager.clusterIssuer="$CLUSTER_ISSUER" \
-            --set-string 'ingress.tls[0].secretName'="$TLS_SECRET_NAME" \
-            --set-string 'ingress.tls[0].hosts[0]'="$APP_HOST" \
-            "${OBSERVABILITY_ARGS[@]}"
+      - name: Bump deployed image tag
+        id: bump
+        working-directory: gitops
+        run: |
+          previous="$(grep -Eo '"[0-9a-f]{40}"' "$GITOPS_FILE" | head -1 | tr -d '"')"
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          if [ "$previous" = "$IMAGE_TAG" ]; then
+            echo "image tag already $IMAGE_TAG; nothing to bump"
+            exit 0
+          fi
+          sed -E -i "s/\"[0-9a-f]{40}\"/\"$IMAGE_TAG\"/g" "$GITOPS_FILE"
+          git config user.name "cobold-vs-hero deploy"
+          git config user.email "deploy@berek.dev"
+          git add "$GITOPS_FILE"
+          git commit -m "cobold-vs-hero deploys $IMAGE_TAG"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            git pull --rebase origin main
+          done
+          echo "::error::Could not push the image-tag bump after 3 attempts."
+          exit 1
+
+      - name: Wait for Flux to roll the release
+        run: |
+          # Flux picks the bump up within its sync interval; the HelmRelease
+          # re-renders from the ConfigMap. Poll until the backend runs the new
+          # tag, then confirm every deployment rolled out.
+          deadline=$((SECONDS + 900))
+          while [ $SECONDS -lt $deadline ]; do
+            img="$(kubectl -n "$RELEASE_NAMESPACE" get deploy "$RELEASE_NAME"-backend \
+              -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true)"
+            if [ "${img##*:}" = "$IMAGE_TAG" ]; then
+              break
+            fi
+            sleep 10
+          done
+          if [ "${img##*:}" != "$IMAGE_TAG" ]; then
+            echo "::error::Flux did not apply image tag $IMAGE_TAG within 15 minutes (last seen: ${img:-none})."
+            exit 1
+          fi
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
           kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
@@ -157,18 +173,33 @@ jobs:
           COBOLD_UI_BASE_URL: https://${{ env.APP_HOST }}
         run: mise run smoke:all
 
-      - name: Roll back Helm release after smoke failure
-        if: steps.deployed-smoke.outcome == 'failure'
+      - name: Revert image bump after smoke failure
+        if: steps.deployed-smoke.outcome == 'failure' && steps.bump.outputs.previous != env.IMAGE_TAG
+        working-directory: gitops
         run: |
-          echo "::warning::Deployed smoke checks failed; rolling back $RELEASE_NAME in namespace $RELEASE_NAMESPACE."
-          helm history "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --max 5 || true
-          helm rollback "$RELEASE_NAME" --namespace "$RELEASE_NAMESPACE" --wait --timeout=5m
-          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s
-          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-bff --timeout=180s
-          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-frontend --timeout=180s
+          echo "::warning::Deployed smoke checks failed; reverting the image-tag bump to ${{ steps.bump.outputs.previous }}."
+          sed -E -i "s/\"[0-9a-f]{40}\"/\"${{ steps.bump.outputs.previous }}\"/g" "$GITOPS_FILE"
+          git add "$GITOPS_FILE"
+          git commit -m "cobold-vs-hero reverts $IMAGE_TAG after failed smoke"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              break
+            fi
+            git pull --rebase origin main
+          done
+          deadline=$((SECONDS + 900))
+          while [ $SECONDS -lt $deadline ]; do
+            img="$(kubectl -n "$RELEASE_NAMESPACE" get deploy "$RELEASE_NAME"-backend \
+              -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null || true)"
+            if [ "${img##*:}" = "${{ steps.bump.outputs.previous }}" ]; then
+              break
+            fi
+            sleep 10
+          done
+          kubectl -n "$RELEASE_NAMESPACE" rollout status deploy/"$RELEASE_NAME"-backend --timeout=180s || true
 
       - name: Fail deploy after smoke rollback
         if: steps.deployed-smoke.outcome == 'failure'
         run: |
-          echo "::error::Deployed smoke checks failed. Helm rollback was attempted; keeping this deployment run failed."
+          echo "::error::Deployed smoke checks failed. The image-tag bump was reverted; keeping this deployment run failed."
           exit 1
