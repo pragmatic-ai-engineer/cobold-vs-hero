@@ -31,5 +31,8 @@ the component they describe.
 Keep docs short, owned, and runnable. Prefer one strong entry point for a topic
 over mirrored summaries in every folder.
 
+After a documentation-only change, run `mise run contracts:check` to confirm
+that the workshop's required documentation and contract artifacts are present.
+
 Hungarian companions are reserved for the highest-signal participant docs:
 orientation, onboarding, the workshop task, and key solution entry points.
