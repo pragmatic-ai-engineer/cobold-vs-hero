@@ -122,9 +122,9 @@ parancsok igen.
 
 A deployolt app a `pai` K3s hoston fut:
 
-- production host: `https://cobold.pragmatic-ai.engineer`
-- preview host minta: `https://pr-<number>.cobold.pragmatic-ai.engineer`
-- image-ek: GHCR, `ghcr.io/pragmatic-ai-engineer`
+- production host: `https://cobold.mimukodik.hu`
+- preview host minta: `https://cobold-pr-<number>.mimukodik.hu`
+- image-ek: GHCR, `ghcr.io/mimukodik`
 - deploy: GitHub Actions self-hosted runner + Helm
 - DNS: Cloudflare Terraform, `infra/terraform/cloudflare`
 - TLS: cert-manager wildcard bootstrap, `infra/ansible`

@@ -117,9 +117,9 @@ commands do.
 
 The deployed app runs on the `pai` K3s host:
 
-- production host: `https://cobold.pragmatic-ai.engineer`
-- preview host pattern: `https://pr-<number>.cobold.pragmatic-ai.engineer`
-- images: GHCR under `ghcr.io/pragmatic-ai-engineer`
+- production host: `https://cobold.mimukodik.hu`
+- preview host pattern: `https://cobold-pr-<number>.mimukodik.hu`
+- images: GHCR under `ghcr.io/mimukodik`
 - deploy mechanism: GitHub Actions self-hosted runner plus Helm
 - DNS: Cloudflare Terraform under `infra/terraform/cloudflare`
 - TLS: cert-manager wildcard bootstrap under `infra/ansible`

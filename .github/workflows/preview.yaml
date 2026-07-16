@@ -25,7 +25,10 @@ env:
   # namespace-admin there and nowhere else, and cert-manager issues the
   # preview wildcard secret straight into it (no copying, no kube-system).
   RELEASE_NAMESPACE: cobold-previews
-  APP_HOST: pr-${{ github.event.pull_request.number }}.cobold.mimukodik.hu
+  # Single label below the apex on purpose: Cloudflare's Universal SSL
+  # covers one wildcard level, so this shape lets previews ride the proxied
+  # * record (the platform repo's cloudflare stack) with the origin hidden.
+  APP_HOST: cobold-pr-${{ github.event.pull_request.number }}.mimukodik.hu
   TLS_SECRET_NAME: mimukodik-hu-wildcard-tls
   IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
   KUBECONFIG: /home/github-runner/.kube/cobold-preview-ci.config

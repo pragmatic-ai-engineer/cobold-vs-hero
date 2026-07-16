@@ -27,8 +27,8 @@ helm upgrade --install cobold-vs-hero deploy/helm/cobold-vs-hero \
   --set global.imageTag=<tag>
 ```
 
-The default public host is `cobold.pragmatic-ai.engineer`. Preview deploys use
-`pr-<number>.cobold.pragmatic-ai.engineer`.
+The default public host is `cobold.mimukodik.hu`. Preview deploys use
+`cobold-pr-<number>.mimukodik.hu`.
 
 ## Image Contract
 
